@@ -1,0 +1,15 @@
+{
+  "name": "suntrace",
+  "version": "1.0.0",
+  "description": "Urban microclimate solar simulator — vanilla JS, no build step",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/solar.test.js"
+  },
+  "devDependencies": {
+    "suncalc": "^1.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

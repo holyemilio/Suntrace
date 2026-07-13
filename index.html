@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunTrace — Simulatore Microclimatico Urbano</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%23eab308'/%3E%3Cpath d='M16 4v4m0 16v4M4 16h4m16 0h4' stroke='%23ea580c' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <!-- Leaflet (CDN — no build step required) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside id="sidebar" aria-label="Pannello di Controllo SunTrace">
+
+    <!-- Brand -->
+    <header class="brand-container">
+      <div class="logo-wrapper">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="6" fill="#eab308"/>
+          <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+          <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
+        </svg>
+        <h1 class="logo-text">Sun<span>Trace</span></h1>
+      </div>
+      <div class="scanner-badge">
+        <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="#059669"/></svg>
+        v4.0 Meeus
+      </div>
+    </header>
+
+    <!-- Main output -->
+    <section class="output-box" aria-labelledby="main-output-title">
+      <p class="output-subtitle" id="main-output-title">Stima temperatura vano</p>
+      <div class="output-temp" id="thermal-result" aria-live="polite">--°C</div>
+
+      <div class="comfort-rate-wrapper">
+        <div style="font-size:0.72rem;opacity:0.65;margin-top:8px;margin-bottom:2px;">Comfort Rate Stimato</div>
+        <div
+          class="comfort-rate-badge"
+          id="energy-class-field"
+          role="button"
+          tabindex="0"
+          aria-label="Apri dettaglio comfort"
+        >
+          <span id="comfort-rate-stars" style="letter-spacing:1px;font-size:0.85rem;margin-right:4px;">⭐⭐⭐⭐⭐</span>
+          <span id="comfort-rate-label">--</span>
+          <!-- GitHub-style Tooltip -->
+          <div class="comfort-rate-tooltip" role="tooltip">
+            Comfort Rate: indice di comfort termico stimato per l'abitazione basato su orientamento, sole e ostruzioni.
+          </div>
+        </div>
+        <span class="kpi-hint">tocca per i dettagli sul comfort</span>
+      </div>
+
+      <!-- Seasonal grid -->
+      <div class="quadrant-grid" role="region" aria-label="Temperature Stagionali">
+        <div class="quadrant-card" id="quad-winter">
+          <span class="q-label">Inverno</span>
+          <strong class="q-value" id="val-q-winter">--°C</strong>
+        </div>
+        <div class="quadrant-card" id="quad-spring">
+          <span class="q-label">Primavera</span>
+          <strong class="q-value" id="val-q-spring">--°C</strong>
+        </div>
+        <div class="quadrant-card" id="quad-summer">
+          <span class="q-label">Estate</span>
+          <strong class="q-value" id="val-q-summer">--°C</strong>
+        </div>
+        <div class="quadrant-card" id="quad-autumn">
+          <span class="q-label">Autunno</span>
+          <strong class="q-value" id="val-q-autumn">--°C</strong>
+        </div>
+      </div>
+
+      <!-- Coordinates -->
+      <div class="coord-row">
+        <span id="coord-lat">--°N</span>
+        <span id="coord-lng">--°E</span>
+      </div>
+    </section>
+
+    <!-- Time configuration -->
+    <section class="card" aria-label="Configurazione Temporale">
+      <p class="card-title">⏱ Crono-Solare</p>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span>Mese di analisi</span>
+          <strong id="month-label">Giugno</strong>
+        </div>
+        <input type="range" id="month-slider" min="0" max="11" value="5" aria-label="Seleziona mese">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span>Ora locale (simulatore ombra)</span>
+          <strong id="hour-label">12:00</strong>
+        </div>
+        <input type="range" id="hour-slider" min="0" max="23" value="12" aria-label="Seleziona ora">
+      </div>
+    </section>
+
+    <!-- Solar info -->
+    <section class="card" aria-label="Informazioni Solari">
+      <p class="card-title">☀️ Dati Solari</p>
+      <div class="info-row">
+        <span class="label">Alba (ora locale)</span>
+        <span class="value" id="val-sunrise">--:--</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Tramonto (ora locale)</span>
+        <span class="value" id="val-sunset">--:--</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Durata del giorno</span>
+        <span class="value" id="val-day-length">--</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Elevazione solare</span>
+        <span class="value" id="val-sun-elevation">--°</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Azimut solare</span>
+        <span class="value" id="val-sun-azimuth">--°</span>
+      </div>
+    </section>
+
+    <!-- Facade parameters -->
+    <section class="card" aria-label="Parametri Geometrici Facciata">
+      <p class="card-title">🛠 Parametri Facciata</p>
+      <div class="info-row">
+        <span class="label">Orientamento / Cardinale</span>
+        <strong class="value" id="telemetry-cardinal">--</strong>
+      </div>
+      <div class="info-row">
+        <span class="label">Schermatura rilevata</span>
+        <strong class="value" id="val-manual-obs">--</strong>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span>Rotazione parete</span>
+          <strong id="val-manual-angle">180°</strong>
+        </div>
+        <input type="range" id="manual-angle-slider" min="0" max="359" value="180" aria-label="Angolo di rotazione parete">
+      </div>
+
+      <div class="select-row">
+        <div class="select-header">
+          <span>Tipo di Infissi</span>
+        </div>
+        <select id="windows-select" class="property-select" aria-label="Seleziona tipo di infissi">
+          <option value="single">Vetro Singolo</option>
+          <option value="double" selected>Doppio Vetro</option>
+          <option value="triple">Triplo Vetro / Taglio Termico</option>
+        </select>
+      </div>
+
+      <div class="select-row">
+        <div class="select-header">
+          <span>Isolamento Muri</span>
+        </div>
+        <select id="insulation-select" class="property-select" aria-label="Seleziona isolamento pareti">
+          <option value="none" selected>Nessuno (Muro Storico)</option>
+          <option value="coat">Cappotto Termico</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Facade sun-hours chart -->
+    <section class="card" aria-label="Ore di Sole per Facciata">
+      <p class="card-title">📊 Ore di Sole per Facciata</p>
+      <div class="chart-tabs" role="tablist">
+        <button class="chart-tab active" data-mode="today" role="tab" aria-selected="true">Oggi</button>
+        <button class="chart-tab"        data-mode="annual" role="tab" aria-selected="false">Media Annuale</button>
+      </div>
+      <div id="facade-chart" class="facade-chart" aria-label="Grafico ore di sole per orientamento facciata">
+        <!-- Rendered by ui.js -->
+      </div>
+      <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">La barra arancione = orientamento selezionato.</p>
+    </section>
+
+    <!-- Address search -->
+    <section class="card" aria-label="Ricerca Geografica">
+      <p class="card-title">📍 Cerca Indirizzo</p>
+      <div class="flex-group">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Via o città in Italia…"
+            autocomplete="off"
+            aria-label="Campo di ricerca indirizzo"
+            aria-autocomplete="list"
+            aria-controls="autocomplete-preview"
+          >
+          <div id="autocomplete-preview" class="autocomplete-preview-box" role="listbox" aria-label="Suggerimenti indirizzo"></div>
+        </div>
+        <button id="search-btn" aria-label="Cerca indirizzo">Vai</button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="sidebar-footer">
+      <nav aria-label="Link utili">
+        <ul class="footer-links">
+          <li><a href="docs/case-study.md">Documentazione</a></li>
+          <li><a href="https://github.com/anthropics/suntrace" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="#" onclick="return false;">Privacy</a></li>
+        </ul>
+      </nav>
+      <p class="footer-copy">&copy; 2026 SunTrace. Motore Meeus/SPA — solo uso indicativo.</p>
+    </footer>
+
+  </aside>
+
+  <!-- ── Map ──────────────────────────────────────────────────────────────── -->
+  <main id="map-container" aria-label="Mappa Interattiva Microclimatica">
+    <button
+      class="map-floating-btn"
+      id="geo-btn"
+      aria-label="Rileva la mia posizione geografica"
+      title="Rileva posizione"
+    >
+      <span id="geo-icon" role="img" aria-hidden="true">🎯</span>
+    </button>
+
+    <!-- Mobile sidebar toggle -->
+    <button id="sidebar-toggle" aria-label="Apri pannello di controllo">☰ Pannello</button>
+
+    <div
+      id="map-error-toast"
+      class="map-error-toast"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    ></div>
+
+    <div id="map"></div>
+  </main>
+
+  <!-- ── Comfort Rate Modal ─────────────────────────────────────────────────────────── -->
+  <div
+    id="kpi-modal"
+    class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-class-title"
+  >
+    <div class="modal">
+      <button class="modal-close" id="modal-close-btn" aria-label="Chiudi modale">✕</button>
+
+      <h2 id="modal-class-title">Dettaglio Comfort Rate</h2>
+      <div class="modal-class-badge" id="modal-class-badge">Comfort Rate --</div>
+
+      <div class="kpi-grid">
+        <div class="kpi-cell">
+          <span class="kpi-val" id="kpi-winter-temp">--</span>
+          <span class="kpi-lbl">Comfort Inverno (mezzogiorno)</span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val" id="kpi-summer-temp">--</span>
+          <span class="kpi-lbl">Comfort Estate (mezzogiorno)</span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val" id="kpi-infissi-selected">--</span>
+          <span class="kpi-lbl">Tipo di Infissi</span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val" id="kpi-isolamento-selected">--</span>
+          <span class="kpi-lbl">Isolamento Pareti</span>
+        </div>
+      </div>
+
+      <div class="modal-tip" id="kpi-tip"></div>
+
+      <p style="font-size:0.65rem;color:var(--text-muted);margin-top:12px;">
+        *Le temperature stimate rappresentano una simulazione climatica euristica dell'abitazione e non costituiscono una certificazione energetica o climatica ufficiale.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Scripts ─────────────────────────────────────────────────────────── -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script type="module">
+    import { init } from './src/ui.js';
+    init();
+  </script>
+
+  <script>
+    // Wire search button outside the module so it is available immediately.
+    // Dispatches Enter on the input, which ui.js already listens for.
+    document.getElementById('search-btn').addEventListener('click', () => {
+      document.getElementById('search-input').dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+    });
+  </script>
+
+  <!-- ── Mobile Block Overlay ─────────────────────────────────────────────────── -->
+  <div id="mobile-warning" class="mobile-warning-overlay" role="alert" aria-live="assertive">
+    <div class="mobile-warning-card">
+      <div class="mobile-warning-icon">🖥️</div>
+      <h2>Ops! SunTrace ha bisogno di spazio...</h2>
+      <p>Ci hai scoperto! 🕵️‍♂️ Per il momento l'esperienza da smartphone non è disponibile.</p>
+      <p>Collegati da un computer per iniziare a scansionare al meglio ed esplorare l'esposizione al sole!</p>
+    </div>
+  </div>
+
+</body>
+</html>
