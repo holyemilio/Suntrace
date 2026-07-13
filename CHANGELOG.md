@@ -5,6 +5,30 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.0.0] — 2026-07-14
+
+### Added
+- **Comfort Rate** replaces "Classe Energetica": 5-star comfort rating with GitHub-style hover tooltip explaining the index meaning. Labels: Eccellente / Buono / Discreto / Scarso / Critico.
+- **Property parameters** in sidebar: dropdown selectors for window type (Vetro Singolo, Doppio Vetro, Triplo Vetro) and wall insulation (Nessuno, Cappotto Termico). Both affect seasonal temperature estimates and the Comfort Rate score.
+- **Open-Meteo API integration**: real monthly climate normals (1991–2020, EC-Earth3P-HR model) fetched on each map click and cached in `localStorage`. Automatic silent fallback to Rome table on network failure.
+- **Italy geofencing**: coordinates outside the Italian bounding box (lat 35.4–47.1 N, lon 6.6–18.6 E, islands included) trigger a friendly toast and redirect to Rome.
+- **Mobile block overlay**: on screen width < 768 px or touch device, a full-screen overlay blocks the app and invites the user to switch to a desktop browser.
+- **`docs/storyline.md`**: project development narrative (v0.3.3 → v1.0.0 → v2.0.0).
+- **`CLAUDE.md` Phase -1 and Phase 0**: critical-stance and model-tier classification rules added upstream.
+
+### Changed
+- `energyClass()` in `climate.js` replaced by `cozynessScore()` (name kept in JS; visible label is "Comfort Rate").
+- `seasonalTemperatures()` accepts `customBaseTemps`, `windowsType`, and `insulationType` parameters.
+- `airTemperature()` accepts optional `customBaseTemps` array (bypasses Rome static table when provided).
+- KPI modal redesigned: shows winter/summer comfort temperatures, selected infissi/isolamento type, and dynamic improvement tip. Energy consumption and CO₂ fields removed.
+- `CLASS_COLORS` simplified to 5 comfort labels (`Eccellente` → `Critico`).
+
+### Removed
+- `KPI_BY_CLASS` table (heating kWh, cooling kWh, cost estimates, CO₂, savingsVsG) — no longer relevant after removing energy-class model.
+- Inline `title` attribute on the Comfort Rate badge (replaced by custom CSS tooltip).
+
+---
+
 ## [1.0.0] — 2026-07-02
 
 ### Added
