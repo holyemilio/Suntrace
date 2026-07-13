@@ -35,6 +35,27 @@
       </div>
     </header>
 
+    <!-- Address search (primo passo: scegli il luogo da analizzare) -->
+    <section class="card" aria-label="Ricerca Geografica">
+      <p class="card-title">📍 Cerca Indirizzo</p>
+      <p class="search-hint">Cerca un indirizzo per iniziare, poi premi «Vai».</p>
+      <div class="flex-group">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Via o città in Italia…"
+            autocomplete="off"
+            aria-label="Campo di ricerca indirizzo"
+            aria-autocomplete="list"
+            aria-controls="autocomplete-preview"
+          >
+          <div id="autocomplete-preview" class="autocomplete-preview-box" role="listbox" aria-label="Suggerimenti indirizzo"></div>
+        </div>
+        <button id="search-btn" aria-label="Cerca indirizzo">Vai</button>
+      </div>
+    </section>
+
     <!-- Main output -->
     <section class="output-box" aria-labelledby="main-output-title">
       <p class="output-subtitle" id="main-output-title">Stima temperatura vano</p>
@@ -187,26 +208,6 @@
       <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">La barra arancione = orientamento selezionato.</p>
     </section>
 
-    <!-- Address search -->
-    <section class="card" aria-label="Ricerca Geografica">
-      <p class="card-title">📍 Cerca Indirizzo</p>
-      <div class="flex-group">
-        <div class="search-wrapper">
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Via o città in Italia…"
-            autocomplete="off"
-            aria-label="Campo di ricerca indirizzo"
-            aria-autocomplete="list"
-            aria-controls="autocomplete-preview"
-          >
-          <div id="autocomplete-preview" class="autocomplete-preview-box" role="listbox" aria-label="Suggerimenti indirizzo"></div>
-        </div>
-        <button id="search-btn" aria-label="Cerca indirizzo">Vai</button>
-      </div>
-    </section>
-
     <!-- Footer -->
     <footer class="sidebar-footer">
       <nav aria-label="Link utili">
@@ -293,16 +294,6 @@
   <script type="module">
     import { init } from './src/ui.js';
     init();
-  </script>
-
-  <script>
-    // Wire search button outside the module so it is available immediately.
-    // Dispatches Enter on the input, which ui.js already listens for.
-    document.getElementById('search-btn').addEventListener('click', () => {
-      document.getElementById('search-input').dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-    });
   </script>
 
   <!-- ── Mobile Block Overlay ─────────────────────────────────────────────────── -->

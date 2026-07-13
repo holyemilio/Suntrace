@@ -51,22 +51,28 @@ Basato su **Meeus, "Astronomical Algorithms" 2nd ed. (1998), cap. 25–27**:
 
 ---
 
-## 🚀 Esecuzione locale
+## 🚀 Come avviare
+
+> ⚠️ **Non aprire `index.html` con doppio click.** L'app usa moduli ES
+> (`<script type="module">`), la geolocalizzazione e chiamate a API esterne:
+> tutte cose che il browser **blocca** in modalità `file://`. Se apri il file
+> direttamente, l'app risulta "morta" (pulsanti e ricerca non rispondono).
+> Serve un server locale su `http://localhost`.
+
+**Metodo più semplice (macOS):** doppio click su **`start.command`**.
+Avvia un server locale e apre il browser sulla pagina giusta. Per fermarlo,
+premi `Ctrl+C` nella finestra del Terminale che si apre.
+
+**In VSCode:** installa l'estensione *Live Server*, poi tasto destro su
+`index.html` → **"Open with Live Server"**.
+
+**Da terminale:**
 
 ```bash
-# 1. Clona il repository
-git clone https://github.com/your-username/suntrace.git
-cd suntrace
-
-# 2. Avvia un server locale (qualsiasi server HTTP funziona)
-python3 -m http.server 8080
-# oppure: npx serve .
-
-# 3. Apri nel browser
-open http://localhost:8080
+cd "SunTrace"
+python3 -m http.server 8000
+# poi apri http://localhost:8000
 ```
-
-> **Nota**: il file `index.html` usa `<script type="module">` — non può essere aperto direttamente come `file://` a causa delle restrizioni CORS. È necessario un server HTTP.
 
 ---
 

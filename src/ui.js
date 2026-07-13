@@ -57,6 +57,10 @@ let autocompleteTimeout = null;
 let facadeChartMode = 'today'; // 'today' | 'annual'
 let customBaseTemps = null; // 12 monthly means from Open-Meteo; null = fallback to climate.js Rome table
 let lastAnalysis = null; // { seasonal, comfort } from the latest refreshUI(), read by openKPIModal()
+// Coordinates of the last picked autocomplete suggestion, kept so the "Vai"
+// button can analyse them without a second Nominatim call. Includes the exact
+// query text it was picked for, to invalidate it if the user edits the field.
+let pendingSearch = null; // { query, lat, lng } | null
 
 // Persists between map clicks; angle survives unless user clicks map again
 let currentScan = {
@@ -502,13 +506,16 @@ function initSearchAutocomplete() {
   const input   = $('search-input');
   const preview = $('autocomplete-preview');
 
+  // Search runs only on the "Vai" button. Enter just closes the suggestions;
+  // Escape closes them and blurs the field.
   input.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closePreview(); input.blur(); }
-    if (e.key === 'Enter')  { e.preventDefault(); searchAddress(); }
+    if (e.key === 'Enter')  { e.preventDefault(); closePreview(); }
   });
 
   input.addEventListener('input', () => {
     clearTimeout(autocompleteTimeout);
+    pendingSearch = null; // editing the text invalidates any previously picked suggestion
     const q = input.value.trim();
 
     if (q.length < 3) { closePreview(); return; }
@@ -519,6 +526,8 @@ function initSearchAutocomplete() {
   document.addEventListener('click', e => {
     if (!input.contains(e.target) && !preview.contains(e.target)) closePreview();
   });
+
+  $('search-btn').addEventListener('click', searchAddress);
 }
 
 function closePreview() {
@@ -546,12 +555,12 @@ async function fetchSuggestions(query) {
         div.className = 'preview-item';
         div.textContent = item.display_name;
         div.addEventListener('click', () => {
+          // Picking a suggestion only fills the field; the search itself runs
+          // when the user presses "Vai" (which reuses these coordinates).
           input.value = item.display_name;
+          pendingSearch = { query: item.display_name, lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
           closePreview();
-          const lat = parseFloat(item.lat);
-          const lng = parseFloat(item.lon);
-          map.setView([lat, lng], 18);
-          analyzePoint(lat, lng, false);
+          input.focus();
         });
         preview.appendChild(div);
       });
@@ -577,6 +586,15 @@ async function searchAddress() {
   const input = $('search-input');
   const query = input.value.trim();
   if (!query) return;
+
+  // Reuse the coordinates of a picked suggestion when the field still matches it,
+  // avoiding a redundant Nominatim lookup.
+  if (pendingSearch && pendingSearch.query === query) {
+    closePreview();
+    map.setView([pendingSearch.lat, pendingSearch.lng], 18);
+    analyzePoint(pendingSearch.lat, pendingSearch.lng, false);
+    return;
+  }
 
   input.classList.add('input-loading');
   closePreview();

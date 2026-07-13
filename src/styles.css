@@ -317,6 +317,11 @@ button:hover { background: #1e293b; }
 .btn-outline:hover { background: var(--input-bg); }
 
 /* ─── search ─────────────────────────────────────────────────────────────── */
+.search-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
 .search-wrapper { position: relative; width: 100%; }
 
 input[type="text"] {
@@ -456,8 +461,13 @@ input[type="text"]:focus { border-color: var(--primary); }
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  line-height: 1;
   transition: all 0.2s;
   padding: 0;
+}
+.map-floating-btn #geo-icon {
+  display: block;
+  line-height: 1;
 }
 .map-floating-btn:hover { transform: scale(1.05); background: #f8fafc; }
 .map-floating-btn.denied {
