@@ -44,6 +44,10 @@ const ITALY_BOUNDS = { latMin: 35.4, latMax: 47.1, lonMin: 6.6, lonMax: 18.6 };
 const OPEN_METEO_URL = 'https://climate-api.open-meteo.com/v1/climate';
 const OPEN_METEO_RANGE = 'models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean';
 
+// Nominatim reverse geocoding — precise land/water/country classification.
+// Land returns address.country_code; open sea returns an error (no country).
+const REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
+
 // ─── state ────────────────────────────────────────────────────────────────────
 
 let map = null;
@@ -177,9 +181,55 @@ function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz) {
 
 // ─── geofencing ───────────────────────────────────────────────────────────────
 
-function isOutsideItaly(lat, lng) {
+const ROME = { lat: 41.9028, lng: 12.4964 };
+
+// Fast offline pre-filter: true when clearly outside the Italian bounding box.
+function isOutsideBox(lat, lng) {
   return lat < ITALY_BOUNDS.latMin || lat > ITALY_BOUNDS.latMax
       || lng < ITALY_BOUNDS.lonMin || lng > ITALY_BOUNDS.lonMax;
+}
+
+/**
+ * Precise classification of a point via Nominatim reverse geocoding.
+ * Land returns a country_code; open sea returns an error (no country), which we
+ * read as water — Italian waters when inside the box, foreign waters otherwise.
+ * @returns {Promise<'it-land'|'it-water'|'foreign'>}
+ */
+async function classifyLocation(lat, lng) {
+  const url = `${REVERSE_URL}?format=jsonv2&lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&zoom=10&addressdetails=1`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const cc = data && data.address ? data.address.country_code : null;
+  if (cc === 'it') return 'it-land';
+  if (cc) return 'foreign';               // some other country's land
+  return isOutsideBox(lat, lng) ? 'foreign' : 'it-water';
+}
+
+function goToRome() {
+  map.setView([ROME.lat, ROME.lng], 13);
+  analyzePoint(ROME.lat, ROME.lng, false, true); // trusted reposition — skip geofence
+}
+
+function rejectForeign() {
+  showToast('Ops! Ci hai scoperto... 🕵️‍♂️\nSunTrace è attivo solo sul territorio italiano (isole comprese!). Ti abbiamo riposizionato su Roma.', 'warn', 10000);
+  goToRome();
+}
+
+function rejectWater() {
+  showToast('🌊 Qui c\'è solo acqua! SunTrace analizza edifici sulla terraferma, non le nostre (bellissime) acque nazionali. Ti abbiamo riportato su Roma.', 'warn', 10000);
+  goToRome();
+}
+
+// Load real climate normals for a validated in-Italy point, then re-render.
+function loadClimateFor(lat, lng) {
+  fetchClimateNormals(lat, lng)
+    .then(monthly => {
+      if (currentScan.lat === lat && currentScan.lng === lng) {
+        customBaseTemps = monthly;
+        refreshUI();
+      }
+    })
+    .catch(() => { /* silent fallback — Rome table already in effect */ });
 }
 
 // ─── Open-Meteo climate normals ───────────────────────────────────────────────
@@ -231,7 +281,7 @@ async function fetchClimateNormals(lat, lon) {
  * @param {number}  lng
  * @param {boolean} isDrag — true when triggered by marker drag (skip resetting angle)
  */
-function analyzePoint(lat, lng, isDrag = false) {
+function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   // Update coordinates display
   setText('coord-lat', lat.toFixed(5) + '°N');
   setText('coord-lng', lng.toFixed(5) + '°E');
@@ -269,23 +319,24 @@ function analyzePoint(lat, lng, isDrag = false) {
 
   refreshUI();
 
-  if (isOutsideItaly(lat, lng)) {
-    showToast(
-      'Ops! Ci hai scoperto... 🕵️‍♂️\nSunTrace è attivo solo sul territorio italiano (isole comprese!). Ti abbiamo riposizionato su Roma.',
-      'warn', 10000
-    );
-    analyzePoint(41.9028, 12.4964, false);
-    return;
-  }
+  // Trusted internal repositioning (e.g. back to Rome) skips the geofence.
+  if (skipGeofence) { loadClimateFor(lat, lng); return; }
 
-  fetchClimateNormals(lat, lng)
-    .then(monthly => {
-      if (currentScan.lat === lat && currentScan.lng === lng) {
-        customBaseTemps = monthly;
-        refreshUI();
-      }
+  // Fast offline reject for points clearly outside Italy.
+  if (isOutsideBox(lat, lng)) { rejectForeign(); return; }
+
+  // Precise check near borders / on the sea: reverse-geocode the country.
+  classifyLocation(lat, lng)
+    .then(kind => {
+      if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded by a newer point
+      if (kind === 'it-land') loadClimateFor(lat, lng);
+      else if (kind === 'it-water') rejectWater();
+      else rejectForeign();
     })
-    .catch(() => { /* silent fallback — Rome table already in effect */ });
+    .catch(() => {
+      // Network / rate-limit failure: best-effort, keep the optimistic result.
+      if (currentScan.lat === lat && currentScan.lng === lng) loadClimateFor(lat, lng);
+    });
 }
 
 function refreshUI() {
@@ -721,6 +772,6 @@ export function init() {
     if (e.key === 'Escape') closeKPIModal();
   });
 
-  // Initial render
-  analyzePoint(41.9028, 12.4964, false);
+  // Initial render (Rome is a known-valid point — skip the geofence check)
+  analyzePoint(ROME.lat, ROME.lng, false, true);
 }
