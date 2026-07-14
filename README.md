@@ -2,13 +2,15 @@
   <img src="docs/logo.svg" alt="SunTrace" width="260">
 </p>
 
+<p align="center"><strong>Italiano</strong> · <a href="README.en.md">English</a></p>
+
 # SunTrace — Simulatore Microclimatico Urbano
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20pass-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 
-**SunTrace** è un simulatore microclimatico urbano che analizza l'esposizione solare di facciate e locali in qualsiasi punto d'Italia. Seleziona un punto sulla mappa, scegli mese e ora, e ottieni in tempo reale: posizione solare corretta (Meeus/SPA), ore di sole per ogni orientamento di facciata, stima termica stagionale e classe energetica con KPI di risparmio.
+**SunTrace** è un simulatore microclimatico urbano che analizza l'esposizione solare di facciate e locali in qualsiasi punto d'Italia. Seleziona un punto sulla mappa, scegli mese e ora, e ottieni in tempo reale: posizione solare corretta (Meeus/SPA), medie climatiche reali del luogo (Open-Meteo), stima termica stagionale e un **Comfort Rate** a stelle con consigli. Interfaccia bilingue **IT/EN**.
 
 ## 🌐 Live Demo
 
@@ -25,13 +27,14 @@
 | **Motore solare Meeus/SPA** | Declinazione, Equazione del Tempo, rifrazione atmosferica (Bennet). Errore < 0.5° su elevazione e azimut rispetto a SunCalc. |
 | **Alba / tramonto precisi** | Calcolo con angolo di depressione −0.833° (rifrazione + disco solare). |
 | **Fuso orario + ora legale** | Usa `Intl.DateTimeFormat / Europe/Rome` — nessun offset hardcoded. |
-| **Ore di sole per facciata** | 8 orientamenti (N, NE, E, SE, S, SW, W, NW). Vista "oggi" o "media annuale" (4 giorni campione). |
-| **Stima termica stagionale** | Ciclo diurno sinusoidale, scalato per latitudine, con guadagno solare sulla facciata analizzata. |
-| **Classe energetica + KPI modal** | Classi A–G con costo stimato, CO₂ emessa e risparmio vs classe G. |
-| **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia, gestione errori di rete con feedback visivo. |
+| **Dati climatici reali (Open-Meteo)** | Medie mensili 1991–2020 del punto cliccato, cache in `localStorage`, fallback su Roma. |
+| **Comfort Rate** | Indice a 5 stelle (orientamento, sole, ostruzioni, infissi, isolamento) con dettaglio, esposizione solare e consigli. |
+| **Stima termica stagionale** | Ciclo diurno sinusoidale con guadagno solare sulla facciata; modificatori per infissi e isolamento. |
+| **Geofencing Italia** | Reverse-geocoding: distingue terraferma IT, acque nazionali ed estero, con messaggi dedicati. |
+| **Bilingue IT/EN** | Selettore in-app, rilevamento automatico della lingua del browser, scelta memorizzata. |
+| **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia; la ricerca parte solo col pulsante «Vai». |
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
-| **Mobile-first** | Sidebar collassabile su schermi < 768px. |
-| **Zero dipendenze di runtime** | Solo Leaflet (CDN) + Nominatim API. Nessun bundler richiesto. |
+| **Zero dipendenze di runtime** | Solo Leaflet (CDN) + API pubbliche (Nominatim, Open-Meteo). Nessun bundler. |
 | **23 unit test** | `node --test` nativo, oracle SunCalc, copertura DST + anni bisestili + edge cases. |
 
 ---
@@ -111,8 +114,9 @@ SunTrace/
 ├── index.html          # App completa (entry point)
 ├── src/
 │   ├── solar.js        # Motore astronomico puro (Meeus/SPA) — senza DOM
-│   ├── climate.js      # Modello termico diurno e KPI energetici
-│   ├── ui.js           # Logica interfaccia, Leaflet, modal, chart
+│   ├── climate.js      # Modello termico stagionale e Comfort Rate
+│   ├── ui.js           # Logica interfaccia, Leaflet, modal, geofencing
+│   ├── i18n.js         # Dizionario IT/EN e motore di traduzione
 │   └── styles.css      # Stili (mobile-first, WCAG AA)
 ├── tests/
 │   └── solar.test.js   # 23 unit test (node --test, oracle SunCalc)
