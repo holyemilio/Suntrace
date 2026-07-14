@@ -506,6 +506,60 @@ input[type="text"]:focus { border-color: var(--primary); }
   color: white;
 }
 
+/* ─── custom map marker (clean green dot) ─────────────────────────────────── */
+.suntrace-marker { background: transparent; border: none; }
+.suntrace-marker-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1.5px var(--primary), 0 2px 6px rgba(15, 23, 42, 0.45);
+}
+
+/* ─── map legend ──────────────────────────────────────────────────────────── */
+.map-legend {
+  position: absolute;
+  top: 84px;
+  right: 10px;
+  z-index: 1100;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.18);
+  padding: 8px 10px;
+  color: var(--dark);
+  max-width: 180px;
+}
+.map-legend-title {
+  font-weight: 800;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.map-legend ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.map-legend li { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; }
+.lg-swatch { flex: 0 0 18px; width: 18px; height: 12px; display: inline-block; }
+.lg-point {
+  width: 12px; height: 12px; flex-basis: 12px; margin: 0 3px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.lg-facade { height: 4px; background: #059669; border-radius: 2px; }
+.lg-sun { height: 0; border-top: 2px dashed #ca8a04; }
+.lg-shadow { height: 12px; background: rgba(15, 23, 42, 0.45); border-radius: 2px; }
+.lg-area {
+  height: 14px; width: 14px; flex-basis: 14px; margin: 0 2px;
+  border: 1.5px dashed #059669;
+  border-radius: 50%;
+  background: rgba(5, 150, 105, 0.05);
+}
+@media (max-width: 768px) { .map-legend { display: none; } }
+
 /* ─── toast ──────────────────────────────────────────────────────────────── */
 .map-error-toast {
   position: absolute;

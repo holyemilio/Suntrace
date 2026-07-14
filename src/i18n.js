@@ -85,6 +85,12 @@ const STRINGS = {
 
     // Map / buttons
     'map-aria': 'Mappa Interattiva Microclimatica',
+    'legend-title': 'Legenda',
+    'legend-point': 'Punto analizzato',
+    'legend-facade': 'Orientamento facciata',
+    'legend-sun': 'Direzione del sole',
+    'legend-shadow': 'Ombra proiettata',
+    'legend-area': 'Area di analisi',
     'geo-aria': 'Rileva la mia posizione geografica',
     'geo-title': 'Rileva posizione',
     'panel-open': '☰ Pannello',
@@ -226,6 +232,12 @@ const STRINGS = {
     'footer-copy': '© 2026 SunTrace. Meeus/SPA engine — indicative use only.',
 
     'map-aria': 'Interactive microclimate map',
+    'legend-title': 'Legend',
+    'legend-point': 'Analysed point',
+    'legend-facade': 'Facade orientation',
+    'legend-sun': 'Sun direction',
+    'legend-shadow': 'Cast shadow',
+    'legend-area': 'Analysis area',
     'geo-aria': 'Detect my location',
     'geo-title': 'Detect location',
     'panel-open': '☰ Panel',

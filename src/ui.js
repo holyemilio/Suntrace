@@ -109,14 +109,28 @@ function getSelectedLocalHour() { return parseInt($('hour-slider').value); }
 // ─── map initialisation ───────────────────────────────────────────────────────
 
 function initMap() {
-  map = L.map('map', { zoomControl: false }).setView([41.9028, 12.4964], 17);
+  map = L.map('map', { zoomControl: false, maxZoom: 20 }).setView([41.9028, 12.4964], 17);
   L.control.zoom({ position: 'topright' }).addTo(map);
   L.tileLayer(
     'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    { attribution: '©<a href="https://openstreetmap.org">OSM</a> ©<a href="https://carto.com">CARTO</a>' }
+    {
+      attribution: '©<a href="https://openstreetmap.org">OSM</a> ©<a href="https://carto.com">CARTO</a>',
+      maxZoom: 20,          // CARTO voyager serves tiles up to z20 — one extra step of zoom
+      maxNativeZoom: 20,
+    }
   ).addTo(map);
 
   map.on('click', e => analyzePoint(e.latlng.lat, e.latlng.lng, false));
+}
+
+// Clean custom marker (a green dot) — replaces Leaflet's default pin + grey shadow.
+function markerIcon() {
+  return L.divIcon({
+    className: 'suntrace-marker',
+    html: '<span class="suntrace-marker-dot"></span>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
 }
 
 // ─── map overlays ─────────────────────────────────────────────────────────────
@@ -283,7 +297,7 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
 
   // Place or move marker
   if (!targetMarker) {
-    targetMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    targetMarker = L.marker([lat, lng], { draggable: true, icon: markerIcon() }).addTo(map);
     targetMarker.on('dragend', e => {
       const p = e.target.getLatLng();
       analyzePoint(p.lat, p.lng, true);
