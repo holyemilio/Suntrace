@@ -107,6 +107,9 @@ const STRINGS = {
     'kpi-summer': 'Comfort Estate (mezzogiorno)',
     'kpi-windows': 'Tipo di Infissi',
     'kpi-insulation': 'Isolamento Pareti',
+    'lbl-feels-summer': 'Percepita estate',
+    'lbl-humidity': 'Umidità media',
+    'lbl-rain': 'Pioggia annua',
     'modal-disclaimer': '*Le temperature usano le medie climatiche reali del luogo (Open-Meteo, normali 1991–2020); il comportamento termico dell\'abitazione è però una stima euristica e non costituisce una certificazione energetica ufficiale (APE).',
 
     // Comfort labels (by stars) + tips
@@ -118,6 +121,7 @@ const STRINGS = {
     'tip-windows': 'Consiglio: Installa infissi a doppio o triplo vetro per migliorare drasticamente l\'isolamento termico e acustico.',
     'tip-insulation': 'Consiglio: L\'edificio manca di isolamento alle pareti. Realizzare un cappotto termico ridurrebbe le escursioni stagionali di circa 4°C.',
     'tip-obstruction': 'Consiglio: L\'elevata ostruzione solare limita l\'apporto termico invernale. Ottimizza i colori interni e i punti luce.',
+    'tip-humid': 'Consiglio: L\'elevata umidità estiva accentua la sensazione di caldo (afa). Favorisci la ventilazione naturale, notturna, e schermature esterne mobili.',
     'tip-ok': 'Consiglio: Il comfort di questa facciata è già ottimo. Considera schermature solari esterne mobili (es. tende) per gestire al meglio il sole estivo.',
 
     // Obstruction + cardinal
@@ -253,6 +257,9 @@ const STRINGS = {
     'kpi-summer': 'Summer comfort (noon)',
     'kpi-windows': 'Window Type',
     'kpi-insulation': 'Wall Insulation',
+    'lbl-feels-summer': 'Summer feels-like',
+    'lbl-humidity': 'Avg humidity',
+    'lbl-rain': 'Annual rainfall',
     'modal-disclaimer': '*Temperatures use real local climate normals (Open-Meteo, 1991–2020); the home\'s thermal behaviour is however a heuristic estimate and is not an official energy certification (APE).',
 
     'comfort-5': 'Excellent',
@@ -263,6 +270,7 @@ const STRINGS = {
     'tip-windows': 'Tip: Install double or triple glazing to dramatically improve thermal and acoustic insulation.',
     'tip-insulation': 'Tip: The building lacks wall insulation. External insulation would cut seasonal swings by about 4°C.',
     'tip-obstruction': 'Tip: Heavy solar obstruction limits winter heat gain. Optimise interior colours and lighting.',
+    'tip-humid': 'Tip: High summer humidity intensifies the feeling of heat. Favour natural, night-time ventilation and adjustable external shading.',
     'tip-ok': 'Tip: This facade\'s comfort is already excellent. Consider adjustable external shading (e.g. blinds) to manage summer sun.',
 
     'obs-high': 'High 🏢',

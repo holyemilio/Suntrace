@@ -699,6 +699,37 @@ input[type="text"]:focus { border-color: var(--primary); }
   margin-top: 12px;
 }
 
+/* ─── real-climate strip in the modal (feels-like / humidity / rainfall) ───── */
+.modal-climate {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mc-item {
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  border-radius: var(--radius-md);
+  padding: 8px 6px;
+  text-align: center;
+}
+.mc-val {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark);
+  font-variant-numeric: tabular-nums;
+}
+.mc-lbl {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
 .modal-exposure {
   font-size: 0.9rem;
   font-weight: 600;

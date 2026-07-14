@@ -18,6 +18,7 @@ import {
   solarThermalGain,
   seasonalTemperatures,
   cozynessScore,
+  apparentTemperature,
   obstructionLabel,
   cardinalLabel,
 } from './climate.js';
@@ -38,7 +39,8 @@ const ITALY_BOUNDS = { latMin: 35.4, latMax: 47.1, lonMin: 6.6, lonMax: 18.6 };
 // param returns an empty payload on this API — verified against the live
 // endpoint — so we pull daily means and aggregate to 12 monthly values ourselves.
 const OPEN_METEO_URL = 'https://climate-api.open-meteo.com/v1/climate';
-const OPEN_METEO_RANGE = 'models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean';
+const OPEN_METEO_RANGE = 'models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean,relative_humidity_2m_mean,windspeed_10m_mean,precipitation_sum';
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 // Nominatim reverse geocoding — precise land/water/country classification.
 // Land returns address.country_code; open sea returns an error (no country).
@@ -54,8 +56,9 @@ let shadowPolygon = null;
 let sunRay = null;
 let errorTimeout = null;
 let autocompleteTimeout = null;
-let customBaseTemps = null; // 12 monthly means from Open-Meteo; null = fallback to climate.js Rome table
-let lastAnalysis = null; // { seasonal, comfort } from the latest refreshUI(), read by openKPIModal()
+let customBaseTemps = null; // 12 monthly temp means from Open-Meteo; null = fallback to climate.js Rome table
+let climateExtra = null;    // { rh, wind, precip } monthly means from Open-Meteo (may be null / partial)
+let lastAnalysis = null; // { seasonal, comfort, ... } from the latest refreshUI(), read by openKPIModal()
 // Coordinates of the last picked autocomplete suggestion, kept so the "Vai"
 // button can analyse them without a second Nominatim call. Includes the exact
 // query text it was picked for, to invalidate it if the user edits the field.
@@ -232,9 +235,10 @@ function rejectWater() {
 // Load real climate normals for a validated in-Italy point, then re-render.
 function loadClimateFor(lat, lng) {
   fetchClimateNormals(lat, lng)
-    .then(monthly => {
+    .then(normals => {
       if (currentScan.lat === lat && currentScan.lng === lng) {
-        customBaseTemps = monthly;
+        customBaseTemps = normals.temp;
+        climateExtra = { rh: normals.rh, wind: normals.wind, precip: normals.precip };
         refreshUI();
       }
     })
@@ -360,13 +364,32 @@ function obstructionFromDensity(buildings) {
 
 // ─── Open-Meteo climate normals ───────────────────────────────────────────────
 
+// Aggregate a daily series into 12 monthly means, skipping nulls.
+// Returns null if the series is missing or has an empty month (treat as unavailable).
+function monthlyMean(time, values) {
+  if (!Array.isArray(values) || values.length !== time.length) return null;
+  const sums = new Array(12).fill(0);
+  const counts = new Array(12).fill(0);
+  for (let i = 0; i < time.length; i++) {
+    const v = values[i];
+    if (v === null || v === undefined) continue;
+    const m = parseInt(time[i].slice(5, 7), 10) - 1;
+    sums[m] += v;
+    counts[m] += 1;
+  }
+  if (counts.some(c => c === 0)) return null;
+  return sums.map((s, i) => s / counts[i]);
+}
+
 /**
- * Real monthly mean temperatures (1991-2020 normals) for a coordinate, cached
- * in localStorage. Throws on any network/shape problem; callers fall back
- * silently to the static Rome table (climate.js default) on rejection.
+ * Real monthly climate normals (1991-2020) for a coordinate — temperature plus
+ * humidity, wind and precipitation — cached in localStorage. Throws on any
+ * network/shape problem or if temperature is unavailable; humidity/wind/precip
+ * may individually be null and are handled gracefully downstream.
+ * @returns {Promise<{temp:number[], rh:?number[], wind:?number[], precip:?number[]}>}
  */
 async function fetchClimateNormals(lat, lon) {
-  const cacheKey = `om_${lat.toFixed(2)}_${lon.toFixed(2)}`;
+  const cacheKey = `omc_${lat.toFixed(2)}_${lon.toFixed(2)}`;
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) return JSON.parse(cached);
@@ -378,25 +401,19 @@ async function fetchClimateNormals(lat, lon) {
   const data = await res.json();
 
   const time = data?.daily?.time;
-  const temps = data?.daily?.temperature_2m_mean;
-  if (!Array.isArray(time) || !Array.isArray(temps) || time.length === 0 || time.length !== temps.length) {
-    throw new Error('Open-Meteo: risposta inattesa');
-  }
+  if (!Array.isArray(time) || time.length === 0) throw new Error('Open-Meteo: risposta inattesa');
 
-  const sums = new Array(12).fill(0);
-  const counts = new Array(12).fill(0);
-  for (let i = 0; i < time.length; i++) {
-    const t = temps[i];
-    if (t === null || t === undefined) continue;
-    const month = parseInt(time[i].slice(5, 7), 10) - 1;
-    sums[month] += t;
-    counts[month] += 1;
-  }
-  if (counts.some(c => c === 0)) throw new Error('Open-Meteo: dati mensili incompleti');
+  const temp = monthlyMean(time, data.daily.temperature_2m_mean);
+  if (!temp) throw new Error('Open-Meteo: temperatura mancante');
 
-  const monthly = sums.map((s, i) => s / counts[i]);
-  try { localStorage.setItem(cacheKey, JSON.stringify(monthly)); } catch { /* storage full/unavailable — non-fatal */ }
-  return monthly;
+  const normals = {
+    temp,
+    rh: monthlyMean(time, data.daily.relative_humidity_2m_mean),
+    wind: monthlyMean(time, data.daily.windspeed_10m_mean),
+    precip: monthlyMean(time, data.daily.precipitation_sum),
+  };
+  try { localStorage.setItem(cacheKey, JSON.stringify(normals)); } catch { /* storage full/unavailable — non-fatal */ }
+  return normals;
 }
 
 // ─── analysis ─────────────────────────────────────────────────────────────────
@@ -432,6 +449,7 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
 
   currentScan = { lat, lng, angleDeg, kOmbra: currentScan.kOmbra, userAdjusted: keepManual };
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
+  climateExtra = null;    // humidity/wind/precip reset with the point
 
   if (!isDrag) {
     $('manual-angle-slider').value = angleDeg;
@@ -519,8 +537,18 @@ function refreshUI() {
     card.style.backgroundColor = color;
   }
 
+  // Perceived ("feels-like") winter/summer temperatures from humidity + wind,
+  // when climate data is available (winter = January, summer = July).
+  let feels = null;
+  if (climateExtra && climateExtra.rh && climateExtra.wind) {
+    feels = {
+      winter: apparentTemperature(seasonal.winter, climateExtra.rh[0], climateExtra.wind[0]),
+      summer: apparentTemperature(seasonal.summer, climateExtra.rh[6], climateExtra.wind[6]),
+    };
+  }
+
   // Comfort Rate
-  const comfort = cozynessScore(seasonal.winter, seasonal.summer, kOmbra, windowsType, insulationType);
+  const comfort = cozynessScore(seasonal.winter, seasonal.summer, kOmbra, windowsType, insulationType, feels);
   const comfortLabel = t('comfort-' + comfort.stars);
   setText('comfort-rate-stars', '⭐'.repeat(comfort.stars));
   setText('comfort-rate-label', comfortLabel);
@@ -532,7 +560,7 @@ function refreshUI() {
   }
   // Direct sun hours today on the selected facade (folded into the Comfort Rate detail)
   const sunHoursToday = dailySunHours(utcDate, lat, lng, angleDeg);
-  lastAnalysis = { seasonal, comfort, sunHoursToday };
+  lastAnalysis = { seasonal, comfort, sunHoursToday, feels, climate: climateExtra };
 
   // Solar info
   setText('val-sunrise', fmt(sunrise));
@@ -568,9 +596,11 @@ function selectedOptionLabel(selectId, fallback) {
   return $(selectId)?.selectedOptions?.[0]?.textContent ?? fallback;
 }
 
+function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
 function openKPIModal() {
   if (!lastAnalysis) return;
-  const { seasonal, comfort, sunHoursToday } = lastAnalysis;
+  const { seasonal, comfort, sunHoursToday, feels, climate } = lastAnalysis;
 
   const comfortLabel = t('comfort-' + comfort.stars);
   setText('modal-class-title', t('modal-title', { label: comfortLabel }));
@@ -584,6 +614,13 @@ function openKPIModal() {
   setText('kpi-summer-temp', seasonal.summer.toFixed(1) + '°C');
   setText('kpi-infissi-selected', selectedOptionLabel('windows-select', '--'));
   setText('kpi-isolamento-selected', selectedOptionLabel('insulation-select', '--'));
+
+  // Real-climate strip (humidity/wind → feels-like, plus rainfall)
+  setText('kpi-feels-summer', feels ? feels.summer.toFixed(1) + '°C' : '—');
+  setText('kpi-humidity', climate && climate.rh ? Math.round(avg(climate.rh)) + '%' : '—');
+  setText('kpi-rain', climate && climate.precip
+    ? Math.round(climate.precip.reduce((s, v, i) => s + v * DAYS_IN_MONTH[i], 0)) + ' mm'
+    : '—');
 
   setText('kpi-exposure', sunExposureNote(sunHoursToday));
   setText('kpi-tip', t(comfort.tipKey));

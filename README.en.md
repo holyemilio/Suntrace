@@ -28,6 +28,7 @@
 | **Accurate sunrise / sunset** | Computed with the −0.833° depression angle (refraction + solar disc). |
 | **Time zone + DST** | Uses `Intl.DateTimeFormat / Europe/Rome` — no hardcoded offset. |
 | **Real climate data (Open-Meteo)** | 1991–2020 monthly normals for the clicked point, cached in `localStorage`, with a Rome fallback. |
+| **Atmospheric factors** | Real humidity and wind → a *feels-like* temperature in the Comfort Rate; humidity and annual rainfall in the detail. |
 | **Comfort Rate** | 5-star index (orientation, sun, obstructions, glazing, insulation) with a detail view, sun exposure and tips. |
 | **Seasonal thermal estimate** | Sinusoidal diurnal cycle with solar gain on the facade; modifiers for glazing and insulation. |
 | **Italy geofencing** | Reverse geocoding distinguishes Italian land, national waters and abroad, each with its own message. |

@@ -107,6 +107,23 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
 }
 
 /**
+ * Apparent ("feels-like") temperature — Australian Apparent Temperature model.
+ * Combines air temperature with humidity (adds heat) and wind (cooling). All
+ * heuristic, computed on climate normals — an indicative feels-like, not a
+ * measured value.
+ *
+ * @param {number} tempC
+ * @param {number} rhPct   — relative humidity, %
+ * @param {number} windKmh — wind speed at 10 m, km/h
+ * @returns {number} °C
+ */
+export function apparentTemperature(tempC, rhPct, windKmh) {
+  const e = (rhPct / 100) * 6.105 * Math.exp((17.27 * tempC) / (237.7 + tempC)); // vapour pressure, hPa
+  const windMs = windKmh / 3.6;
+  return tempC + 0.33 * e - 0.70 * windMs - 4.00;
+}
+
+/**
  * Derive Comfort Rate rating from seasonal performance metrics and building parameters.
  * Clamps result between 1 and 5 stars.
  *
@@ -115,10 +132,12 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
  * @param {number} obstrK
  * @param {string} windowsType
  * @param {string} insulationType
+ * @param {?{winter:number, summer:number}} feels — apparent temperatures; when
+ *   provided, humid summer heat and windy winter cold refine the rating.
  * @returns {{ stars: number, color: string, tipKey: string }} — label/tip are
  *   i18n keys resolved by the UI layer (comfort-<stars>, tipKey).
  */
-export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'double', insulationType = 'none') {
+export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'double', insulationType = 'none', feels = null) {
   let score = 5;
 
   // Winter comfort penalties
@@ -139,6 +158,13 @@ export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'dou
     score -= 1;
   }
 
+  // Perceived-comfort adjustments from humidity/wind (bounded, only when known)
+  let humidHeat = false;
+  if (feels) {
+    if (summerTemp >= 26 && feels.summer - summerTemp >= 2) { score -= 1; humidHeat = true; } // muggy heat
+    if (winterTemp <= 15 && winterTemp - feels.winter >= 2) { score -= 1; }                   // wind/damp cold
+  }
+
   const stars = Math.min(5, Math.max(1, score));
   const color = STAR_COLORS[stars];
 
@@ -146,6 +172,7 @@ export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'dou
   let tipKey;
   if (windowsType === 'single') tipKey = 'tip-windows';
   else if (insulationType === 'none') tipKey = 'tip-insulation';
+  else if (humidHeat) tipKey = 'tip-humid';
   else if (obstrK < 0.4) tipKey = 'tip-obstruction';
   else tipKey = 'tip-ok';
 

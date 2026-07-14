@@ -28,6 +28,7 @@
 | **Alba / tramonto precisi** | Calcolo con angolo di depressione −0.833° (rifrazione + disco solare). |
 | **Fuso orario + ora legale** | Usa `Intl.DateTimeFormat / Europe/Rome` — nessun offset hardcoded. |
 | **Dati climatici reali (Open-Meteo)** | Medie mensili 1991–2020 del punto cliccato, cache in `localStorage`, fallback su Roma. |
+| **Fattori atmosferici** | Umidità e vento reali → temperatura percepita (*feels-like*) integrata nel Comfort Rate; umidità e pioggia annua nel dettaglio. |
 | **Comfort Rate** | Indice a 5 stelle (orientamento, sole, ostruzioni, infissi, isolamento) con dettaglio, esposizione solare e consigli. |
 | **Stima termica stagionale** | Ciclo diurno sinusoidale con guadagno solare sulla facciata; modificatori per infissi e isolamento. |
 | **Geofencing Italia** | Reverse-geocoding: distingue terraferma IT, acque nazionali ed estero, con messaggi dedicati. |
