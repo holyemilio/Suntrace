@@ -195,25 +195,12 @@
       </div>
     </section>
 
-    <!-- Facade sun-hours chart -->
-    <section class="card" aria-label="Ore di Sole per Facciata">
-      <p class="card-title">📊 Ore di Sole per Facciata</p>
-      <div class="chart-tabs" role="tablist">
-        <button class="chart-tab active" data-mode="today" role="tab" aria-selected="true">Oggi</button>
-        <button class="chart-tab"        data-mode="annual" role="tab" aria-selected="false">Media Annuale</button>
-      </div>
-      <div id="facade-chart" class="facade-chart" aria-label="Grafico ore di sole per orientamento facciata">
-        <!-- Rendered by ui.js -->
-      </div>
-      <p style="font-size:0.68rem;color:var(--text-muted);margin-top:4px;">La barra arancione = orientamento selezionato.</p>
-    </section>
-
     <!-- Footer -->
     <footer class="sidebar-footer">
       <nav aria-label="Link utili">
         <ul class="footer-links">
           <li><a href="docs/case-study.md">Documentazione</a></li>
-          <li><a href="https://github.com/anthropics/suntrace" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="https://github.com/holyemilio/Suntrace" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="#" onclick="return false;">Privacy</a></li>
         </ul>
       </nav>
@@ -280,10 +267,12 @@
         </div>
       </div>
 
+      <div class="modal-exposure" id="kpi-exposure"></div>
+
       <div class="modal-tip" id="kpi-tip"></div>
 
       <p style="font-size:0.65rem;color:var(--text-muted);margin-top:12px;">
-        *Le temperature stimate rappresentano una simulazione climatica euristica dell'abitazione e non costituiscono una certificazione energetica o climatica ufficiale.
+        *Le temperature usano le medie climatiche reali del luogo (Open-Meteo, normali 1991–2020); il comportamento termico dell'abitazione è però una stima euristica e non costituisce una certificazione energetica ufficiale (APE).
       </p>
     </div>
   </div>

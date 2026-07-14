@@ -9,7 +9,6 @@ import {
   sunriseSunset,
   facadeIrradiance,
   dailySunHours,
-  annualFacadeSunHours,
   localToUTC,
   offsetByAzimuth,
 } from './solar.js';
@@ -58,7 +57,6 @@ let shadowPolygon = null;
 let sunRay = null;
 let errorTimeout = null;
 let autocompleteTimeout = null;
-let facadeChartMode = 'today'; // 'today' | 'annual'
 let customBaseTemps = null; // 12 monthly means from Open-Meteo; null = fallback to climate.js Rome table
 let lastAnalysis = null; // { seasonal, comfort } from the latest refreshUI(), read by openKPIModal()
 // Coordinates of the last picked autocomplete suggestion, kept so the "Vai"
@@ -407,7 +405,9 @@ function refreshUI() {
     badge.dataset.stars = String(comfort.stars);
     badge.dataset.label = comfort.label;
   }
-  lastAnalysis = { seasonal, comfort };
+  // Direct sun hours today on the selected facade (folded into the Comfort Rate detail)
+  const sunHoursToday = dailySunHours(utcDate, lat, lng, angleDeg);
+  lastAnalysis = { seasonal, comfort, sunHoursToday };
 
   // Solar info
   setText('val-sunrise', fmt(sunrise));
@@ -421,57 +421,23 @@ function refreshUI() {
   setText('val-manual-obs', obstructionLabel(kOmbra));
   setText('telemetry-cardinal', `${angleDeg}° (${cardinalLabel(angleDeg)})`);
 
-  // Sun hours chart
-  updateFacadeChart(lat, lng, utcDate, angleDeg);
-
   // Map overlays
   renderMapOverlays(lat, lng, elevation, azimuth, angleDeg);
 }
 
-// ─── facade sun-hours chart ───────────────────────────────────────────────────
-
-let lastChartData = null;
-
-function updateFacadeChart(lat, lng, utcDate, highlightAz) {
-  const year = utcDate.getUTCFullYear();
-
-  if (facadeChartMode === 'today') {
-    const facades = [0, 45, 90, 135, 180, 225, 270, 315].map(az => ({
-      label: ['N','NE','E','SE','S','SW','W','NW'][[0,45,90,135,180,225,270,315].indexOf(az)],
-      azimuth: az,
-      hours: dailySunHours(utcDate, lat, lng, az),
-    }));
-    lastChartData = { facades, maxH: Math.max(...facades.map(f => f.hours), 1) };
-  } else {
-    // Annual: compute for 4 sample days and average
-    const annual = annualFacadeSunHours(year, lat, lng);
-    const facades = annual.map(f => ({ label: f.label, azimuth: f.azimuth, hours: f.hours.avg }));
-    lastChartData = { facades, maxH: Math.max(...facades.map(f => f.hours), 1) };
-  }
-
-  renderFacadeChart(lastChartData, highlightAz);
-}
-
-function renderFacadeChart({ facades, maxH }, highlightAz) {
-  const container = $('facade-chart');
-  if (!container) return;
-
-  container.innerHTML = '';
-  for (const f of facades) {
-    const isHighlighted = Math.abs(((f.azimuth - highlightAz + 360) % 360)) < 23;
-    const row = document.createElement('div');
-    row.className = 'facade-row';
-    row.innerHTML = `
-      <span class="facade-dir" style="${isHighlighted ? 'color:var(--primary)' : ''}">${f.label}</span>
-      <div class="facade-bar-bg">
-        <div class="facade-bar-fill" style="width:${(f.hours / maxH * 100).toFixed(1)}%;${isHighlighted ? 'background:var(--orange)' : ''}"></div>
-      </div>
-      <span class="facade-hours">${f.hours.toFixed(1)}h</span>`;
-    container.appendChild(row);
-  }
-}
-
 // ─── KPI modal ────────────────────────────────────────────────────────────────
+
+/**
+ * Turn today's direct-sun hours on the facade into a "good/bad news" line
+ * for the Comfort Rate detail (replaces the removed sun-hours chart).
+ */
+function sunExposureNote(hours) {
+  const h = hours.toFixed(1);
+  if (hours >= 5)   return `☀️ Ottima esposizione: ~${h}h di sole diretto oggi su questa facciata.`;
+  if (hours >= 2.5) return `🌤️ Esposizione discreta: ~${h}h di sole diretto oggi su questa facciata.`;
+  if (hours > 0)    return `🌥️ Poca luce: solo ~${h}h di sole diretto oggi su questa facciata.`;
+  return '🌑 Nessun sole diretto oggi su questa facciata.';
+}
 
 function selectedOptionLabel(selectId, fallback) {
   return $(selectId)?.selectedOptions?.[0]?.textContent ?? fallback;
@@ -479,7 +445,7 @@ function selectedOptionLabel(selectId, fallback) {
 
 function openKPIModal() {
   if (!lastAnalysis) return;
-  const { seasonal, comfort } = lastAnalysis;
+  const { seasonal, comfort, sunHoursToday } = lastAnalysis;
 
   setText('modal-class-title', `Analisi Comfort Rate — ${comfort.label}`);
   const classBadge = $('modal-class-badge');
@@ -493,6 +459,7 @@ function openKPIModal() {
   setText('kpi-infissi-selected', selectedOptionLabel('windows-select', '--'));
   setText('kpi-isolamento-selected', selectedOptionLabel('insulation-select', '--'));
 
+  setText('kpi-exposure', sunExposureNote(sunHoursToday));
   setText('kpi-tip', comfort.tip);
   $('kpi-modal').classList.add('open');
 }
@@ -532,23 +499,6 @@ function initFacadeSlider() {
 function initPropertySelects() {
   $('windows-select')?.addEventListener('change', () => { if (currentScan) refreshUI(); });
   $('insulation-select')?.addEventListener('change', () => { if (currentScan) refreshUI(); });
-}
-
-// ─── chart tab buttons ────────────────────────────────────────────────────────
-
-function initChartTabs() {
-  document.querySelectorAll('.chart-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.chart-tab').forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
-      facadeChartMode = btn.dataset.mode;
-      if (currentScan) refreshUI();
-    });
-  });
 }
 
 // ─── address search ───────────────────────────────────────────────────────────
@@ -754,7 +704,6 @@ export function init() {
   initSliders();
   initFacadeSlider();
   initPropertySelects();
-  initChartTabs();
   initSearchAutocomplete();
   initGeolocation();
   initMobileToggle();

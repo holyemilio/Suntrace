@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="56" viewBox="0 0 240 56" fill="none" role="img" aria-label="SunTrace">
+  <g transform="translate(4,12)">
+    <circle cx="16" cy="16" r="6" fill="#eab308"/>
+    <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+    <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
+  </g>
+  <text x="44" y="37" font-family="'Segoe UI',system-ui,-apple-system,Arial,sans-serif" font-size="28" font-weight="800">
+    <tspan fill="#0f172a">Sun</tspan><tspan fill="#ea580c">Trace</tspan>
+  </text>
+</svg>

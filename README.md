@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.svg" alt="SunTrace" width="260">
+</p>
+
 # SunTrace — Simulatore Microclimatico Urbano
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -137,7 +141,7 @@ L'interfaccia usa Leaflet (CDN) per la mappa e l'API pubblica Nominatim per il g
 
 ## ⚠️ Limitazioni
 
-- Le temperature sono **stime euristiche** calibrate sull'Italia centrale (Roma come riferimento). Non sostituiscono un APE (Attestato di Prestazione Energetica) certificato.
+- Le temperature usano le **medie climatiche reali** del punto selezionato (Open-Meteo, normali 1991–2020), con la tabella di Roma solo come *fallback* offline in caso di errore di rete. Il modello termico dell'edificio resta però **euristico** e non sostituisce un APE (Attestato di Prestazione Energetica) certificato.
 - L'ombreggiatura degli edifici è **generata proceduralmente** da una funzione seed sulle coordinate — non usa dati GIS reali.
 - Il modello non include: massa termica, infiltrazioni, apporti interni, ponti termici.
 
