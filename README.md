@@ -31,6 +31,7 @@
 | **Comfort Rate** | Indice a 5 stelle (orientamento, sole, ostruzioni, infissi, isolamento) con dettaglio, esposizione solare e consigli. |
 | **Stima termica stagionale** | Ciclo diurno sinusoidale con guadagno solare sulla facciata; modificatori per infissi e isolamento. |
 | **Geofencing Italia** | Reverse-geocoding: distingue terraferma IT, acque nazionali ed estero, con messaggi dedicati. |
+| **Orientamento reale (OSM)** | Facciata e ostruzione derivate dagli edifici OpenStreetMap vicini (Overpass), con cache e fallback neutro. |
 | **Bilingue IT/EN** | Selettore in-app, rilevamento automatico della lingua del browser, scelta memorizzata. |
 | **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia; la ricerca parte solo col pulsante «Vai». |
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
@@ -146,7 +147,7 @@ L'interfaccia usa Leaflet (CDN) per la mappa e l'API pubblica Nominatim per il g
 ## ⚠️ Limitazioni
 
 - Le temperature usano le **medie climatiche reali** del punto selezionato (Open-Meteo, normali 1991–2020), con la tabella di Roma solo come *fallback* offline in caso di errore di rete. Il modello termico dell'edificio resta però **euristico** e non sostituisce un APE (Attestato di Prestazione Energetica) certificato.
-- L'ombreggiatura degli edifici è **generata proceduralmente** da una funzione seed sulle coordinate — non usa dati GIS reali.
+- Orientamento della facciata e ostruzione solare sono **derivati dagli edifici reali di OpenStreetMap** (via Overpass): l'orientamento dal muro più vicino, l'ostruzione dalla densità/altezza degli edifici attorno. In assenza di dati OSM o di rete, si usa un default neutro (Sud, nessuna ostruzione).
 - Il modello non include: massa termica, infiltrazioni, apporti interni, ponti termici.
 
 ---

@@ -241,6 +241,113 @@ function loadClimateFor(lat, lng) {
     .catch(() => { /* silent fallback — Rome table already in effect */ });
 }
 
+// ─── OSM building context (real facade orientation + obstruction) ─────────────
+
+const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+
+// Called for a validated in-Italy point: fetch real climate + building context.
+function onValidLand(lat, lng) {
+  loadClimateFor(lat, lng);
+  detectBuildingContext(lat, lng);
+}
+
+/**
+ * Derive facade orientation and obstruction from real OSM buildings around the
+ * point, then update the scan (orientation only if the user hasn't set it
+ * manually) and re-render. Cached, silent, best-effort — never throws upward.
+ */
+async function detectBuildingContext(lat, lng) {
+  let ctx;
+  try { ctx = await fetchBuildingContext(lat, lng); }
+  catch { return; }
+  if (!ctx) return;                                              // no building nearby
+  if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded by a newer point
+  currentScan.kOmbra = ctx.kOmbra;
+  if (!currentScan.userAdjusted) {
+    currentScan.angleDeg = ctx.facadeAz;
+    const slider = $('manual-angle-slider');
+    if (slider) slider.value = ctx.facadeAz;
+  }
+  refreshUI();
+}
+
+async function fetchBuildingContext(lat, lng) {
+  const cacheKey = `osm_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return JSON.parse(cached);
+  } catch { /* corrupted cache — refetch */ }
+
+  const q = `[out:json][timeout:20];(way["building"](around:70,${lat},${lng});relation["building"](around:70,${lat},${lng}););out geom;`;
+  const res = await fetch(OVERPASS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+    body: 'data=' + encodeURIComponent(q),
+  });
+  if (!res.ok) throw new Error('Overpass ' + res.status);
+  const data = await res.json();
+
+  const buildings = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
+  const ctx = buildings.length
+    ? { facadeAz: nearestFacadeAzimuth(lat, lng, buildings), kOmbra: obstructionFromDensity(buildings) }
+    : null;
+  try { localStorage.setItem(cacheKey, JSON.stringify(ctx)); } catch { /* storage unavailable */ }
+  return ctx;
+}
+
+// Facade azimuth = outward normal (facing the click) of the nearest building edge.
+function nearestFacadeAzimuth(clat, clng, buildings) {
+  const mLat = 111320;
+  const mLng = 111320 * Math.cos(clat * Math.PI / 180);
+  const xy = (la, lo) => ({ x: (lo - clng) * mLng, y: (la - clat) * mLat });
+  const click = { x: 0, y: 0 };
+
+  let bestDist = Infinity;
+  let bestAz = 180;
+  for (const b of buildings) {
+    const g = b.geometry;
+    for (let i = 0; i < g.length - 1; i++) {
+      const a = xy(g[i].lat, g[i].lon);
+      const c = xy(g[i + 1].lat, g[i + 1].lon);
+      const dist = pointSegDist(click, a, c);
+      if (dist < bestDist) { bestDist = dist; bestAz = outwardNormalAz(a, c, click); }
+    }
+  }
+  return Math.round(((bestAz % 360) + 360) % 360);
+}
+
+function pointSegDist(p, a, c) {
+  const abx = c.x - a.x, aby = c.y - a.y;
+  const ab2 = abx * abx + aby * aby || 1e-9;
+  let t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / ab2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * abx), p.y - (a.y + t * aby));
+}
+
+// Outward normal of edge a→c on the side of the click, as an azimuth (0=N, 90=E).
+function outwardNormalAz(a, c, click) {
+  let nx = -(c.y - a.y);
+  let ny = (c.x - a.x);
+  const mx = (a.x + c.x) / 2, my = (a.y + c.y) / 2;
+  if (nx * (click.x - mx) + ny * (click.y - my) < 0) { nx = -nx; ny = -ny; }
+  return Math.atan2(nx, ny) * 180 / Math.PI;
+}
+
+// Obstruction factor from local building density/height (1 = open, 0.2 = dense).
+function obstructionFromDensity(buildings) {
+  const n = buildings.length;
+  let sumLevels = 0, counted = 0;
+  for (const b of buildings) {
+    const lv = parseFloat(b.tags && b.tags['building:levels']);
+    if (!isNaN(lv)) { sumLevels += lv; counted++; }
+  }
+  const avgLevels = counted ? sumLevels / counted : 3;
+  let k = 1.0;
+  if (n >= 8) k = 0.35; else if (n >= 4) k = 0.6; else if (n >= 2) k = 0.8;
+  if (avgLevels >= 6) k -= 0.15;
+  return Math.max(0.2, Math.min(1.0, k));
+}
+
 // ─── Open-Meteo climate normals ───────────────────────────────────────────────
 
 /**
@@ -306,20 +413,13 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
     targetMarker.setLatLng([lat, lng]);
   }
 
-  // Derive obstruction and default angle from coordinate seed (heuristic — no real GIS data)
-  const seed = Math.abs(Math.sin(lat * 1000) * Math.cos(lng * 1000));
-  const seedAngle = Math.round((seed * 360) % 360);
-  const seedDensity = (seed * 10) % 3;
-  let kOmbra = 1.0;
-  if (seedDensity > 2.0) kOmbra = 0.22;
-  else if (seedDensity > 1.0) kOmbra = 0.60;
+  // Facade orientation & obstruction come from real OSM buildings, detected
+  // asynchronously in onValidLand(). Until that resolves, keep a manually-set
+  // angle across drags, otherwise start neutral (South-facing, no shading).
+  const keepManual = isDrag && currentScan.userAdjusted;
+  const angleDeg = keepManual ? currentScan.angleDeg : 180;
 
-  // Preserve manual angle adjustment when user drags marker; reset on fresh click
-  const angleDeg = (isDrag && currentScan.userAdjusted)
-    ? currentScan.angleDeg
-    : seedAngle;
-
-  currentScan = { lat, lng, angleDeg, kOmbra, userAdjusted: false };
+  currentScan = { lat, lng, angleDeg, kOmbra: 1.0, userAdjusted: keepManual };
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
 
   if (!isDrag) {
@@ -329,7 +429,7 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   refreshUI();
 
   // Trusted internal repositioning (e.g. back to Rome) skips the geofence.
-  if (skipGeofence) { loadClimateFor(lat, lng); return; }
+  if (skipGeofence) { onValidLand(lat, lng); return; }
 
   // Fast offline reject for points clearly outside Italy.
   if (isOutsideBox(lat, lng)) { rejectForeign(); return; }
@@ -338,13 +438,13 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   classifyLocation(lat, lng)
     .then(kind => {
       if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded by a newer point
-      if (kind === 'it-land') loadClimateFor(lat, lng);
+      if (kind === 'it-land') onValidLand(lat, lng);
       else if (kind === 'it-water') rejectWater();
       else rejectForeign();
     })
     .catch(() => {
       // Network / rate-limit failure: best-effort, keep the optimistic result.
-      if (currentScan.lat === lat && currentScan.lng === lng) loadClimateFor(lat, lng);
+      if (currentScan.lat === lat && currentScan.lng === lng) onValidLand(lat, lng);
     });
 }
 

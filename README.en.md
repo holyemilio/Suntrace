@@ -31,6 +31,7 @@
 | **Comfort Rate** | 5-star index (orientation, sun, obstructions, glazing, insulation) with a detail view, sun exposure and tips. |
 | **Seasonal thermal estimate** | Sinusoidal diurnal cycle with solar gain on the facade; modifiers for glazing and insulation. |
 | **Italy geofencing** | Reverse geocoding distinguishes Italian land, national waters and abroad, each with its own message. |
+| **Real orientation (OSM)** | Facade and obstruction derived from nearby OpenStreetMap buildings (Overpass), cached, with a neutral fallback. |
 | **Bilingual IT/EN** | In-app switcher, automatic browser-language detection, remembered choice. |
 | **Nominatim autocomplete** | 420 ms debounce, restricted to Italy; search runs only via the “Go” button. |
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
@@ -147,7 +148,7 @@ The interface uses Leaflet (CDN) for the map and the public Nominatim API for ge
 ## ⚠️ Limitations
 
 - Temperatures use the **real climate normals** of the selected point (Open-Meteo, 1991–2020), with the Rome table only as an offline *fallback* on network errors. The building's thermal model is however **heuristic** and is not a certified energy performance assessment (APE).
-- Building shading is **procedurally generated** from a coordinate seed — it does not use real GIS data.
+- Facade orientation and solar obstruction are **derived from real OpenStreetMap buildings** (via Overpass): orientation from the nearest wall, obstruction from the density/height of surrounding buildings. With no OSM data or network, a neutral default is used (South, no obstruction).
 - The model does not include: thermal mass, infiltration, internal gains, thermal bridges.
 
 ---
