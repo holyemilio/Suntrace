@@ -22,12 +22,9 @@ import {
   cardinalLabel,
 } from './climate.js';
 
-// ─── constants ────────────────────────────────────────────────────────────────
+import { t, monthName, getLang, setLang, applyTranslations } from './i18n.js';
 
-const MONTHS_IT = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
-];
+// ─── constants ────────────────────────────────────────────────────────────────
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const NOMINATIM_DEBOUNCE_MS = 420;
@@ -209,12 +206,12 @@ function goToRome() {
 }
 
 function rejectForeign() {
-  showToast('Ops! Ci hai scoperto... 🕵️‍♂️\nSunTrace è attivo solo sul territorio italiano (isole comprese!). Ti abbiamo riposizionato su Roma.', 'warn', 10000);
+  showToast(t('geo-foreign'), 'warn', 10000);
   goToRome();
 }
 
 function rejectWater() {
-  showToast('🌊 Qui c\'è solo acqua! SunTrace analizza edifici sulla terraferma, non le nostre (bellissime) acque nazionali. Ti abbiamo riportato su Roma.', 'warn', 10000);
+  showToast(t('geo-water'), 'warn', 10000);
   goToRome();
 }
 
@@ -363,7 +360,9 @@ function refreshUI() {
 
   // Update main output
   setText('thermal-result', roomTemp.toFixed(1) + '°C');
-  setText('main-output-title', `Stima ${MONTHS_IT[month]}, ${localHour}:00`);
+  setText('main-output-title', t('main-title', { month: monthName(month), hour: localHour }));
+  setText('month-label', monthName(month));
+  setText('hour-label', String(localHour).padStart(2, '0') + ':00');
 
   // Seasonal analysis
   const seasonal = seasonalTemperatures(
@@ -397,13 +396,14 @@ function refreshUI() {
 
   // Comfort Rate
   const comfort = cozynessScore(seasonal.winter, seasonal.summer, kOmbra, windowsType, insulationType);
+  const comfortLabel = t('comfort-' + comfort.stars);
   setText('comfort-rate-stars', '⭐'.repeat(comfort.stars));
-  setText('comfort-rate-label', comfort.label);
+  setText('comfort-rate-label', comfortLabel);
   const badge = $('energy-class-field');
   if (badge) {
     badge.style.backgroundColor = comfort.color;
     badge.dataset.stars = String(comfort.stars);
-    badge.dataset.label = comfort.label;
+    badge.dataset.label = comfortLabel;
   }
   // Direct sun hours today on the selected facade (folded into the Comfort Rate detail)
   const sunHoursToday = dailySunHours(utcDate, lat, lng, angleDeg);
@@ -413,13 +413,13 @@ function refreshUI() {
   setText('val-sunrise', fmt(sunrise));
   setText('val-sunset', fmt(sunset));
   setText('val-day-length', dayLength > 0 ? `${dayLength.toFixed(1)}h` : '--');
-  setText('val-sun-elevation', elevClamped > 0 ? `${elevation.toFixed(1)}°` : '< orizzonte');
+  setText('val-sun-elevation', elevClamped > 0 ? `${elevation.toFixed(1)}°` : t('below-horizon'));
   setText('val-sun-azimuth', `${azimuth.toFixed(0)}°`);
 
   // Facade info
   setText('val-manual-angle', `${angleDeg}°`);
-  setText('val-manual-obs', obstructionLabel(kOmbra));
-  setText('telemetry-cardinal', `${angleDeg}° (${cardinalLabel(angleDeg)})`);
+  setText('val-manual-obs', t(obstructionLabel(kOmbra)));
+  setText('telemetry-cardinal', `${angleDeg}° (${t(cardinalLabel(angleDeg))})`);
 
   // Map overlays
   renderMapOverlays(lat, lng, elevation, azimuth, angleDeg);
@@ -433,10 +433,10 @@ function refreshUI() {
  */
 function sunExposureNote(hours) {
   const h = hours.toFixed(1);
-  if (hours >= 5)   return `☀️ Ottima esposizione: ~${h}h di sole diretto oggi su questa facciata.`;
-  if (hours >= 2.5) return `🌤️ Esposizione discreta: ~${h}h di sole diretto oggi su questa facciata.`;
-  if (hours > 0)    return `🌥️ Poca luce: solo ~${h}h di sole diretto oggi su questa facciata.`;
-  return '🌑 Nessun sole diretto oggi su questa facciata.';
+  if (hours >= 5)   return t('exp-great', { h });
+  if (hours >= 2.5) return t('exp-ok', { h });
+  if (hours > 0)    return t('exp-low', { h });
+  return t('exp-none');
 }
 
 function selectedOptionLabel(selectId, fallback) {
@@ -447,10 +447,11 @@ function openKPIModal() {
   if (!lastAnalysis) return;
   const { seasonal, comfort, sunHoursToday } = lastAnalysis;
 
-  setText('modal-class-title', `Analisi Comfort Rate — ${comfort.label}`);
+  const comfortLabel = t('comfort-' + comfort.stars);
+  setText('modal-class-title', t('modal-title', { label: comfortLabel }));
   const classBadge = $('modal-class-badge');
   if (classBadge) {
-    classBadge.textContent = `Comfort Rate ${'⭐'.repeat(comfort.stars)}`;
+    classBadge.textContent = `${t('comfort-rate')} ${'⭐'.repeat(comfort.stars)}`;
     classBadge.style.backgroundColor = comfort.color;
   }
 
@@ -460,7 +461,7 @@ function openKPIModal() {
   setText('kpi-isolamento-selected', selectedOptionLabel('insulation-select', '--'));
 
   setText('kpi-exposure', sunExposureNote(sunHoursToday));
-  setText('kpi-tip', comfort.tip);
+  setText('kpi-tip', t(comfort.tipKey));
   $('kpi-modal').classList.add('open');
 }
 
@@ -472,14 +473,11 @@ function closeKPIModal() {
 
 function initSliders() {
   $('month-slider').addEventListener('input', () => {
-    setText('month-label', MONTHS_IT[$('month-slider').value]);
-    if (currentScan) refreshUI();
+    if (currentScan) refreshUI(); // refreshUI updates the month/hour labels
   });
 
   $('hour-slider').addEventListener('input', () => {
-    const h = $('hour-slider').value;
-    setText('hour-label', `${String(h).padStart(2,'0')}:00`);
-    if (currentScan) refreshUI();
+    if (currentScan) refreshUI(); // refreshUI updates the month/hour labels
   });
 }
 
@@ -569,14 +567,14 @@ async function fetchSuggestions(query) {
       preview.style.display = 'block';
       const empty = document.createElement('div');
       empty.className = 'autocomplete-empty';
-      empty.textContent = 'Nessun risultato trovato';
+      empty.textContent = t('search-empty');
       preview.appendChild(empty);
     }
   } catch (err) {
     preview.style.display = 'block';
     const errDiv = document.createElement('div');
     errDiv.className = 'autocomplete-empty';
-    errDiv.textContent = '⚠️ Errore di rete — verifica la connessione';
+    errDiv.textContent = t('search-neterror');
     preview.appendChild(errDiv);
   } finally {
     input.classList.remove('input-loading');
@@ -612,10 +610,10 @@ async function searchAddress() {
       map.setView([lat, lng], 18);
       analyzePoint(lat, lng, false);
     } else {
-      showToast('⚠️ Indirizzo non trovato. Prova con un nome diverso.', 'warn', 7000);
+      showToast(t('search-notfound'), 'warn', 7000);
     }
   } catch {
-    showToast('⚠️ Errore di rete. Verifica la connessione.', 'error', 8000);
+    showToast(t('search-neterror-toast'), 'error', 8000);
   } finally {
     input.classList.remove('input-loading');
   }
@@ -633,7 +631,7 @@ function getLocation() {
   hideToast();
 
   if (!navigator.geolocation) {
-    showToast('⚠️ La geolocalizzazione non è supportata dal browser.', 'error', 8000);
+    showToast(t('geoloc-unsupported'), 'error', 8000);
     return;
   }
 
@@ -644,14 +642,11 @@ function getLocation() {
     pos => {
       btn.classList.remove('loading', 'denied');
       icon.textContent = '🎯';
-      btn.setAttribute('aria-label', 'Rileva la mia posizione geografica');
+      btn.setAttribute('aria-label', t('geo-aria'));
 
       const acc = Math.round(pos.coords.accuracy);
       if (acc > 2000) {
-        showToast(
-          `⚠️ Posizione imprecisa (±${(acc / 1000).toFixed(1)} km).\nPotrebbe essere una stima via IP/VPN. Verifica i Servizi di Localizzazione.`,
-          'warn', 15000
-        );
+        showToast(t('geoloc-inaccurate', { km: (acc / 1000).toFixed(1) }), 'warn', 15000);
       }
 
       map.setView([pos.coords.latitude, pos.coords.longitude], 18);
@@ -662,13 +657,13 @@ function getLocation() {
       btn.classList.add('denied');
       icon.textContent = '🚫';
 
-      let msg = '⚠️ Geolocalizzazione non riuscita.';
+      let msg = t('geoloc-failed');
       if (err.code === err.PERMISSION_DENIED) {
-        msg = '⚠️ Permesso negato.\nSu Mac: Impostazioni → Privacy → Servizi di Localizzazione → abilita il browser.';
+        msg = t('geoloc-denied');
       } else if (err.code === err.POSITION_UNAVAILABLE) {
-        msg = '⚠️ Posizione non disponibile. Verifica che i Servizi di Localizzazione siano attivi.';
+        msg = t('geoloc-unavailable');
       } else if (err.code === err.TIMEOUT) {
-        msg = '⚠️ Timeout: localizzazione troppo lenta. Riprova con una rete Wi-Fi.';
+        msg = t('geoloc-timeout');
       }
       btn.setAttribute('aria-label', msg);
       showToast(msg, 'error', 15000);
@@ -686,13 +681,45 @@ function initMobileToggle() {
 
   toggle.addEventListener('click', () => {
     sidebar.classList.toggle('open');
-    toggle.textContent = sidebar.classList.contains('open') ? '✕ Chiudi' : '☰ Pannello';
+    toggle.textContent = sidebar.classList.contains('open') ? t('panel-close') : t('panel-open');
   });
+}
+
+// ─── language switcher (IT / EN) ──────────────────────────────────────────────
+
+function markActiveLang() {
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === getLang());
+  });
+}
+
+function changeLang(lang) {
+  if (lang === getLang()) return;
+  setLang(lang);
+  applyTranslations();          // static text
+  markActiveLang();
+  if (currentScan) refreshUI(); // dynamic text (temps, labels, exposure…)
+  if ($('kpi-modal')?.classList.contains('open')) openKPIModal(); // refresh an open modal
+  const toggle = $('sidebar-toggle');
+  const sidebar = $('sidebar');
+  if (toggle && sidebar) {
+    toggle.textContent = sidebar.classList.contains('open') ? t('panel-close') : t('panel-open');
+  }
+}
+
+function initLangSwitch() {
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => changeLang(btn.dataset.lang));
+  });
+  markActiveLang();
 }
 
 // ─── app bootstrap ────────────────────────────────────────────────────────────
 
 export function init() {
+  setLang(getLang());  // sync <html lang> + persist the resolved language
+  applyTranslations(); // fill static UI text (including the mobile overlay below)
+
   const isMobile = window.innerWidth < 768 || navigator.maxTouchPoints > 1;
   if (isMobile) {
     const warning = $('mobile-warning');
@@ -707,6 +734,7 @@ export function init() {
   initSearchAutocomplete();
   initGeolocation();
   initMobileToggle();
+  initLangSwitch();
 
   // KPI modal wiring
   const badge = $('energy-class-field');

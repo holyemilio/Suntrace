@@ -18,14 +18,8 @@ const SOLAR_POWER = [1.2, 2.0, 4.2, 6.5, 8.5, 9.8, 10.0, 8.8, 6.5, 4.0, 2.0, 1.0
 // Reference latitude for the tables above
 const LAT_ROME = 41.9;
 
-// ─── Comfort level colors ────────────────────────────────────────────────────
-export const CLASS_COLORS = {
-  'Eccellente': '#15803d',
-  'Buono': '#16a34a',
-  'Discreto': '#ca8a04',
-  'Scarso': '#ea580c',
-  'Critico': '#dc2626',
-};
+// ─── Comfort Rate colors keyed by star count (5 best → 1 worst) ───────────────
+const STAR_COLORS = { 5: '#15803d', 4: '#16a34a', 3: '#ca8a04', 2: '#ea580c', 1: '#dc2626' };
 
 // ─── public API ──────────────────────────────────────────────────────────────
 
@@ -121,7 +115,8 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
  * @param {number} obstrK
  * @param {string} windowsType
  * @param {string} insulationType
- * @returns {{ stars: number, label: string, color: string, tip: string }}
+ * @returns {{ stars: number, color: string, tipKey: string }} — label/tip are
+ *   i18n keys resolved by the UI layer (comfort-<stars>, tipKey).
  */
 export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'double', insulationType = 'none') {
   let score = 5;
@@ -145,56 +140,42 @@ export function cozynessScore(winterTemp, summerTemp, obstrK, windowsType = 'dou
   }
 
   const stars = Math.min(5, Math.max(1, score));
-  
-  const labels = {
-    5: 'Eccellente',
-    4: 'Buono',
-    3: 'Discreto',
-    2: 'Scarso',
-    1: 'Critico'
-  };
-  const label = labels[stars];
-  const color = CLASS_COLORS[label];
+  const color = STAR_COLORS[stars];
 
-  // Dynamic tip based on weakest link
-  let tip = '';
-  if (windowsType === 'single') {
-    tip = 'Consiglio: Installa infissi a doppio o triplo vetro per migliorare drasticamente l\'isolamento termico e acustico.';
-  } else if (insulationType === 'none') {
-    tip = 'Consiglio: L\'edificio manca di isolamento alle pareti. Realizzare un cappotto termico ridurrebbe le escursioni stagionali di circa 4°C.';
-  } else if (obstrK < 0.4) {
-    tip = 'Consiglio: L\'elevata ostruzione solare limita l\'apporto termico invernale. Ottimizza i colori interni e i punti luce.';
-  } else {
-    tip = 'Consiglio: Il comfort di questa facciata è già ottimo. Considera schermature solari esterne mobili (es. tende) per gestire al meglio il sole estivo.';
-  }
+  // Dynamic tip (i18n key) based on the weakest link
+  let tipKey;
+  if (windowsType === 'single') tipKey = 'tip-windows';
+  else if (insulationType === 'none') tipKey = 'tip-insulation';
+  else if (obstrK < 0.4) tipKey = 'tip-obstruction';
+  else tipKey = 'tip-ok';
 
-  return { stars, label, color, tip };
+  return { stars, color, tipKey };
 }
 
 /**
- * Obstruction description string.
+ * Obstruction level as an i18n key.
  * @param {number} k
- * @returns {string}
+ * @returns {string} 'obs-high' | 'obs-partial' | 'obs-none'
  */
 export function obstructionLabel(k) {
-  if (k <= 0.25) return 'Elevata 🏢';
-  if (k <= 0.65) return 'Parziale 🌳';
-  return 'Nessuna ☀️';
+  if (k <= 0.25) return 'obs-high';
+  if (k <= 0.65) return 'obs-partial';
+  return 'obs-none';
 }
 
 /**
- * Cardinal direction label for a facade azimuth angle.
+ * Cardinal direction for a facade azimuth as an i18n key.
  * @param {number} az — degrees 0–359
- * @returns {string}
+ * @returns {string} 'card-n' | 'card-ne' | … | 'card-nw'
  */
 export function cardinalLabel(az) {
   const norm = ((az % 360) + 360) % 360;
-  if (norm < 22.5 || norm >= 337.5) return 'Nord ❄️';
-  if (norm < 67.5)  return 'Nord-Est';
-  if (norm < 112.5) return 'Est 🌅';
-  if (norm < 157.5) return 'Sud-Est';
-  if (norm < 202.5) return 'Sud 🔥';
-  if (norm < 247.5) return 'Sud-Ovest';
-  if (norm < 292.5) return 'Ovest 🌇';
-  return 'Nord-Ovest';
+  if (norm < 22.5 || norm >= 337.5) return 'card-n';
+  if (norm < 67.5)  return 'card-ne';
+  if (norm < 112.5) return 'card-e';
+  if (norm < 157.5) return 'card-se';
+  if (norm < 202.5) return 'card-s';
+  if (norm < 247.5) return 'card-sw';
+  if (norm < 292.5) return 'card-w';
+  return 'card-nw';
 }

@@ -16,7 +16,7 @@
 <body>
 
   <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
-  <aside id="sidebar" aria-label="Pannello di Controllo SunTrace">
+  <aside id="sidebar" data-i18n-aria="sidebar-aria" aria-label="Pannello di Controllo SunTrace">
 
     <!-- Brand -->
     <header class="brand-container">
@@ -36,66 +36,69 @@
     </header>
 
     <!-- Address search (primo passo: scegli il luogo da analizzare) -->
-    <section class="card" aria-label="Ricerca Geografica">
-      <p class="card-title">📍 Cerca Indirizzo</p>
-      <p class="search-hint">Cerca un indirizzo per iniziare, poi premi «Vai».</p>
+    <section class="card" data-i18n-aria="search-card-aria" aria-label="Ricerca Geografica">
+      <p class="card-title" data-i18n="search-title">📍 Cerca Indirizzo</p>
+      <p class="search-hint" data-i18n="search-hint">Cerca un indirizzo per iniziare, poi premi «Vai».</p>
       <div class="flex-group">
         <div class="search-wrapper">
           <input
             type="text"
             id="search-input"
             placeholder="Via o città in Italia…"
+            data-i18n-ph="search-ph"
             autocomplete="off"
+            data-i18n-aria="search-input-aria"
             aria-label="Campo di ricerca indirizzo"
             aria-autocomplete="list"
             aria-controls="autocomplete-preview"
           >
-          <div id="autocomplete-preview" class="autocomplete-preview-box" role="listbox" aria-label="Suggerimenti indirizzo"></div>
+          <div id="autocomplete-preview" class="autocomplete-preview-box" role="listbox" data-i18n-aria="search-suggestions-aria" aria-label="Suggerimenti indirizzo"></div>
         </div>
-        <button id="search-btn" aria-label="Cerca indirizzo">Vai</button>
+        <button id="search-btn" data-i18n="search-go" data-i18n-aria="search-go-aria" aria-label="Cerca indirizzo">Vai</button>
       </div>
     </section>
 
     <!-- Main output -->
     <section class="output-box" aria-labelledby="main-output-title">
-      <p class="output-subtitle" id="main-output-title">Stima temperatura vano</p>
+      <p class="output-subtitle" id="main-output-title" data-i18n="output-initial">Stima temperatura vano</p>
       <div class="output-temp" id="thermal-result" aria-live="polite">--°C</div>
 
       <div class="comfort-rate-wrapper">
-        <div style="font-size:0.72rem;opacity:0.65;margin-top:8px;margin-bottom:2px;">Comfort Rate Stimato</div>
+        <div class="comfort-rate-caption" data-i18n="comfort-estimated">Comfort Rate Stimato</div>
         <div
           class="comfort-rate-badge"
           id="energy-class-field"
           role="button"
           tabindex="0"
+          data-i18n-aria="comfort-open-aria"
           aria-label="Apri dettaglio comfort"
         >
           <span id="comfort-rate-stars" style="letter-spacing:1px;font-size:0.85rem;margin-right:4px;">⭐⭐⭐⭐⭐</span>
           <span id="comfort-rate-label">--</span>
           <!-- GitHub-style Tooltip -->
-          <div class="comfort-rate-tooltip" role="tooltip">
+          <div class="comfort-rate-tooltip" role="tooltip" data-i18n="comfort-tooltip">
             Comfort Rate: indice di comfort termico stimato per l'abitazione basato su orientamento, sole e ostruzioni.
           </div>
         </div>
-        <span class="kpi-hint">tocca per i dettagli sul comfort</span>
+        <span class="kpi-hint" data-i18n="comfort-hint">tocca per i dettagli sul comfort</span>
       </div>
 
       <!-- Seasonal grid -->
-      <div class="quadrant-grid" role="region" aria-label="Temperature Stagionali">
+      <div class="quadrant-grid" role="region" data-i18n-aria="seasonal-aria" aria-label="Temperature Stagionali">
         <div class="quadrant-card" id="quad-winter">
-          <span class="q-label">Inverno</span>
+          <span class="q-label" data-i18n="season-winter">Inverno</span>
           <strong class="q-value" id="val-q-winter">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-spring">
-          <span class="q-label">Primavera</span>
+          <span class="q-label" data-i18n="season-spring">Primavera</span>
           <strong class="q-value" id="val-q-spring">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-summer">
-          <span class="q-label">Estate</span>
+          <span class="q-label" data-i18n="season-summer">Estate</span>
           <strong class="q-value" id="val-q-summer">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-autumn">
-          <span class="q-label">Autunno</span>
+          <span class="q-label" data-i18n="season-autumn">Autunno</span>
           <strong class="q-value" id="val-q-autumn">--°C</strong>
         </div>
       </div>
@@ -108,120 +111,128 @@
     </section>
 
     <!-- Time configuration -->
-    <section class="card" aria-label="Configurazione Temporale">
-      <p class="card-title">⏱ Crono-Solare</p>
+    <section class="card" data-i18n-aria="time-card-aria" aria-label="Configurazione Temporale">
+      <p class="card-title" data-i18n="time-title">⏱ Crono-Solare</p>
 
       <div class="slider-row">
         <div class="slider-header">
-          <span>Mese di analisi</span>
+          <span data-i18n="time-month">Mese di analisi</span>
           <strong id="month-label">Giugno</strong>
         </div>
-        <input type="range" id="month-slider" min="0" max="11" value="5" aria-label="Seleziona mese">
+        <input type="range" id="month-slider" min="0" max="11" value="5" data-i18n-aria="month-slider-aria" aria-label="Seleziona mese">
       </div>
 
       <div class="slider-row">
         <div class="slider-header">
-          <span>Ora locale (simulatore ombra)</span>
+          <span data-i18n="time-hour">Ora locale (simulatore ombra)</span>
           <strong id="hour-label">12:00</strong>
         </div>
-        <input type="range" id="hour-slider" min="0" max="23" value="12" aria-label="Seleziona ora">
+        <input type="range" id="hour-slider" min="0" max="23" value="12" data-i18n-aria="hour-slider-aria" aria-label="Seleziona ora">
       </div>
     </section>
 
     <!-- Solar info -->
-    <section class="card" aria-label="Informazioni Solari">
-      <p class="card-title">☀️ Dati Solari</p>
+    <section class="card" data-i18n-aria="solar-card-aria" aria-label="Informazioni Solari">
+      <p class="card-title" data-i18n="solar-title">☀️ Dati Solari</p>
       <div class="info-row">
-        <span class="label">Alba (ora locale)</span>
+        <span class="label" data-i18n="solar-sunrise">Alba (ora locale)</span>
         <span class="value" id="val-sunrise">--:--</span>
       </div>
       <div class="info-row">
-        <span class="label">Tramonto (ora locale)</span>
+        <span class="label" data-i18n="solar-sunset">Tramonto (ora locale)</span>
         <span class="value" id="val-sunset">--:--</span>
       </div>
       <div class="info-row">
-        <span class="label">Durata del giorno</span>
+        <span class="label" data-i18n="solar-daylength">Durata del giorno</span>
         <span class="value" id="val-day-length">--</span>
       </div>
       <div class="info-row">
-        <span class="label">Elevazione solare</span>
+        <span class="label" data-i18n="solar-elevation">Elevazione solare</span>
         <span class="value" id="val-sun-elevation">--°</span>
       </div>
       <div class="info-row">
-        <span class="label">Azimut solare</span>
+        <span class="label" data-i18n="solar-azimuth">Azimut solare</span>
         <span class="value" id="val-sun-azimuth">--°</span>
       </div>
     </section>
 
     <!-- Facade parameters -->
-    <section class="card" aria-label="Parametri Geometrici Facciata">
-      <p class="card-title">🛠 Parametri Facciata</p>
+    <section class="card" data-i18n-aria="facade-card-aria" aria-label="Parametri Geometrici Facciata">
+      <p class="card-title" data-i18n="facade-title">🛠 Parametri Facciata</p>
       <div class="info-row">
-        <span class="label">Orientamento / Cardinale</span>
+        <span class="label" data-i18n="facade-orientation">Orientamento / Cardinale</span>
         <strong class="value" id="telemetry-cardinal">--</strong>
       </div>
       <div class="info-row">
-        <span class="label">Schermatura rilevata</span>
+        <span class="label" data-i18n="facade-shading">Schermatura rilevata</span>
         <strong class="value" id="val-manual-obs">--</strong>
       </div>
 
       <div class="slider-row">
         <div class="slider-header">
-          <span>Rotazione parete</span>
+          <span data-i18n="facade-rotation">Rotazione parete</span>
           <strong id="val-manual-angle">180°</strong>
         </div>
-        <input type="range" id="manual-angle-slider" min="0" max="359" value="180" aria-label="Angolo di rotazione parete">
+        <input type="range" id="manual-angle-slider" min="0" max="359" value="180" data-i18n-aria="rotation-slider-aria" aria-label="Angolo di rotazione parete">
       </div>
 
       <div class="select-row">
         <div class="select-header">
-          <span>Tipo di Infissi</span>
+          <span data-i18n="facade-windows">Tipo di Infissi</span>
         </div>
-        <select id="windows-select" class="property-select" aria-label="Seleziona tipo di infissi">
-          <option value="single">Vetro Singolo</option>
-          <option value="double" selected>Doppio Vetro</option>
-          <option value="triple">Triplo Vetro / Taglio Termico</option>
+        <select id="windows-select" class="property-select" data-i18n-aria="windows-select-aria" aria-label="Seleziona tipo di infissi">
+          <option value="single" data-i18n="windows-single">Vetro Singolo</option>
+          <option value="double" selected data-i18n="windows-double">Doppio Vetro</option>
+          <option value="triple" data-i18n="windows-triple">Triplo Vetro / Taglio Termico</option>
         </select>
       </div>
 
       <div class="select-row">
         <div class="select-header">
-          <span>Isolamento Muri</span>
+          <span data-i18n="facade-insulation">Isolamento Muri</span>
         </div>
-        <select id="insulation-select" class="property-select" aria-label="Seleziona isolamento pareti">
-          <option value="none" selected>Nessuno (Muro Storico)</option>
-          <option value="coat">Cappotto Termico</option>
+        <select id="insulation-select" class="property-select" data-i18n-aria="insulation-select-aria" aria-label="Seleziona isolamento pareti">
+          <option value="none" selected data-i18n="insulation-none">Nessuno (Muro Storico)</option>
+          <option value="coat" data-i18n="insulation-coat">Cappotto Termico</option>
         </select>
       </div>
     </section>
 
     <!-- Footer -->
     <footer class="sidebar-footer">
-      <nav aria-label="Link utili">
+      <nav data-i18n-aria="footer-links-aria" aria-label="Link utili">
         <ul class="footer-links">
-          <li><a href="docs/case-study.md">Documentazione</a></li>
-          <li><a href="https://github.com/holyemilio/Suntrace" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="#" onclick="return false;">Privacy</a></li>
+          <li><a href="docs/case-study.md" data-i18n="footer-docs">Documentazione</a></li>
+          <li><a href="https://github.com/holyemilio/Suntrace" target="_blank" rel="noopener" data-i18n="footer-github">GitHub</a></li>
+          <li><a href="#" onclick="return false;" data-i18n="footer-privacy">Privacy</a></li>
         </ul>
       </nav>
-      <p class="footer-copy">&copy; 2026 SunTrace. Motore Meeus/SPA — solo uso indicativo.</p>
+      <p class="footer-copy" data-i18n="footer-copy">© 2026 SunTrace. Motore Meeus/SPA — solo uso indicativo.</p>
     </footer>
 
   </aside>
 
   <!-- ── Map ──────────────────────────────────────────────────────────────── -->
-  <main id="map-container" aria-label="Mappa Interattiva Microclimatica">
+  <main id="map-container" data-i18n-aria="map-aria" aria-label="Mappa Interattiva Microclimatica">
     <button
       class="map-floating-btn"
       id="geo-btn"
+      data-i18n-aria="geo-aria"
       aria-label="Rileva la mia posizione geografica"
+      data-i18n-title="geo-title"
       title="Rileva posizione"
     >
       <span id="geo-icon" role="img" aria-hidden="true">🎯</span>
     </button>
 
     <!-- Mobile sidebar toggle -->
-    <button id="sidebar-toggle" aria-label="Apri pannello di controllo">☰ Pannello</button>
+    <button id="sidebar-toggle" data-i18n="panel-open" data-i18n-aria="panel-open-aria" aria-label="Apri pannello di controllo">☰ Pannello</button>
+
+    <!-- Language switcher (bottom-left of the map) -->
+    <div id="lang-switch" class="lang-switch" role="group" data-i18n-aria="lang-aria" aria-label="Lingua / Language">
+      <button type="button" class="lang-btn" data-lang="it">IT</button>
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+    </div>
 
     <div
       id="map-error-toast"
@@ -243,27 +254,27 @@
     aria-labelledby="modal-class-title"
   >
     <div class="modal">
-      <button class="modal-close" id="modal-close-btn" aria-label="Chiudi modale">✕</button>
+      <button class="modal-close" id="modal-close-btn" data-i18n-aria="modal-close-aria" aria-label="Chiudi modale">✕</button>
 
-      <h2 id="modal-class-title">Dettaglio Comfort Rate</h2>
+      <h2 id="modal-class-title" data-i18n="modal-title-initial">Dettaglio Comfort Rate</h2>
       <div class="modal-class-badge" id="modal-class-badge">Comfort Rate --</div>
 
       <div class="kpi-grid">
         <div class="kpi-cell">
           <span class="kpi-val" id="kpi-winter-temp">--</span>
-          <span class="kpi-lbl">Comfort Inverno (mezzogiorno)</span>
+          <span class="kpi-lbl" data-i18n="kpi-winter">Comfort Inverno (mezzogiorno)</span>
         </div>
         <div class="kpi-cell">
           <span class="kpi-val" id="kpi-summer-temp">--</span>
-          <span class="kpi-lbl">Comfort Estate (mezzogiorno)</span>
+          <span class="kpi-lbl" data-i18n="kpi-summer">Comfort Estate (mezzogiorno)</span>
         </div>
         <div class="kpi-cell">
           <span class="kpi-val" id="kpi-infissi-selected">--</span>
-          <span class="kpi-lbl">Tipo di Infissi</span>
+          <span class="kpi-lbl" data-i18n="kpi-windows">Tipo di Infissi</span>
         </div>
         <div class="kpi-cell">
           <span class="kpi-val" id="kpi-isolamento-selected">--</span>
-          <span class="kpi-lbl">Isolamento Pareti</span>
+          <span class="kpi-lbl" data-i18n="kpi-insulation">Isolamento Pareti</span>
         </div>
       </div>
 
@@ -271,7 +282,7 @@
 
       <div class="modal-tip" id="kpi-tip"></div>
 
-      <p style="font-size:0.65rem;color:var(--text-muted);margin-top:12px;">
+      <p class="modal-disclaimer" data-i18n="modal-disclaimer">
         *Le temperature usano le medie climatiche reali del luogo (Open-Meteo, normali 1991–2020); il comportamento termico dell'abitazione è però una stima euristica e non costituisce una certificazione energetica ufficiale (APE).
       </p>
     </div>
@@ -289,9 +300,9 @@
   <div id="mobile-warning" class="mobile-warning-overlay" role="alert" aria-live="assertive">
     <div class="mobile-warning-card">
       <div class="mobile-warning-icon">🖥️</div>
-      <h2>Ops! SunTrace ha bisogno di spazio...</h2>
-      <p>Ci hai scoperto! 🕵️‍♂️ Per il momento l'esperienza da smartphone non è disponibile.</p>
-      <p>Collegati da un computer per iniziare a scansionare al meglio ed esplorare l'esposizione al sole!</p>
+      <h2 data-i18n="mobile-title">Ops! SunTrace ha bisogno di spazio...</h2>
+      <p data-i18n="mobile-p1">Ci hai scoperto! 🕵️‍♂️ Per il momento l'esperienza da smartphone non è disponibile.</p>
+      <p data-i18n="mobile-p2">Collegati da un computer per iniziare a scansionare al meglio ed esplorare l'esposizione al sole!</p>
     </div>
   </div>
 

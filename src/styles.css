@@ -151,6 +151,13 @@ body { display: flex; height: 100vh; overflow: hidden; }
   line-height: 1.1;
 }
 
+.comfort-rate-caption {
+  font-size: 0.72rem;
+  opacity: 0.65;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
 .comfort-rate-wrapper {
   position: relative;
   display: inline-block;
@@ -419,6 +426,37 @@ input[type="text"]:focus { border-color: var(--primary); }
 }
 @keyframes spinBtn { to { transform: rotate(360deg); } }
 
+/* ─── language switcher (bottom-left of the map) ──────────────────────────── */
+.lang-switch {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 1100;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.18);
+}
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 5px 9px;
+  border-radius: calc(var(--radius-sm) - 3px);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lang-btn:hover { color: var(--dark); background: #f1f5f9; }
+.lang-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
 /* ─── toast ──────────────────────────────────────────────────────────────── */
 .map-error-toast {
   position: absolute;
@@ -546,6 +584,12 @@ input[type="text"]:focus { border-color: var(--primary); }
   height: 100%;
   background: var(--primary);
   border-radius: 999px;
+}
+
+.modal-disclaimer {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 12px;
 }
 
 .modal-exposure {
