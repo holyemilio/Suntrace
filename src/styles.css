@@ -475,6 +475,10 @@ input[type="text"]:focus { border-color: var(--primary); }
 }
 @keyframes spinBtn { to { transform: rotate(360deg); } }
 
+/* ─── "loading" pulse for values being resolved (e.g. OSM detection) ───────── */
+@keyframes slowPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.loading-pulse { animation: slowPulse 1.1s ease-in-out infinite; }
+
 /* ─── language switcher (bottom-left of the map) ──────────────────────────── */
 .lang-switch {
   position: absolute;

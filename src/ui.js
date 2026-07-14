@@ -256,12 +256,22 @@ function onValidLand(lat, lng) {
  * point, then update the scan (orientation only if the user hasn't set it
  * manually) and re-render. Cached, silent, best-effort — never throws upward.
  */
+// Pulse the detected orientation/shading readouts while OSM is being queried.
+function setBuildingLoading(on) {
+  ['telemetry-cardinal', 'val-manual-obs', 'val-manual-angle'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.toggle('loading-pulse', on);
+  });
+}
+
 async function detectBuildingContext(lat, lng) {
+  setBuildingLoading(true);
   let ctx;
   try { ctx = await fetchBuildingContext(lat, lng); }
-  catch { return; }
-  if (!ctx) return;                                              // no building nearby
-  if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded by a newer point
+  catch { if (currentScan.lat === lat && currentScan.lng === lng) setBuildingLoading(false); return; }
+  if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded — a newer call owns the loading state
+  setBuildingLoading(false);
+  if (!ctx) return;                                              // no building nearby → keep the last values
   currentScan.kOmbra = ctx.kOmbra;
   if (!currentScan.userAdjusted) {
     currentScan.angleDeg = ctx.facadeAz;
@@ -414,12 +424,13 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   }
 
   // Facade orientation & obstruction come from real OSM buildings, detected
-  // asynchronously in onValidLand(). Until that resolves, keep a manually-set
-  // angle across drags, otherwise start neutral (South-facing, no shading).
+  // asynchronously in onValidLand(). Keep the LAST known values as provisional
+  // (no jump to South) until OSM refines them; if OSM finds nothing they simply
+  // stay put. A manually-set angle stays locked across drags.
   const keepManual = isDrag && currentScan.userAdjusted;
-  const angleDeg = keepManual ? currentScan.angleDeg : 180;
+  const angleDeg = currentScan.angleDeg;
 
-  currentScan = { lat, lng, angleDeg, kOmbra: 1.0, userAdjusted: keepManual };
+  currentScan = { lat, lng, angleDeg, kOmbra: currentScan.kOmbra, userAdjusted: keepManual };
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
 
   if (!isDrag) {
