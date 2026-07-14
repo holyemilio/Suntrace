@@ -133,7 +133,13 @@
 
     <!-- Solar info -->
     <section class="card" data-i18n-aria="solar-card-aria" aria-label="Informazioni Solari">
-      <p class="card-title" data-i18n="solar-title">☀️ Dati Solari</p>
+      <p class="card-title">
+        <span data-i18n="solar-title">☀️ Dati Solari</span>
+        <span class="info-tip" tabindex="0" data-i18n-aria="tip-solar-data">
+          <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
+          <span class="info-tip-box" role="tooltip" data-i18n="tip-solar-data">Posizione del Sole e durata del giorno per data, ora e luogo selezionati.</span>
+        </span>
+      </p>
       <div class="info-row">
         <span class="label" data-i18n="solar-sunrise">Alba (ora locale)</span>
         <span class="value" id="val-sunrise">--:--</span>
@@ -160,11 +166,23 @@
     <section class="card" data-i18n-aria="facade-card-aria" aria-label="Parametri Geometrici Facciata">
       <p class="card-title" data-i18n="facade-title">🛠 Parametri Facciata</p>
       <div class="info-row">
-        <span class="label" data-i18n="facade-orientation">Orientamento / Cardinale</span>
+        <span class="label-with-tip">
+          <span class="label" data-i18n="facade-orientation">Orientamento / Cardinale</span>
+          <span class="info-tip" tabindex="0" data-i18n-aria="tip-orientation">
+            <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
+            <span class="info-tip-box" role="tooltip" data-i18n="tip-orientation">Direzione verso cui guarda la facciata analizzata.</span>
+          </span>
+        </span>
         <strong class="value" id="telemetry-cardinal">--</strong>
       </div>
       <div class="info-row">
-        <span class="label" data-i18n="facade-shading">Schermatura rilevata</span>
+        <span class="label-with-tip">
+          <span class="label" data-i18n="facade-shading">Schermatura rilevata</span>
+          <span class="info-tip" tabindex="0" data-i18n-aria="tip-shading">
+            <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
+            <span class="info-tip-box" role="tooltip" data-i18n="tip-shading">Stima automatica dell'ostruzione solare in base alla posizione.</span>
+          </span>
+        </span>
         <strong class="value" id="val-manual-obs">--</strong>
       </div>
 
