@@ -97,6 +97,9 @@ const STRINGS = {
     'panel-open-aria': 'Apri pannello di controllo',
     'panel-close': '✕ Chiudi',
     'lang-aria': 'Lingua / Language',
+    'floor-label': 'Piano',
+    'floor-aria': 'Piano dell\'abitazione',
+    'floor-ground': 'Piano terra',
 
     // Modal
     'modal-close-aria': 'Chiudi modale',
@@ -248,6 +251,9 @@ const STRINGS = {
     'panel-open-aria': 'Open control panel',
     'panel-close': '✕ Close',
     'lang-aria': 'Language / Lingua',
+    'floor-label': 'Floor',
+    'floor-aria': 'Home floor',
+    'floor-ground': 'Ground floor',
 
     'modal-close-aria': 'Close modal',
     'modal-title-initial': 'Comfort Rate Detail',

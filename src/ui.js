@@ -58,6 +58,7 @@ let errorTimeout = null;
 let autocompleteTimeout = null;
 let customBaseTemps = null; // 12 monthly temp means from Open-Meteo; null = fallback to climate.js Rome table
 let climateExtra = null;    // { rh, wind, precip } monthly means from Open-Meteo (may be null / partial)
+let currentFloor = 0;       // user's floor (0 = ground … 5); higher clears nearby rooftops → less obstruction
 let lastAnalysis = null; // { seasonal, comfort, ... } from the latest refreshUI(), read by openKPIModal()
 // Coordinates of the last picked autocomplete suggestion, kept so the "Vai"
 // button can analyse them without a second Nominatim call. Includes the exact
@@ -276,7 +277,9 @@ async function detectBuildingContext(lat, lng) {
   if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded — a newer call owns the loading state
   setBuildingLoading(false);
   if (!ctx) return;                                              // no building nearby → keep the last values
-  currentScan.kOmbra = ctx.kOmbra;
+  currentScan.baseK = ctx.baseK;                                 // obstruction at ground level
+  currentScan.neighborH = ctx.neighborH;                         // representative nearby rooftop height (m)
+  currentScan.kOmbra = effectiveObstruction(ctx.baseK, ctx.neighborH, currentFloor);
   if (!currentScan.userAdjusted) {
     currentScan.angleDeg = ctx.facadeAz;
     const slider = $('manual-angle-slider');
@@ -285,8 +288,24 @@ async function detectBuildingContext(lat, lng) {
   refreshUI();
 }
 
+// Obstruction seen from the user's floor: as the floor rises toward the nearby
+// rooftops the ground-level obstruction eases, reaching none (1.0) once above them.
+function effectiveObstruction(baseK, neighborH, floor) {
+  if (!neighborH || neighborH <= 0) return 1.0;
+  const userH = floor * 3;                          // ~3 m per floor
+  const cleared = Math.min(1, userH / neighborH);   // 0 at ground, 1 once above the rooftops
+  return baseK + (1 - baseK) * cleared;
+}
+
+// Recompute obstruction for the current floor and re-render (floor-bar handler).
+function applyFloor() {
+  if (!currentScan) return;
+  currentScan.kOmbra = effectiveObstruction(currentScan.baseK ?? 1.0, currentScan.neighborH ?? 9, currentFloor);
+  refreshUI();
+}
+
 async function fetchBuildingContext(lat, lng) {
-  const cacheKey = `osm_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  const cacheKey = `osm2_${lat.toFixed(4)}_${lng.toFixed(4)}`;
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) return JSON.parse(cached);
@@ -303,10 +322,26 @@ async function fetchBuildingContext(lat, lng) {
 
   const buildings = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
   const ctx = buildings.length
-    ? { facadeAz: nearestFacadeAzimuth(lat, lng, buildings), kOmbra: obstructionFromDensity(buildings) }
+    ? {
+        facadeAz: nearestFacadeAzimuth(lat, lng, buildings),
+        baseK: obstructionFromDensity(buildings),  // obstruction at ground level
+        neighborH: neighborHeight(buildings),       // representative rooftop height (m)
+      }
     : null;
   try { localStorage.setItem(cacheKey, JSON.stringify(ctx)); } catch { /* storage unavailable */ }
   return ctx;
+}
+
+// Representative height (m) of the nearby buildings, from OSM levels (~3 m each,
+// default 3 levels when unknown).
+function neighborHeight(buildings) {
+  let sum = 0, counted = 0;
+  for (const b of buildings) {
+    const lv = parseFloat(b.tags && b.tags['building:levels']);
+    if (!isNaN(lv)) { sum += lv; counted++; }
+  }
+  const avgLevels = counted ? sum / counted : 3;
+  return avgLevels * 3;
 }
 
 // Facade azimuth = outward normal (facing the click) of the nearest building edge.
@@ -447,7 +482,13 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   const keepManual = isDrag && currentScan.userAdjusted;
   const angleDeg = currentScan.angleDeg;
 
-  currentScan = { lat, lng, angleDeg, kOmbra: currentScan.kOmbra, userAdjusted: keepManual };
+  currentScan = {
+    lat, lng, angleDeg,
+    kOmbra: currentScan.kOmbra,
+    baseK: currentScan.baseK ?? 1.0,
+    neighborH: currentScan.neighborH ?? 9,
+    userAdjusted: keepManual,
+  };
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
   climateExtra = null;    // humidity/wind/precip reset with the point
 
@@ -876,6 +917,25 @@ function initLangSwitch() {
   markActiveLang();
 }
 
+// ─── floor selector (building height) ─────────────────────────────────────────
+
+function markActiveFloor() {
+  document.querySelectorAll('.floor-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.floor, 10) === currentFloor);
+  });
+}
+
+function initFloorBar() {
+  document.querySelectorAll('.floor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFloor = parseInt(btn.dataset.floor, 10);
+      markActiveFloor();
+      applyFloor(); // recompute obstruction for the chosen floor and re-render
+    });
+  });
+  markActiveFloor();
+}
+
 // ─── app bootstrap ────────────────────────────────────────────────────────────
 
 export function init() {
@@ -897,6 +957,7 @@ export function init() {
   initGeolocation();
   initMobileToggle();
   initLangSwitch();
+  initFloorBar();
 
   // KPI modal wiring
   const badge = $('energy-class-field');

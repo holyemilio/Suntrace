@@ -594,6 +594,56 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   color: var(--accent-ink);
 }
 
+/* ─── floor selector (top-center of the map) ──────────────────────────────── */
+.floor-bar {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+.floor-bar-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  padding: 0 6px 0 4px;
+}
+.floor-btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.floor-btn:hover { background: var(--panel-2); color: var(--text-strong); }
+.floor-btn.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+@media (max-width: 768px) { .floor-bar { display: none; } }
+
 /* ─── custom map marker (clean green dot) ─────────────────────────────────── */
 .suntrace-marker { background: transparent; border: none; }
 .suntrace-marker-dot {
