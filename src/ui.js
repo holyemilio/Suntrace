@@ -115,10 +115,10 @@ function initMap() {
   map = L.map('map', { zoomControl: false, maxZoom: 20 }).setView([41.9028, 12.4964], 17);
   L.control.zoom({ position: 'topright' }).addTo(map);
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     {
       attribution: '©<a href="https://openstreetmap.org">OSM</a> ©<a href="https://carto.com">CARTO</a>',
-      maxZoom: 20,          // CARTO voyager serves tiles up to z20 — one extra step of zoom
+      maxZoom: 20,          // CARTO dark serves tiles up to z20 — one extra step of zoom
       maxNativeZoom: 20,
     }
   ).addTo(map);
@@ -150,9 +150,9 @@ function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz) {
 
   radarCircle = L.circle([lat, lng], {
     radius: 35,
-    color: '#059669',
-    fillColor: '#059669',
-    fillOpacity: 0.04,
+    color: '#22c55e',
+    fillColor: '#22c55e',
+    fillOpacity: 0.05,
     weight: 1.2,
     dashArray: '4 4',
   }).addTo(map);
@@ -166,28 +166,28 @@ function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz) {
     const opacity = Math.max(0.18, 0.58 - (elevation / 90) * 0.32);
 
     shadowPolygon = L.polygon([[lat, lng], p1, p2], {
-      color: 'transparent',
-      fillColor: '#0f172a',
-      fillOpacity: opacity,
-      weight: 0,
+      color: 'rgba(148, 163, 184, 0.45)', // faint outline so the wedge reads on the dark map
+      fillColor: '#020509',
+      fillOpacity: Math.min(0.6, opacity + 0.12),
+      weight: 1,
     }).addTo(map);
 
     // Sun ray
     const sunPt = offsetByAzimuth(lat, lng, azimuth, 0.00028);
     sunRay = L.polyline([sunPt, [lat, lng]], {
-      color: '#ca8a04',
+      color: '#f5b301',
       weight: 2,
       dashArray: '6 5',
-      opacity: 0.9,
+      opacity: 0.95,
     }).addTo(map);
   }
 
   // Facade orientation line
   const facadeTip = offsetByAzimuth(lat, lng, facadeAz, 0.00014);
   facadeLine = L.polyline([[lat, lng], facadeTip], {
-    color: '#059669',
+    color: '#22c55e',
     weight: 6,
-    opacity: 0.9,
+    opacity: 0.95,
   }).addTo(map);
 }
 

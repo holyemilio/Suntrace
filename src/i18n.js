@@ -14,7 +14,7 @@ const STRINGS = {
 
     // Search
     'search-card-aria': 'Ricerca Geografica',
-    'search-title': '📍 Cerca Indirizzo',
+    'search-title': 'Cerca Indirizzo',
     'search-hint': 'Cerca un indirizzo per iniziare, poi premi «Vai».',
     'search-ph': 'Via o città in Italia…',
     'search-input-aria': 'Campo di ricerca indirizzo',
@@ -40,7 +40,7 @@ const STRINGS = {
 
     // Time
     'time-card-aria': 'Configurazione Temporale',
-    'time-title': '⏱ Crono-Solare',
+    'time-title': 'Crono-Solare',
     'time-month': 'Mese di analisi',
     'time-hour': 'Ora locale (simulatore ombra)',
     'month-slider-aria': 'Seleziona mese',
@@ -48,7 +48,7 @@ const STRINGS = {
 
     // Solar
     'solar-card-aria': 'Informazioni Solari',
-    'solar-title': '☀️ Dati Solari',
+    'solar-title': 'Dati Solari',
     'solar-sunrise': 'Alba (ora locale)',
     'solar-sunset': 'Tramonto (ora locale)',
     'solar-daylength': 'Durata del giorno',
@@ -58,7 +58,7 @@ const STRINGS = {
 
     // Facade
     'facade-card-aria': 'Parametri Geometrici Facciata',
-    'facade-title': '🛠 Parametri Facciata',
+    'facade-title': 'Parametri Facciata',
     'facade-orientation': 'Orientamento / Cardinale',
     'facade-shading': 'Schermatura rilevata',
     'tip-solar-data': 'Posizione del Sole (alba, tramonto, elevazione, azimut) e durata del giorno, calcolate per data, ora e luogo selezionati con il motore astronomico Meeus/SPA.',
@@ -171,7 +171,7 @@ const STRINGS = {
     'sidebar-aria': 'SunTrace Control Panel',
 
     'search-card-aria': 'Address search',
-    'search-title': '📍 Search Address',
+    'search-title': 'Search Address',
     'search-hint': 'Search an address to begin, then press “Go”.',
     'search-ph': 'Street or city in Italy…',
     'search-input-aria': 'Address search field',
@@ -195,14 +195,14 @@ const STRINGS = {
     'season-autumn': 'Autumn',
 
     'time-card-aria': 'Time configuration',
-    'time-title': '⏱ Solar Clock',
+    'time-title': 'Solar Clock',
     'time-month': 'Analysis month',
     'time-hour': 'Local time (shadow simulator)',
     'month-slider-aria': 'Select month',
     'hour-slider-aria': 'Select hour',
 
     'solar-card-aria': 'Solar information',
-    'solar-title': '☀️ Solar Data',
+    'solar-title': 'Solar Data',
     'solar-sunrise': 'Sunrise (local time)',
     'solar-sunset': 'Sunset (local time)',
     'solar-daylength': 'Day length',
@@ -211,7 +211,7 @@ const STRINGS = {
     'below-horizon': '< horizon',
 
     'facade-card-aria': 'Facade parameters',
-    'facade-title': '🛠 Facade Parameters',
+    'facade-title': 'Facade Parameters',
     'facade-orientation': 'Orientation / Cardinal',
     'facade-shading': 'Detected shading',
     'tip-solar-data': 'Sun position (sunrise, sunset, elevation, azimuth) and day length, computed for the selected date, time and place with the Meeus/SPA astronomical engine.',
