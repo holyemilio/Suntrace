@@ -39,6 +39,7 @@
 
 - **[User Manual](docs/manuale-utente.html)** (Italian) — how to use the app, what it does, buttons and notifications (opens in the browser, printable to PDF).
 - **[Testbook](docs/testbook.html)** (Italian) — a table-based test plan with a blank outcome column to run through every feature.
+- **[Testbook (CSV)](docs/testbook.csv)** (Italian) — the same checklist, downloadable and Excel-ready (`;` separator, UTF-8).
 
 ---
 
