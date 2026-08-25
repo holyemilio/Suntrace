@@ -5,6 +5,36 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.1.0] — 2026-07-15
+
+### Added
+- **`start.command` launcher** + "Come avviare" docs: the app must be served over `http://localhost` (ES modules, geolocation and external APIs are blocked under `file://`).
+- **Precise Italy geofencing** via Nominatim reverse geocoding: distinguishes Italian land (proceed), national waters (dedicated 🌊 message) and abroad ("Ops!" message), each returning to Rome. Replaces the coarse bounding box (kept only as a fast pre-filter).
+- **Bilingual IT/EN**: `src/i18n.js` dictionary + engine, in-app language switcher (bottom-left of the map), browser-language auto-detect, choice remembered in `localStorage`; bilingual README (`README.en.md`).
+- **OSM building detection** (Overpass): real facade orientation from the nearest building wall's outward normal, and obstruction from local building density/levels; cached in `localStorage`, with a loading pulse and a neutral fallback.
+- **Atmospheric factors**: humidity, wind and precipitation normals from Open-Meteo. `apparentTemperature()` (feels-like) feeds winter/summer perceived temperatures into the Comfort Rate (bounded humid-heat / windy-cold penalties, humidity tip). Modal gains a real-climate strip (summer feels-like, average humidity, annual rainfall).
+- **Info tooltips** (hover/focus) for Solar data, Orientation and Shading.
+- **Map legend** + custom green-dot marker (replacing Leaflet's default pin); max zoom raised 18 → 20.
+- **`docs/logo.svg`** shown atop the README.
+
+### Changed
+- Address search moved to the top of the sidebar; picking a suggestion only fills the field; search runs solely via the "Vai" button.
+- Sun-hours chart removed; sun exposure folded into the Comfort Rate detail as a "good/bad news" line.
+- Facade orientation/obstruction now come from real OSM data instead of a pseudo-random coordinate seed; the last known values are kept as provisional while OSM loads (no jump to South).
+- `climate.js` returns i18n keys (comfort labels, tips, obstruction, cardinal); `CLASS_COLORS` → `STAR_COLORS` keyed by star count.
+- Temperature disclaimer corrected (real per-location normals; Rome only as offline fallback). Climate cache key bumped to `omc_` for the richer normals shape.
+
+### Fixed
+- App appeared "dead" when opened via `file://` — documented and solved with the local-server launcher.
+- KPI cell text overflowing its rounded border.
+- Off-centre emoji on the floating geolocation button; stale footer GitHub link.
+
+### Removed
+- "Ore di sole per facciata" chart and its dead JS/CSS.
+- Broken "Live Demo" placeholder link and screenshot reference from the README.
+
+---
+
 ## [2.0.0] — 2026-07-14
 
 ### Added

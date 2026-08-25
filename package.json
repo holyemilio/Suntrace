@@ -1,6 +1,6 @@
 {
   "name": "suntrace",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "description": "Urban microclimate solar simulator — vanilla JS, no build step",
   "type": "module",
   "scripts": {

@@ -12,12 +12,6 @@
 
 **SunTrace** è un simulatore microclimatico urbano che analizza l'esposizione solare di facciate e locali in qualsiasi punto d'Italia. Seleziona un punto sulla mappa, scegli mese e ora, e ottieni in tempo reale: posizione solare corretta (Meeus/SPA), medie climatiche reali del luogo (Open-Meteo), stima termica stagionale e un **Comfort Rate** a stelle con consigli. Interfaccia bilingue **IT/EN**.
 
-## 🌐 Live Demo
-
-> **[suntrace.io](https://your-username.github.io/suntrace/)** ← aggiorna con il tuo URL GitHub Pages
-
-![Screenshot placeholder](docs/screenshot.png)
-
 ---
 
 ## ✨ Features

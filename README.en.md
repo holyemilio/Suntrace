@@ -12,12 +12,6 @@
 
 **SunTrace** is an urban microclimate simulator that analyses the solar exposure of facades and rooms anywhere in Italy. Pick a point on the map, choose a month and hour, and get in real time: an accurate solar position (Meeus/SPA), real local climate normals (Open-Meteo), a seasonal thermal estimate and a star-based **Comfort Rate** with tips. Bilingual **IT/EN** interface.
 
-## 🌐 Live Demo
-
-> **[suntrace.io](https://your-username.github.io/suntrace/)** ← update with your GitHub Pages URL
-
-![Screenshot placeholder](docs/screenshot.png)
-
 ---
 
 ## ✨ Features
