@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SunTrace — Testbook (Piano di Test)</title>
+<style>
+  :root { --ink:#14181f; --muted:#5b6675; --line:#d8dee7; --accent:#ea580c; --green:#059669; --soft:#f7f9fc; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink);
+         line-height:1.5; background:#fff; }
+  .page { max-width:1000px; margin:0 auto; padding:40px 32px 56px; }
+  header.doc { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink);
+               padding-bottom:14px; margin-bottom:20px; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand h1 { font-size:1.4rem; margin:0; font-weight:800; letter-spacing:-.02em; }
+  .brand h1 span { color:var(--accent); }
+  .doc-meta { text-align:right; font-size:.8rem; color:var(--muted); }
+  p { margin:8px 0; }
+  h2 { font-size:1.05rem; margin:22px 0 8px; }
+  /* fillable header fields */
+  .fields { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; margin:14px 0 6px; font-size:.9rem; }
+  .field { display:flex; align-items:baseline; gap:8px; }
+  .field label { color:var(--muted); white-space:nowrap; }
+  .field .blank { flex:1; border-bottom:1px solid var(--line); min-height:1.2em; }
+  .legend { font-size:.85rem; color:var(--muted); margin:6px 0 18px; }
+  .legend b { color:var(--ink); }
+  table { border-collapse:collapse; width:100%; font-size:.82rem; }
+  th,td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:var(--soft); font-weight:700; }
+  td.id { font-family:ui-monospace,Menlo,monospace; font-weight:700; white-space:nowrap; }
+  td.area { font-weight:600; }
+  col.c-esito { width:64px; } col.c-note { width:150px; }
+  td.esito { background:#fcfdff; }
+  tr.area-row td { background:#eef2f7; font-weight:800; text-transform:uppercase; letter-spacing:.05em; font-size:.72rem; }
+  ol.steps { margin:0; padding-left:16px; } ol.steps li { margin:2px 0; }
+  footer.doc { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); font-size:.78rem; color:var(--muted); }
+  @media print {
+    .page { padding:0; max-width:none; }
+    table { font-size:.72rem; } th,td { padding:5px 6px; }
+    tr, .fields, footer.doc { break-inside:avoid; }
+    thead { display:table-header-group; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc">
+    <div class="brand">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="6" fill="#eab308"/>
+        <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
+      </svg>
+      <h1>Sun<span>Trace</span></h1>
+    </div>
+    <div class="doc-meta">Testbook — Piano di Test<br>Versione app 2.1.0</div>
+  </header>
+
+  <p>Piano di test in formato standard (ID · Area · Precondizioni · Passi · Risultato atteso · Esito · Note).
+  Compila i campi qui sotto, esegui ogni caso e segna l'esito. Stampa in PDF con <strong>Cmd/Ctrl + P</strong>.</p>
+
+  <div class="fields">
+    <div class="field"><label>Tester:</label><span class="blank"></span></div>
+    <div class="field"><label>Data:</label><span class="blank"></span></div>
+    <div class="field"><label>Browser / versione:</label><span class="blank"></span></div>
+    <div class="field"><label>Sistema operativo:</label><span class="blank"></span></div>
+    <div class="field"><label>URL / ambiente:</label><span class="blank"></span></div>
+    <div class="field"><label>Note generali:</label><span class="blank"></span></div>
+  </div>
+  <p class="legend">Legenda esito — <b>P</b> = Superato · <b>F</b> = Fallito · <b>B</b> = Bloccato / N.A.</p>
+
+  <table>
+    <colgroup>
+      <col class="c-id"><col class="c-area"><col><col><col><col class="c-esito"><col class="c-note">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>ID</th><th>Area</th><th>Precondizioni</th><th>Passi</th><th>Risultato atteso</th><th>Esito</th><th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="area-row"><td colspan="7">Avvio</td></tr>
+      <tr>
+        <td class="id">T01</td><td class="area">Avvio</td>
+        <td>App servita da server locale.</td>
+        <td><ol class="steps"><li>Apri <code>http://localhost:8000</code>.</li></ol></td>
+        <td>L'app carica: mappa scura a destra, pannello a sinistra, nessun errore.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T02</td><td class="area">Avvio</td>
+        <td>File del progetto in locale.</td>
+        <td><ol class="steps"><li>Apri <code>index.html</code> con doppio click (file://).</li></ol></td>
+        <td>L'app risulta non interattiva: è previsto, va usato il server locale (vedi T01).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Ricerca indirizzo</td></tr>
+      <tr>
+        <td class="id">T03</td><td class="area">Ricerca</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Scrivi "Via Giusti Roma" (almeno 3 caratteri).</li></ol></td>
+        <td>Compaiono suggerimenti di indirizzo sotto il campo.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T04</td><td class="area">Ricerca</td>
+        <td>Suggerimenti visibili (T03).</td>
+        <td><ol class="steps"><li>Clicca un suggerimento.</li></ol></td>
+        <td>Il campo si riempie; la mappa NON si sposta (nessuna ricerca).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T05</td><td class="area">Ricerca</td>
+        <td>Campo compilato.</td>
+        <td><ol class="steps"><li>Premi «Vai».</li></ol></td>
+        <td>La mappa si sposta sull'indirizzo e i dati si aggiornano.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T06</td><td class="area">Ricerca</td>
+        <td>Campo compilato.</td>
+        <td><ol class="steps"><li>Premi Invio nel campo di testo.</li></ol></td>
+        <td>La ricerca NON parte (parte solo col tasto «Vai»).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T07</td><td class="area">Ricerca</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Cerca un testo senza risultati (es. "xyzxyz").</li><li>Premi «Vai».</li></ol></td>
+        <td>Compare la notifica "Indirizzo non trovato".</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Mappa e posizione</td></tr>
+      <tr>
+        <td class="id">T08</td><td class="area">Mappa</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca un punto su una città italiana.</li></ol></td>
+        <td>Appare il puntatore verde e parte l'analisi (temperatura, comfort, stagioni).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T09</td><td class="area">Mappa</td>
+        <td>Browser con geolocalizzazione attiva.</td>
+        <td><ol class="steps"><li>Clicca 🎯.</li><li>Concedi il permesso.</li></ol></td>
+        <td>La mappa si centra sulla tua posizione e la analizza.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T10</td><td class="area">Mappa</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Zooma al massimo con «+».</li></ol></td>
+        <td>Si raggiunge un livello di zoom profondo (20) senza riquadri grigi.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Confini (geofencing)</td></tr>
+      <tr>
+        <td class="id">T11</td><td class="area">Confini</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca all'estero (es. Francia o Tunisia).</li></ol></td>
+        <td>Notifica "Ops! Ci hai scoperto…" e ritorno automatico a Roma.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T12</td><td class="area">Confini</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca in mare vicino all'Italia (es. Mar Tirreno).</li></ol></td>
+        <td>Notifica "🌊 Qui c'è solo acqua!" e ritorno a Roma.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T13</td><td class="area">Confini</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca sulla terraferma in Italia.</li></ol></td>
+        <td>L'analisi procede, nessuna notifica di confine.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Tempo e facciata</td></tr>
+      <tr>
+        <td class="id">T14</td><td class="area">Tempo</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Muovi il cursore del mese.</li></ol></td>
+        <td>L'etichetta del mese e i valori (temperatura, sole) si aggiornano.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T15</td><td class="area">Tempo</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Muovi il cursore dell'ora.</li></ol></td>
+        <td>Ora, posizione del sole e ombra sulla mappa si aggiornano.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T16</td><td class="area">Facciata</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Muovi «Rotazione parete».</li></ol></td>
+        <td>Orientamento/Cardinale cambia e resta il valore impostato (non sovrascritto).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T17</td><td class="area">Facciata</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Cambia "Tipo di Infissi" in Vetro Singolo.</li></ol></td>
+        <td>Le temperature stagionali e il Comfort Rate si aggiornano.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T18</td><td class="area">Facciata</td>
+        <td>Punto selezionato.</td>
+        <td><ol class="steps"><li>Cambia "Isolamento" in Cappotto Termico.</li></ol></td>
+        <td>I valori si aggiornano (inverno più caldo, estate più fresca).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T19</td><td class="area">Facciata</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Passa il mouse sulle icone ⓘ (Dati Solari, Orientamento, Schermatura).</li></ol></td>
+        <td>Compare un riquadro con la spiegazione.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Rilevamento edifici (OSM)</td></tr>
+      <tr>
+        <td class="id">T20</td><td class="area">OSM</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca in un centro urbano denso.</li></ol></td>
+        <td>Orientamento e Schermatura pulsano brevemente e si assestano su valori reali (senza saltare a Sud).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T21</td><td class="area">OSM</td>
+        <td>Un punto già analizzato.</td>
+        <td><ol class="steps"><li>Trascina il puntatore poco più in là.</li></ol></td>
+        <td>L'orientamento parte dall'ultimo valore noto, non da 180°, poi si aggiorna.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Comfort Rate e clima</td></tr>
+      <tr>
+        <td class="id">T22</td><td class="area">Comfort</td>
+        <td>Punto analizzato.</td>
+        <td><ol class="steps"><li>Tocca il badge a stelle del Comfort Rate.</li></ol></td>
+        <td>Si apre il dettaglio: inverno/estate, infissi, isolamento, percepita/umidità/pioggia, esposizione, consiglio.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T23</td><td class="area">Comfort</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Analizza un punto umido del Sud in estate (mese di luglio).</li><li>Apri il dettaglio.</li></ol></td>
+        <td>"Percepita estate" è maggiore della temperatura; può comparire il consiglio sull'afa.</td>
+        <td class="esito"></td><td></td>
+      </tr>
+
+      <tr class="area-row"><td colspan="7">Lingua e dispositivo</td></tr>
+      <tr>
+        <td class="id">T24</td><td class="area">Lingua</td>
+        <td>App avviata.</td>
+        <td><ol class="steps"><li>Clicca "EN" nel selettore in basso a sinistra.</li></ol></td>
+        <td>Tutta l'interfaccia passa in inglese, testi statici e dinamici (anche col dettaglio aperto).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T25</td><td class="area">Lingua</td>
+        <td>Lingua impostata su EN.</td>
+        <td><ol class="steps"><li>Ricarica la pagina.</li></ol></td>
+        <td>L'app resta in inglese (scelta ricordata).</td>
+        <td class="esito"></td><td></td>
+      </tr>
+      <tr>
+        <td class="id">T26</td><td class="area">Mobile</td>
+        <td>—</td>
+        <td><ol class="steps"><li>Apri da smartphone o restringi la finestra sotto 768px.</li></ol></td>
+        <td>Compare l'avviso a schermo intero "Ops! SunTrace ha bisogno di spazio…".</td>
+        <td class="esito"></td><td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer class="doc">
+    SunTrace — Testbook v2.1.0 · Esiti: P = Superato, F = Fallito, B = Bloccato/N.A. · Riporta i difetti trovati nella colonna Note.
+  </footer>
+
+</div>
+</body>
+</html>

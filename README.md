@@ -35,6 +35,13 @@
 
 ---
 
+## 📖 Documentazione
+
+- **[Manuale Utente](docs/manuale-utente.html)** — come si usa l'app, cosa fa, pulsanti e notifiche (apribile nel browser, stampabile in PDF).
+- **[Testbook](docs/testbook.html)** — piano di test in tabella, con esito da compilare, per verificare tutte le funzioni.
+
+---
+
 ## 🔬 Algoritmi
 
 ### Motore solare (`src/solar.js`)

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SunTrace — Manuale Utente</title>
+<style>
+  :root { --ink:#14181f; --muted:#5b6675; --line:#e4e8ee; --accent:#ea580c; --green:#059669; --soft:#f7f9fc; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink);
+         line-height:1.6; background:#fff; }
+  .page { max-width:820px; margin:0 auto; padding:48px 40px 64px; }
+  header.doc { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink);
+               padding-bottom:16px; margin-bottom:28px; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand h1 { font-size:1.5rem; margin:0; font-weight:800; letter-spacing:-.02em; }
+  .brand h1 span { color:var(--accent); }
+  .doc-meta { text-align:right; font-size:.8rem; color:var(--muted); }
+  h2 { font-size:1.15rem; margin:34px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  h3 { font-size:1rem; margin:20px 0 6px; }
+  p { margin:8px 0; }
+  ul,ol { margin:8px 0 8px 4px; padding-left:22px; }
+  li { margin:4px 0; }
+  code, .kbd { background:var(--soft); border:1px solid var(--line); border-radius:5px; padding:1px 6px;
+               font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.85em; }
+  .lead { font-size:1.05rem; color:var(--muted); }
+  .callout { background:var(--soft); border-left:4px solid var(--accent); border-radius:8px; padding:12px 16px; margin:16px 0; }
+  .callout.ok { border-left-color:var(--green); }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:.9rem; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--soft); font-weight:700; }
+  .toc { columns:2; font-size:.92rem; }
+  .toc a { color:var(--ink); text-decoration:none; }
+  footer.doc { margin-top:40px; padding-top:14px; border-top:1px solid var(--line); font-size:.8rem; color:var(--muted); }
+  @media print {
+    .page { padding:0; max-width:none; }
+    h2 { break-after:avoid; } h3 { break-after:avoid; }
+    table, .callout { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="6" fill="#eab308"/>
+        <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
+      </svg>
+      <h1>Sun<span>Trace</span></h1>
+    </div>
+    <div class="doc-meta">
+      Manuale Utente<br>Versione 2.1.0 · Agosto 2026
+    </div>
+  </header>
+
+  <p class="lead">SunTrace è un simulatore che mostra <strong>quanto sole prende una casa</strong> e quanto risulterà
+  confortevole, in qualsiasi punto d'Italia. Scegli un luogo sulla mappa, imposta mese e ora, e ottieni una stima
+  della temperatura, un giudizio di comfort a stelle e consigli pratici.</p>
+
+  <h2>Indice</h2>
+  <div class="toc">
+    <a href="#req">1. Requisiti e avvio</a><br>
+    <a href="#tour">2. Panoramica dell'interfaccia</a><br>
+    <a href="#uso">3. Come si usa (passo-passo)</a><br>
+    <a href="#comfort">4. Il Comfort Rate</a><br>
+    <a href="#facciata">5. Parametri della facciata</a><br>
+    <a href="#mappa">6. Mappa: simboli e controlli</a><br>
+    <a href="#cta">7. Pulsanti e notifiche</a><br>
+    <a href="#lingua">8. Lingua</a><br>
+    <a href="#limiti">9. Limiti e note</a><br>
+  </div>
+
+  <h2 id="req">1. Requisiti e avvio</h2>
+  <p>SunTrace è un'app web: serve un browser aggiornato (Chrome, Safari, Edge, Firefox) su <strong>computer</strong>
+  (da smartphone l'esperienza è bloccata: gli schermi piccoli non permettono click precisi).</p>
+  <div class="callout">
+    <strong>Importante:</strong> non aprire <code>index.html</code> con un doppio click. Il browser bloccherebbe
+    mappa, ricerca e dati. Avvia sempre da un <strong>server locale</strong>.
+  </div>
+  <p><strong>Modo più semplice (Mac):</strong> doppio click su <code>start.command</code>. Si apre il browser
+  sull'indirizzo giusto (<code>http://localhost:8000</code>). Per fermare, chiudi la finestra del Terminale o premi
+  <span class="kbd">Ctrl+C</span>.</p>
+  <p><strong>In alternativa</strong> (VSCode): estensione <em>Live Server</em> → tasto destro su
+  <code>index.html</code> → «Open with Live Server».</p>
+
+  <h2 id="tour">2. Panoramica dell'interfaccia</h2>
+  <p>Lo schermo è diviso in due:</p>
+  <ul>
+    <li><strong>Pannello a sinistra</strong> — ricerca, risultati (temperatura e comfort), impostazioni di tempo e facciata.</li>
+    <li><strong>Mappa a destra</strong> — dove scegli il punto da analizzare; mostra sole, ombra e orientamento.</li>
+  </ul>
+
+  <h2 id="uso">3. Come si usa (passo-passo)</h2>
+  <ol>
+    <li><strong>Scegli il luogo.</strong> Tre modi: scrivi un indirizzo in alto e premi <strong>«Vai»</strong>;
+        clicca direttamente un punto sulla mappa; oppure premi 🎯 per usare la tua posizione.</li>
+    <li><strong>Imposta il momento.</strong> Nella sezione <em>Crono-Solare</em> scegli il <strong>mese</strong> e l'<strong>ora</strong>
+        con i cursori: la stima e le ombre si aggiornano di conseguenza.</li>
+    <li><strong>Regola la facciata.</strong> In <em>Parametri Facciata</em> puoi correggere l'orientamento della parete
+        e scegliere il tipo di infissi e l'isolamento.</li>
+    <li><strong>Leggi il risultato.</strong> In alto trovi la <strong>temperatura stimata del vano</strong>, il
+        <strong>Comfort Rate</strong> a stelle e le quattro temperature stagionali.</li>
+    <li><strong>Approfondisci.</strong> Tocca il badge del Comfort Rate per aprire il dettaglio (vedi sezione 4).</li>
+  </ol>
+  <div class="callout ok">
+    <strong>Suggerimento:</strong> quando scrivi un indirizzo compaiono dei suggerimenti. Cliccarne uno
+    <em>riempie</em> solo il campo: la ricerca parte comunque solo con il tasto <strong>«Vai»</strong>.
+  </div>
+
+  <h2 id="comfort">4. Il Comfort Rate</h2>
+  <p>È il giudizio di <strong>comfort abitativo stimato</strong>, da 1 a 5 stelle
+  (Critico → Scarso → Discreto → Buono → Eccellente). Tiene conto di orientamento, sole, ostruzioni,
+  infissi, isolamento e del clima reale del luogo.</p>
+  <p>Toccando il badge si apre un dettaglio con:</p>
+  <ul>
+    <li><strong>Comfort inverno / estate</strong> (a mezzogiorno).</li>
+    <li><strong>Infissi</strong> e <strong>isolamento</strong> selezionati.</li>
+    <li><strong>Percepita estate</strong> — quanto "si sente" il caldo tenendo conto dell'umidità e del vento.</li>
+    <li><strong>Umidità media</strong> e <strong>pioggia annua</strong> reali della zona.</li>
+    <li><strong>Esposizione al sole</strong> di oggi su quella facciata e un <strong>consiglio</strong> pratico.</li>
+  </ul>
+
+  <h2 id="facciata">5. Parametri della facciata</h2>
+  <table>
+    <tr><th>Parametro</th><th>Cosa fa</th></tr>
+    <tr><td>Orientamento / Cardinale</td><td>La direzione verso cui guarda la parete. Viene rilevata dagli edifici
+      reali della zona; puoi correggerla con il cursore «Rotazione parete».</td></tr>
+    <tr><td>Schermatura rilevata</td><td>Quanta ombra fanno gli edifici vicini (stimata dai dati OpenStreetMap):
+      più sono numerosi e alti, minore è il sole che arriva.</td></tr>
+    <tr><td>Tipo di Infissi</td><td>Vetro singolo, doppio o triplo: incide su quanto caldo/freddo entra.</td></tr>
+    <tr><td>Isolamento Muri</td><td>Nessuno o cappotto termico: riduce le escursioni tra inverno ed estate.</td></tr>
+  </table>
+  <p>Accanto ad alcune voci c'è l'icona <strong>ⓘ</strong>: passandoci sopra compare una breve spiegazione.</p>
+
+  <h2 id="mappa">6. Mappa: simboli e controlli</h2>
+  <p>La <strong>legenda</strong> in alto a destra spiega i simboli:</p>
+  <table>
+    <tr><th>Simbolo</th><th>Significato</th></tr>
+    <tr><td>Punto verde</td><td>Il punto analizzato.</td></tr>
+    <tr><td>Linea verde</td><td>Orientamento della facciata.</td></tr>
+    <tr><td>Linea tratteggiata gialla</td><td>Direzione del sole in quel momento.</td></tr>
+    <tr><td>Area scura</td><td>Ombra proiettata.</td></tr>
+    <tr><td>Cerchio tratteggiato</td><td>Area di analisi attorno al punto.</td></tr>
+  </table>
+
+  <h2 id="cta">7. Pulsanti e notifiche</h2>
+  <table>
+    <tr><th>Elemento</th><th>Dove</th><th>Cosa fa</th></tr>
+    <tr><td>«Vai»</td><td>accanto alla ricerca</td><td>Avvia la ricerca dell'indirizzo scritto.</td></tr>
+    <tr><td>🎯</td><td>alto-sinistra mappa</td><td>Usa la tua posizione (chiede il permesso al browser).</td></tr>
+    <tr><td>IT | EN</td><td>basso-sinistra mappa</td><td>Cambia la lingua dell'interfaccia.</td></tr>
+    <tr><td>+ / −</td><td>alto-destra mappa</td><td>Zoom della mappa.</td></tr>
+    <tr><td>Badge a stelle</td><td>pannello, sotto la temperatura</td><td>Apre il dettaglio del Comfort Rate.</td></tr>
+  </table>
+  <p><strong>Notifiche che potresti vedere:</strong></p>
+  <ul>
+    <li><strong>«Ops! Ci hai scoperto…»</strong> — hai cliccato fuori dall'Italia: l'app ti riporta a Roma.</li>
+    <li><strong>«🌊 Qui c'è solo acqua!»</strong> — hai cliccato in mare: si analizzano edifici sulla terraferma.</li>
+    <li><strong>Valori che "pulsano"</strong> — l'app sta scaricando i dati reali degli edifici/clima: attendi un istante.</li>
+    <li><strong>Errori di rete</strong> — se un servizio esterno non risponde, l'app usa valori di ripiego e continua a funzionare.</li>
+  </ul>
+
+  <h2 id="lingua">8. Lingua</h2>
+  <p>L'app è in <strong>Italiano ed Inglese</strong>. Alla prima apertura sceglie in automatico la lingua del tuo
+  browser; puoi cambiarla in ogni momento col selettore <strong>IT | EN</strong> in basso a sinistra. La scelta
+  viene ricordata.</p>
+
+  <h2 id="limiti">9. Limiti e note</h2>
+  <ul>
+    <li>Le temperature usano <strong>medie climatiche reali</strong> del luogo (1991–2020); non sono previsioni meteo del giorno.</li>
+    <li>Il modello è una <strong>stima</strong> e <strong>non</strong> sostituisce un APE (Attestato di Prestazione Energetica) certificato.</li>
+    <li>Orientamento e ombreggiamento derivano da <strong>OpenStreetMap</strong>: in zone poco mappate si usano valori neutri.</li>
+    <li>L'app funziona solo sul <strong>territorio italiano</strong> (isole comprese).</li>
+  </ul>
+
+  <footer class="doc">
+    SunTrace — Manuale Utente · Documento generato per uso indicativo. Le stime non costituiscono certificazione ufficiale.
+  </footer>
+
+</div>
+</body>
+</html>
