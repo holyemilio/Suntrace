@@ -1000,7 +1000,18 @@ function startApp() {
   analyzePoint(ROME.lat, ROME.lng, false, true);
 }
 
+/**
+ * Last resort: an unexpected failure should say so rather than leave a dead page.
+ * The message is deliberately literal — it is what you would paste in a report.
+ */
+function initErrorReporting() {
+  const report = (what) => showToast(t('app-error', { detail: String(what).slice(0, 160) }), 'error', 20000);
+  window.addEventListener('error', e => report(e.message || e.error));
+  window.addEventListener('unhandledrejection', e => report(e.reason?.message || e.reason));
+}
+
 export function init() {
+  initErrorReporting();
   setLang(getLang());  // sync <html lang> + persist the resolved language
   applyTranslations(); // fill static UI text (including the mobile overlay below)
   updateMobileBlock();

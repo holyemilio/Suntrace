@@ -324,6 +324,16 @@ test('T35: the Vatican and San Marino count as Italy, not abroad', async (t) => 
   }
 });
 
+test('T36: an unexpected failure surfaces as a message instead of a dead page', async (t) => {
+  const page = await openApp(t);
+  await page.evaluate(() => { throw new Error('guasto simulato'); }).catch(() => {});
+  await page.evaluate(() => setTimeout(() => { throw new Error('guasto simulato'); }, 0));
+  await page.waitForSelector('.map-error-toast', { state: 'visible' });
+  const toast = await text(page, 'map-error-toast');
+  assert.match(toast, /errore imprevisto/i, 'the user is told something went wrong');
+  assert.match(toast, /guasto simulato/, 'and gets the detail worth reporting');
+});
+
 // ─── T27 / T28 / T29 — floor, shadow ──────────────────────────────────────────
 
 test('T28/T29: the direct-sun readout reflects the sun and the buildings', async (t) => {

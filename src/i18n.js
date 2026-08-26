@@ -25,6 +25,7 @@ const STRINGS = {
     'search-neterror': '⚠️ Errore di rete — verifica la connessione',
     'search-notfound': '⚠️ Indirizzo non trovato. Prova con un nome diverso.',
     'search-neterror-toast': '⚠️ Errore di rete. Verifica la connessione.',
+    'app-error': '⚠️ Si è verificato un errore imprevisto.\n{detail}',
 
     // Output / comfort
     'output-initial': 'Stima temperatura vano',
@@ -194,6 +195,7 @@ const STRINGS = {
     'search-neterror': '⚠️ Network error — check your connection',
     'search-notfound': '⚠️ Address not found. Try a different name.',
     'search-neterror-toast': '⚠️ Network error. Check your connection.',
+    'app-error': '⚠️ Something went wrong.\n{detail}',
 
     'output-initial': 'Room temperature estimate',
     'comfort-estimated': 'Estimated Comfort Rate',
