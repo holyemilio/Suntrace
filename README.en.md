@@ -103,6 +103,19 @@ npm test
 
 **Expected output**: 59 pass, 0 fail.
 
+### End-to-end tests (real browser)
+
+These drive the app in a headless browser with the external APIs stubbed for
+deterministic runs. They cover testbook cases T01, T03–T06, T11, T14–T15,
+T17–T18, T22, T24–T25, T27–T29.
+
+```bash
+npx playwright install chromium   # once (~95 MB)
+npm run test:e2e
+```
+
+**Expected output**: 13 pass, 0 fail.
+
 ---
 
 ## 🌍 Deploy to GitHub Pages
@@ -129,7 +142,8 @@ SunTrace/
 ├── tests/
 │   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
 │   ├── climate.test.js # 20 tests — thermal model and Comfort Rate
-│   └── shadow.test.js  # 16 tests — facade geometry and shadows
+│   ├── shadow.test.js  # 16 tests — facade geometry and shadows
+│   └── e2e/app.e2e.js  # 13 end-to-end tests (Playwright, headless browser)
 ├── docs/
 │   └── case-study.md   # Technical case study
 ├── README.md           # Italian
