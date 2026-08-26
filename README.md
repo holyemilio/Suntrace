@@ -7,7 +7,7 @@
 # SunTrace — Simulatore Microclimatico Urbano
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-23%20pass-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-59%20pass-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 
 **SunTrace** è un simulatore microclimatico urbano che analizza l'esposizione solare di facciate e locali in qualsiasi punto d'Italia. Seleziona un punto sulla mappa, scegli mese e ora, e ottieni in tempo reale: posizione solare corretta (Meeus/SPA), medie climatiche reali del luogo (Open-Meteo), stima termica stagionale e un **Comfort Rate** a stelle con consigli. Interfaccia bilingue **IT/EN**.
@@ -31,7 +31,7 @@
 | **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia; la ricerca parte solo col pulsante «Vai». |
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero dipendenze di runtime** | Solo Leaflet (CDN) + API pubbliche (Nominatim, Open-Meteo). Nessun bundler. |
-| **23 unit test** | `node --test` nativo, oracle SunCalc, copertura DST + anni bisestili + edge cases. |
+| **59 unit test** | `node --test` nativo: motore solare (oracle SunCalc, DST, bisestili), modello termico/Comfort Rate e geometria delle ombre. |
 
 ---
 
@@ -89,16 +89,19 @@ python3 -m http.server 8000
 
 ## 🧪 Test
 
+> Serve **Node.js 18+**. Se non ce l'hai, il modo più semplice è `brew install node`,
+> oppure scarica il pacchetto ufficiale da [nodejs.org](https://nodejs.org).
+
 ```bash
 # Installa suncalc (solo devDependency per i test)
 npm install
 
-# Esegui i 23 unit test (Node 18+)
+# Esegui i 59 unit test (Node 18+)
 npm test
 # oppure: node --test tests/solar.test.js
 ```
 
-**Output atteso**: 23 pass, 0 fail.
+**Output atteso**: 59 pass, 0 fail.
 
 ---
 
@@ -119,11 +122,14 @@ SunTrace/
 ├── src/
 │   ├── solar.js        # Motore astronomico puro (Meeus/SPA) — senza DOM
 │   ├── climate.js      # Modello termico stagionale e Comfort Rate
+│   ├── shadow.js       # Geometria: orientamento facciata e ombre (line-of-sight)
 │   ├── ui.js           # Logica interfaccia, Leaflet, modal, geofencing
 │   ├── i18n.js         # Dizionario IT/EN e motore di traduzione
 │   └── styles.css      # Stili (mobile-first, WCAG AA)
 ├── tests/
-│   └── solar.test.js   # 23 unit test (node --test, oracle SunCalc)
+│   ├── solar.test.js   # 23 test — motore astronomico (oracle SunCalc)
+│   ├── climate.test.js # 20 test — modello termico e Comfort Rate
+│   └── shadow.test.js  # 16 test — geometria facciate e ombre
 ├── docs/
 │   └── case-study.md   # Case study tecnico
 ├── README.md
@@ -150,7 +156,7 @@ L'interfaccia usa Leaflet (CDN) per la mappa e l'API pubblica Nominatim per il g
 ## ⚠️ Limitazioni
 
 - Le temperature usano le **medie climatiche reali** del punto selezionato (Open-Meteo, normali 1991–2020), con la tabella di Roma solo come *fallback* offline in caso di errore di rete. Il modello termico dell'edificio resta però **euristico** e non sostituisce un APE (Attestato di Prestazione Energetica) certificato.
-- Orientamento della facciata e ostruzione solare sono **derivati dagli edifici reali di OpenStreetMap** (via Overpass): l'orientamento dal muro più vicino, l'ostruzione dalla densità/altezza degli edifici attorno. In assenza di dati OSM o di rete, si usa un default neutro (Sud, nessuna ostruzione).
+- Orientamento e ombre sono **calcolati sugli edifici reali di OpenStreetMap** (via Overpass): l'orientamento dal muro più vicino, l'ombra tracciando un raggio verso il sole e verificando se un tetto lo intercetta, all'altezza del piano scelto. Le altezze OSM spesso mancano: in tal caso si assumono 3 piani (9 m), e si considerano solo gli edifici entro 90 m.
 - Il modello non include: massa termica, infiltrazioni, apporti interni, ponti termici.
 
 ---

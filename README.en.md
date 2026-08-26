@@ -7,7 +7,7 @@
 # SunTrace — Urban Microclimate Simulator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-23%20pass-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-59%20pass-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 
 **SunTrace** is an urban microclimate simulator that analyses the solar exposure of facades and rooms anywhere in Italy. Pick a point on the map, choose a month and hour, and get in real time: an accurate solar position (Meeus/SPA), real local climate normals (Open-Meteo), a seasonal thermal estimate and a star-based **Comfort Rate** with tips. Bilingual **IT/EN** interface.
@@ -31,7 +31,7 @@
 | **Nominatim autocomplete** | 420 ms debounce, restricted to Italy; search runs only via the “Go” button. |
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero runtime dependencies** | Only Leaflet (CDN) + public APIs (Nominatim, Open-Meteo). No bundler. |
-| **23 unit tests** | Native `node --test`, SunCalc oracle, DST + leap-year + edge-case coverage. |
+| **59 unit tests** | Native `node --test`: solar engine (SunCalc oracle, DST, leap years), thermal model / Comfort Rate, and shadow geometry. |
 
 ---
 
@@ -89,16 +89,19 @@ python3 -m http.server 8000
 
 ## 🧪 Tests
 
+> Requires **Node.js 18+**. If you don't have it, `brew install node` is the
+> easiest route, or grab the official package from [nodejs.org](https://nodejs.org).
+
 ```bash
 # Install suncalc (test-only devDependency)
 npm install
 
-# Run the 23 unit tests (Node 18+)
+# Run the 59 unit tests (Node 18+)
 npm test
 # or: node --test tests/solar.test.js
 ```
 
-**Expected output**: 23 pass, 0 fail.
+**Expected output**: 59 pass, 0 fail.
 
 ---
 
@@ -119,11 +122,14 @@ SunTrace/
 ├── src/
 │   ├── solar.js        # Pure astronomical engine (Meeus/SPA) — no DOM
 │   ├── climate.js      # Seasonal thermal model and Comfort Rate
+│   ├── shadow.js       # Geometry: facade orientation and shadows (line-of-sight)
 │   ├── ui.js           # UI logic, Leaflet, modal, geofencing
 │   ├── i18n.js         # IT/EN dictionary and translation engine
 │   └── styles.css      # Styles (mobile-first, WCAG AA)
 ├── tests/
-│   └── solar.test.js   # 23 unit tests (node --test, SunCalc oracle)
+│   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
+│   ├── climate.test.js # 20 tests — thermal model and Comfort Rate
+│   └── shadow.test.js  # 16 tests — facade geometry and shadows
 ├── docs/
 │   └── case-study.md   # Technical case study
 ├── README.md           # Italian
@@ -151,7 +157,7 @@ The interface uses Leaflet (CDN) for the map and the public Nominatim API for ge
 ## ⚠️ Limitations
 
 - Temperatures use the **real climate normals** of the selected point (Open-Meteo, 1991–2020), with the Rome table only as an offline *fallback* on network errors. The building's thermal model is however **heuristic** and is not a certified energy performance assessment (APE).
-- Facade orientation and solar obstruction are **derived from real OpenStreetMap buildings** (via Overpass): orientation from the nearest wall, obstruction from the density/height of surrounding buildings. With no OSM data or network, a neutral default is used (South, no obstruction).
+- Orientation and shadows are **computed on real OpenStreetMap buildings** (via Overpass): orientation from the nearest wall, shadow by casting a ray toward the sun and checking whether a roof intercepts it at the selected floor height. OSM heights are often missing: 3 storeys (9 m) are assumed, and only buildings within 90 m are considered.
 - The model does not include: thermal mass, infiltration, internal gains, thermal bridges.
 
 ---
