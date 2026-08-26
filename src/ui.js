@@ -260,7 +260,13 @@ function loadClimateFor(lat, lng) {
 
 // ─── OSM building context (real facade orientation + obstruction) ─────────────
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+// The main Overpass instance is a heavily used free service that rate-limits and
+// refuses connections under load; fall through to the community mirrors.
+const OVERPASS_URLS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
 
 // Called for a validated in-Italy point: fetch real climate + building context.
 function onValidLand(lat, lng) {
@@ -308,13 +314,7 @@ async function fetchBuildingContext(lat, lng) {
   } catch { /* corrupted cache — refetch */ }
 
   const q = `[out:json][timeout:20];(way["building"](around:90,${lat},${lng});relation["building"](around:90,${lat},${lng}););out geom;`;
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
-    body: 'data=' + encodeURIComponent(q),
-  });
-  if (!res.ok) throw new Error('Overpass ' + res.status);
-  const data = await res.json();
+  const data = await overpassQuery(q);
 
   const raw = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
   let ctx = null;
@@ -324,6 +324,25 @@ async function fetchBuildingContext(lat, lng) {
   }
   try { localStorage.setItem(cacheKey, JSON.stringify(ctx)); } catch { /* storage unavailable */ }
   return ctx;
+}
+
+/** Ask each Overpass instance in turn; the first one that answers wins. */
+async function overpassQuery(q) {
+  let lastError;
+  for (const url of OVERPASS_URLS) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+        body: 'data=' + encodeURIComponent(q),
+      });
+      if (!res.ok) { lastError = new Error('Overpass ' + res.status); continue; }
+      return await res.json();
+    } catch (err) {
+      lastError = err; // network refused this mirror — try the next one
+    }
+  }
+  throw lastError ?? new Error('Overpass unreachable');
 }
 
 // Building height in metres: OSM `height` tag, else levels × 3 m, default 3 storeys.

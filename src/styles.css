@@ -598,14 +598,14 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
 /* ─── facade compass (bottom-right of the map) ────────────────────────────── */
 .compass {
   position: absolute;
-  bottom: 30px;
+  bottom: 26px;
   right: 14px;
   z-index: 1100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 10px 8px;
+  gap: 4px;
+  padding: 8px 8px 6px;
   background: var(--glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -615,8 +615,8 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
 
 .compass-dial {
   position: relative;
-  width: 132px;
-  height: 132px;
+  width: 104px;
+  height: 104px;
   border-radius: 50%;
   border: 1px dashed var(--border-strong);
   pointer-events: none;   /* only the direction buttons are clickable */
@@ -625,8 +625,8 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
 /* the eight direction buttons, laid out around the rim */
 .compass-dir {
   position: absolute;
-  width: 30px;
-  height: 22px;
+  width: 26px;
+  height: 18px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -636,7 +636,7 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   border-radius: 999px;
   color: var(--text-muted);
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   font-weight: 700;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
@@ -651,8 +651,8 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   top: 50%;
   left: 50%;
   width: 3px;
-  height: 40px;
-  margin: -40px 0 0 -1.5px;
+  height: 30px;
+  margin: -30px 0 0 -1.5px;
   transform-origin: 50% 100%;
   border-radius: 2px;
   background: linear-gradient(to top, var(--green), rgba(34, 197, 94, 0.25));
@@ -682,18 +682,18 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   justify-content: center;
   font-size: 0.8rem;
   color: var(--accent);
-  transform: rotate(var(--sun-a, 0deg)) translateY(-64px) rotate(calc(-1 * var(--sun-a, 0deg)));
+  transform: rotate(var(--sun-a, 0deg)) translateY(-50px) rotate(calc(-1 * var(--sun-a, 0deg)));
   transition: transform 0.35s ease, opacity 0.2s;
 }
 .compass-sun.hidden { opacity: 0; }
 .compass-sun.shaded { color: var(--text-muted); opacity: 0.55; }
 
 .compass-state {
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-size: 0.62rem;
+  font-weight: 600;
   color: var(--text);
   text-align: center;
-  max-width: 140px;
+  max-width: 112px;
   line-height: 1.3;
 }
 
@@ -1088,18 +1088,13 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   :root { --sidebar-width: 380px; }
 }
 
-/* ─── property choices (radio cards with emoji) ───────────────────────────── */
-.card-hint {
-  font-size: 0.72rem;
-  line-height: 1.45;
-  color: var(--text-muted);
-  background: var(--accent-soft);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
+/* ─── property choices: one row each, label left, emoji right ─────────────── */
+.choice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
-
-.choice-row { display: flex; flex-direction: column; gap: 6px; }
 .choice-label {
   font-size: 0.68rem;
   font-weight: 700;
@@ -1107,21 +1102,19 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.choice-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.choice-group { display: flex; gap: 6px; }
 
 .choice {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 4px;
-  padding: 9px 4px 8px;
+  justify-content: center;
+  width: 46px;
+  height: 34px;
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  text-align: center;
   transition: border-color 0.15s, background 0.15s, transform 0.05s;
 }
 .choice:hover { border-color: var(--text-muted); }
@@ -1138,20 +1131,67 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   opacity: 0;
   cursor: pointer;
 }
-.choice-emoji { font-size: 1.05rem; line-height: 1.1; }
+.choice-emoji { font-size: 1rem; line-height: 1; }
+
+/* The description is the tooltip: it shows on hover or keyboard focus and stays
+   in the accessibility tree the rest of the time. */
 .choice-text {
-  font-size: 0.66rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  line-height: 1.25;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background-color: #0d1117;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  z-index: 1200;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
 }
+.choice-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: #0d1117;
+}
+.choice:hover .choice-text,
+.choice:has(input:focus-visible) .choice-text { opacity: 1; visibility: visible; }
 
 .choice:has(input:checked) {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.choice:has(input:checked) .choice-text { color: var(--text-strong); }
 .choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ─── placement hint, small, on the map ───────────────────────────────────── */
+.map-hint {
+  position: absolute;
+  top: 62px;
+  left: 14px;
+  z-index: 1100;
+  max-width: 250px;
+  padding: 6px 9px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  line-height: 1.35;
+}
+@media (max-width: 768px) { .map-hint { display: none; } }
 
 /* ─── mobile warning overlay ──────────────────────────────────────────────── */
 .mobile-warning-overlay {

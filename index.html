@@ -201,8 +201,6 @@
         <strong class="value" id="val-manual-obs">--</strong>
       </div>
 
-      <p class="card-hint" data-i18n="placement-hint">💡 Posiziona il punto in linea con il muro da analizzare: né dentro l'edificio né in mezzo alla strada, altrimenti la lettura non è attendibile.</p>
-
       <div class="choice-row">
         <span class="choice-label" data-i18n="facade-windows">Tipo di Infissi</span>
         <div class="choice-group" role="radiogroup" data-i18n-aria="windows-select-aria" aria-label="Seleziona tipo di infissi">
@@ -306,6 +304,8 @@
       </ul>
     </div>
 
+    <p id="map-hint" class="map-hint" data-i18n="placement-hint">💡 Posiziona il punto in linea con il muro da analizzare: né dentro l'edificio né in mezzo alla strada, altrimenti la lettura non è attendibile.</p>
+
     <!-- Facade compass: pick which wall you are analysing, and see at a glance
          where the sun is and whether it reaches that wall. -->
     <div id="compass" class="compass" role="group" data-i18n-aria="compass-aria" aria-label="Orientamento della facciata">
@@ -313,14 +313,14 @@
         <div class="compass-needle" id="compass-needle"></div>
         <div class="compass-sun" id="compass-sun" aria-hidden="true">☀</div>
         <div class="compass-hub" id="compass-hub" aria-hidden="true"></div>
-        <button type="button" class="compass-dir" data-az="0" style="left:51.0px;top:3.0px" data-i18n="dir-n">N</button>
-        <button type="button" class="compass-dir" data-az="45" style="left:87.8px;top:18.2px" data-i18n="dir-ne">NE</button>
-        <button type="button" class="compass-dir" data-az="90" style="left:103.0px;top:55.0px" data-i18n="dir-e">E</button>
-        <button type="button" class="compass-dir" data-az="135" style="left:87.8px;top:91.8px" data-i18n="dir-se">SE</button>
-        <button type="button" class="compass-dir" data-az="180" style="left:51.0px;top:107.0px" data-i18n="dir-s">S</button>
-        <button type="button" class="compass-dir" data-az="225" style="left:14.2px;top:91.8px" data-i18n="dir-sw">SO</button>
-        <button type="button" class="compass-dir" data-az="270" style="left:-1.0px;top:55.0px" data-i18n="dir-w">O</button>
-        <button type="button" class="compass-dir" data-az="315" style="left:14.2px;top:18.2px" data-i18n="dir-nw">NO</button>
+        <button type="button" class="compass-dir" data-az="0" style="left:39.0px;top:3.0px" data-i18n="dir-n">N</button>
+        <button type="button" class="compass-dir" data-az="45" style="left:67.3px;top:14.7px" data-i18n="dir-ne">NE</button>
+        <button type="button" class="compass-dir" data-az="90" style="left:79.0px;top:43.0px" data-i18n="dir-e">E</button>
+        <button type="button" class="compass-dir" data-az="135" style="left:67.3px;top:71.3px" data-i18n="dir-se">SE</button>
+        <button type="button" class="compass-dir" data-az="180" style="left:39.0px;top:83.0px" data-i18n="dir-s">S</button>
+        <button type="button" class="compass-dir" data-az="225" style="left:10.7px;top:71.3px" data-i18n="dir-sw">SO</button>
+        <button type="button" class="compass-dir" data-az="270" style="left:-1.0px;top:43.0px" data-i18n="dir-w">O</button>
+        <button type="button" class="compass-dir" data-az="315" style="left:10.7px;top:14.7px" data-i18n="dir-nw">NO</button>
       </div>
       <p class="compass-state" id="compass-state">--</p>
     </div>
