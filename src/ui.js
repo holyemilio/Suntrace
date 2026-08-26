@@ -41,6 +41,10 @@ const DEFAULT_YEAR = 2026;
 // Bounding box covering Italy including islands (Sicily, Sardinia, Lampedusa)
 const ITALY_BOUNDS = { latMin: 35.4, latMax: 47.1, lonMin: 6.6, lonMax: 18.6 };
 
+// Vatican City and San Marino are enclaves surrounded by Italy: Nominatim gives
+// them their own country code, but a click there is not "abroad".
+const IN_ITALY_CODES = new Set(['it', 'va', 'sm']);
+
 // Open-Meteo climate normals (1991-2020, EC-Earth3P-HR). "monthly" aggregation
 // param returns an empty payload on this API — verified against the live
 // endpoint — so we pull daily means and aggregate to 12 monthly values ourselves.
@@ -225,7 +229,7 @@ async function classifyLocation(lat, lng) {
   const res = await fetch(url);
   const data = await res.json();
   const cc = data && data.address ? data.address.country_code : null;
-  if (cc === 'it') return 'it-land';
+  if (cc && IN_ITALY_CODES.has(cc)) return 'it-land';
   if (cc) return 'foreign';               // some other country's land
   return isOutsideBox(lat, lng) ? 'foreign' : 'it-water';
 }

@@ -303,6 +303,27 @@ test('T11: a point outside Italy is rejected and recentred on Rome', async (t) =
   await page.waitForFunction(() => document.getElementById('coord-lat').textContent.startsWith('41.90'));
 });
 
+test('T35: the Vatican and San Marino count as Italy, not abroad', async (t) => {
+  for (const [nome, cc, lat, lon] of [['Vatican', 'va', '41.9022', '12.4539'],
+                                      ['San Marino', 'sm', '43.9356', '12.4473']]) {
+    const page = await openApp(t, {
+      searchResult: { display_name: nome, lat, lon },
+    });
+    await page.route('**/nominatim.openstreetmap.org/reverse**', r =>
+      r.fulfill({ json: { address: { country_code: cc } } }));
+
+    await page.locator('#search-input').fill(nome);
+    await page.locator('#search-btn').click();
+    await page.waitForFunction(la => document.getElementById('coord-lat').textContent.startsWith(la),
+      lat.slice(0, 5));
+
+    assert.equal(await page.locator('#map-error-toast').isVisible(), false,
+      `${nome} (${cc}) must not be rejected as foreign`);
+    assert.ok((await text(page, 'coord-lat')).startsWith(lat.slice(0, 5)),
+      'the analysis stays on the clicked point');
+  }
+});
+
 // ─── T27 / T28 / T29 — floor, shadow ──────────────────────────────────────────
 
 test('T28/T29: the direct-sun readout reflects the sun and the buildings', async (t) => {
