@@ -24,13 +24,14 @@
 | **Real climate data (Open-Meteo)** | 1991–2020 monthly normals for the clicked point, cached in `localStorage`, with a Rome fallback. |
 | **Atmospheric factors** | Real humidity and wind → a *feels-like* temperature in the Comfort Rate; humidity and annual rainfall in the detail. |
 | **Comfort Rate** | 5-star index (orientation, sun, obstructions, glazing, insulation) with a detail view, sun exposure and tips. |
+| **Facade compass** | A circular selector on the map with the eight directions: shows the facade needle, where the sun is, and whether it actually reaches the wall. |
 | **Seasonal thermal estimate** | Sinusoidal diurnal cycle with solar gain on the facade; modifiers for glazing and insulation. |
 | **Italy geofencing** | Reverse geocoding distinguishes Italian land, national waters and abroad, each with its own message. |
-| **Real orientation (OSM)** | Facade and obstruction derived from nearby OpenStreetMap buildings (Overpass), cached, with a neutral fallback. |
+| **Real shadows (OSM)** | Facade from the nearest wall, and shadows cast by ray-tracing to the sun through nearby buildings from your floor height. |
 | **Bilingual IT/EN** | In-app switcher, automatic browser-language detection, remembered choice. |
 | **Nominatim autocomplete** | 420 ms debounce, restricted to Italy; search runs only via the “Go” button. |
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
-| **Zero runtime dependencies** | Only Leaflet (CDN) + public APIs (Nominatim, Open-Meteo). No bundler. |
+| **Zero runtime dependencies** | Only Leaflet (CDN) + key-free public APIs: OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
 | **59 unit tests** | Native `node --test`: solar engine (SunCalc oracle, DST, leap years), thermal model / Comfort Rate, and shadow geometry. |
 
 ---

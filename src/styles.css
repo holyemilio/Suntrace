@@ -594,6 +594,110 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   color: var(--accent-ink);
 }
 
+/* ─── facade compass (bottom-right of the map) ────────────────────────────── */
+.compass {
+  position: absolute;
+  bottom: 30px;
+  right: 14px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 10px 8px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.compass-dial {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-strong);
+  pointer-events: none;   /* only the direction buttons are clickable */
+}
+
+/* the eight direction buttons, laid out around the rim */
+.compass-dir {
+  position: absolute;
+  width: 30px;
+  height: 22px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  pointer-events: auto;
+}
+.compass-dir:hover { color: var(--text-strong); background: var(--panel-2); }
+.compass-dir.active { background: var(--accent); color: var(--accent-ink); }
+
+/* needle: points at the exact facade azimuth (0° = north = up) */
+.compass-needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 40px;
+  margin: -40px 0 0 -1.5px;
+  transform-origin: 50% 100%;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--green), rgba(34, 197, 94, 0.25));
+  transform: rotate(0deg);
+  transition: transform 0.35s ease;
+}
+.compass-hub {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+/* sun marker: sits on the rim at the solar azimuth */
+.compass-sun {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--accent);
+  transform: rotate(var(--sun-a, 0deg)) translateY(-64px) rotate(calc(-1 * var(--sun-a, 0deg)));
+  transition: transform 0.35s ease, opacity 0.2s;
+}
+.compass-sun.hidden { opacity: 0; }
+.compass-sun.shaded { color: var(--text-muted); opacity: 0.55; }
+
+.compass-state {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  max-width: 140px;
+  line-height: 1.3;
+}
+
+@media (max-width: 768px) { .compass { display: none; } }
+
 /* ─── floor selector (top-center of the map) ──────────────────────────────── */
 .floor-bar {
   position: absolute;
@@ -983,36 +1087,70 @@ input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px va
   :root { --sidebar-width: 380px; }
 }
 
-/* ─── property selects styling ───────────────────────────────────────────── */
-.select-row {
-  margin-top: 12px;
+/* ─── property choices (radio cards with emoji) ───────────────────────────── */
+.card-hint {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.choice-row { display: flex; flex-direction: column; gap: 6px; }
+.choice-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.choice-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.choice {
+  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   gap: 4px;
-}
-.select-row span {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-.property-select {
-  width: 100%;
-  padding: 9px 12px;
-  background-color: var(--bg);
+  padding: 9px 4px 8px;
+  background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 0.85rem;
-  font-family: inherit;
   cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, transform 0.05s;
 }
-.property-select:focus {
+.choice:hover { border-color: var(--text-muted); }
+.choice:active { transform: translateY(1px); }
+
+/* The radio covers the whole card: invisible, but a real target for the mouse,
+   the keyboard and screen readers. */
+.choice input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.choice-emoji { font-size: 1.05rem; line-height: 1.1; }
+.choice-text {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.choice:has(input:checked) {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--accent-soft);
 }
-.property-select option { background: var(--panel-2); color: var(--text); }
+.choice:has(input:checked) .choice-text { color: var(--text-strong); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ─── mobile warning overlay ──────────────────────────────────────────────── */
 .mobile-warning-overlay {

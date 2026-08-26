@@ -124,14 +124,15 @@ function getSelectedLocalHour() { return parseInt($('hour-slider').value); }
 // ─── map initialisation ───────────────────────────────────────────────────────
 
 function initMap() {
-  map = L.map('map', { zoomControl: false, maxZoom: 20 }).setView([41.9028, 12.4964], 17);
+  map = L.map('map', { zoomControl: false, maxZoom: 19 }).setView([41.9028, 12.4964], 17);
   L.control.zoom({ position: 'topright' }).addTo(map);
+  // Standard OpenStreetMap tiles: free, no API key, and legible — CARTO's
+  // basemaps now stamp "API KEY REQUIRED" over every style without a key.
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
-      attribution: '©<a href="https://openstreetmap.org">OSM</a> ©<a href="https://carto.com">CARTO</a>',
-      maxZoom: 20,          // CARTO dark serves tiles up to z20 — one extra step of zoom
-      maxNativeZoom: 20,
+      attribution: '©<a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,          // the OSM tile server serves up to z19
     }
   ).addTo(map);
 
@@ -274,7 +275,7 @@ function onValidLand(lat, lng) {
  */
 // Pulse the detected orientation/shading readouts while OSM is being queried.
 function setBuildingLoading(on) {
-  ['telemetry-cardinal', 'val-manual-obs', 'val-manual-angle'].forEach(id => {
+  ['telemetry-cardinal', 'val-manual-obs'].forEach(id => {
     const el = $(id);
     if (el) el.classList.toggle('loading-pulse', on);
   });
@@ -289,11 +290,7 @@ async function detectBuildingContext(lat, lng) {
   setBuildingLoading(false);
   if (!ctx) return;                                              // no building nearby → keep the last values
   currentScan.buildings = ctx.buildings;                        // OSM footprints + heights, for shadow casting
-  if (!currentScan.userAdjusted) {
-    currentScan.angleDeg = ctx.facadeAz;
-    const slider = $('manual-angle-slider');
-    if (slider) slider.value = ctx.facadeAz;
-  }
+  if (!currentScan.userAdjusted) currentScan.angleDeg = ctx.facadeAz;
   refreshUI();
 }
 
@@ -428,10 +425,6 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
   climateExtra = null;    // humidity/wind/precip reset with the point
 
-  if (!isDrag) {
-    $('manual-angle-slider').value = angleDeg;
-  }
-
   refreshUI();
 
   // Trusted internal repositioning (e.g. back to Rome) skips the geofence.
@@ -465,8 +458,8 @@ function refreshUI() {
   const elevClamped = Math.max(0, elevation);
 
   // Property parameters
-  const windowsType = $('windows-select')?.value ?? 'double';
-  const insulationType = $('insulation-select')?.value ?? 'none';
+  const windowsType = checkedValue('windows', 'double');
+  const insulationType = checkedValue('insulation', 'none');
 
   // Real shadow: cast a ray to the sun through the nearby OSM buildings from the
   // observer's floor height. When blocked, only diffuse sky light reaches the wall.
@@ -568,9 +561,9 @@ function refreshUI() {
   else if (inShadow) sunKey = 'sun-shadow';
   else sunKey = 'sun-yes';
   setText('val-sun-direct', t(sunKey));
+  updateCompass(angleDeg, azimuth, hasSun, sunKey);
 
   // Facade info
-  setText('val-manual-angle', `${angleDeg}°`);
   setText('val-manual-obs', t(obstructionLabel(kOmbra)));
   setText('telemetry-cardinal', `${angleDeg}° (${t(cardinalLabel(angleDeg))})`);
 
@@ -592,8 +585,15 @@ function sunExposureNote(hours) {
   return t('exp-none');
 }
 
-function selectedOptionLabel(selectId, fallback) {
-  return $(selectId)?.selectedOptions?.[0]?.textContent ?? fallback;
+/** Value of the checked radio in a group, or a fallback. */
+function checkedValue(name, fallback) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value ?? fallback;
+}
+
+/** Visible label of the checked radio in a group. */
+function checkedLabel(name, fallback) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el?.parentElement?.querySelector('.choice-text')?.textContent ?? fallback;
 }
 
 function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
@@ -612,8 +612,8 @@ function openKPIModal() {
 
   setText('kpi-winter-temp', seasonal.winter.toFixed(1) + '°C');
   setText('kpi-summer-temp', seasonal.summer.toFixed(1) + '°C');
-  setText('kpi-infissi-selected', selectedOptionLabel('windows-select', '--'));
-  setText('kpi-isolamento-selected', selectedOptionLabel('insulation-select', '--'));
+  setText('kpi-infissi-selected', checkedLabel('windows', '--'));
+  setText('kpi-isolamento-selected', checkedLabel('insulation', '--'));
 
   // Real-climate strip (humidity/wind → feels-like, plus rainfall)
   setText('kpi-feels-summer', feels ? feels.summer.toFixed(1) + '°C' : '—');
@@ -645,20 +645,50 @@ function initSliders() {
 
 // ─── facade orientation slider ────────────────────────────────────────────────
 
-function initFacadeSlider() {
-  $('manual-angle-slider').addEventListener('input', () => {
-    const az = parseInt($('manual-angle-slider').value);
-    currentScan.angleDeg = az;
-    currentScan.userAdjusted = true;
-    refreshUI();
+function initCompass() {
+  document.querySelectorAll('.compass-dir').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentScan.angleDeg = parseInt(btn.dataset.az, 10);
+      currentScan.userAdjusted = true; // an explicit choice is never overwritten by OSM
+      refreshUI();
+    });
   });
+}
+
+/**
+ * Point the needle at the facade, place the sun on the rim and say, in one line,
+ * whether that wall is actually being hit right now.
+ * @param {number} facadeAz  facade azimuth (deg)
+ * @param {number} sunAz     solar azimuth (deg)
+ * @param {boolean} sunUp    sun above the horizon
+ * @param {string} stateKey  i18n key of the direct-sun verdict
+ */
+function updateCompass(facadeAz, sunAz, sunUp, stateKey) {
+  const needle = $('compass-needle');
+  if (needle) needle.style.transform = `rotate(${facadeAz}deg)`;
+
+  const sun = $('compass-sun');
+  if (sun) {
+    sun.style.setProperty('--sun-a', `${sunAz}deg`);
+    sun.classList.toggle('hidden', !sunUp);
+    sun.classList.toggle('shaded', stateKey !== 'sun-yes');
+  }
+
+  // Highlight the direction closest to the facade (OSM may report any angle).
+  const nearest = (Math.round(facadeAz / 45) * 45) % 360;
+  document.querySelectorAll('.compass-dir').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.az, 10) === nearest);
+  });
+
+  setText('compass-state', t(stateKey));
 }
 
 // ─── property selectors (infissi / isolamento) ────────────────────────────────
 
 function initPropertySelects() {
-  $('windows-select')?.addEventListener('change', () => { if (currentScan) refreshUI(); });
-  $('insulation-select')?.addEventListener('change', () => { if (currentScan) refreshUI(); });
+  document.querySelectorAll('input[name="windows"], input[name="insulation"]').forEach(radio => {
+    radio.addEventListener('change', () => { if (currentScan) refreshUI(); });
+  });
 }
 
 // ─── address search ───────────────────────────────────────────────────────────
@@ -910,7 +940,7 @@ export function init() {
 
   initMap();
   initSliders();
-  initFacadeSlider();
+  initCompass();
   initPropertySelects();
   initSearchAutocomplete();
   initGeolocation();

@@ -145,7 +145,7 @@ test('T17: single glazing changes the seasonal figures', async (t) => {
   // sun, so the glazing modifier has something to act on.
   const page = await openApp(t, { buildings: false });
   const before = await text(page, 'val-q-summer');
-  await page.selectOption('#windows-select', 'single');
+  await page.locator('input[name="windows"][value="single"]').check();
   await page.waitForFunction(b => document.getElementById('val-q-summer').textContent !== b, before);
   assert.notEqual(await text(page, 'val-q-summer'), before);
 });
@@ -155,7 +155,7 @@ test('T18: insulation warms winter and cools summer', async (t) => {
   const winterBefore = parseFloat(await text(page, 'val-q-winter'));
   const summerBefore = parseFloat(await text(page, 'val-q-summer'));
 
-  await page.selectOption('#insulation-select', 'coat');
+  await page.locator('input[name="insulation"][value="coat"]').check();
   await page.waitForFunction(w => document.getElementById('val-q-winter').textContent !== w,
     `${winterBefore.toFixed(1)}°C`);
 
@@ -164,6 +164,26 @@ test('T18: insulation warms winter and cools summer', async (t) => {
 });
 
 // ─── T22 — Comfort Rate detail ────────────────────────────────────────────────
+
+test('T32: the choice cards are single-select and the fortress tier is the strongest', async (t) => {
+  const page = await openApp(t, { buildings: false });
+  const bareWinter = parseFloat(await text(page, 'val-q-winter'));
+
+  await page.locator('input[name="insulation"][value="coat"]').check();
+  await page.waitForFunction(w => parseFloat(document.getElementById('val-q-winter').textContent) !== w, bareWinter);
+  const coatWinter = parseFloat(await text(page, 'val-q-winter'));
+
+  await page.locator('input[name="insulation"][value="fortress"]').check();
+  await page.waitForFunction(w => parseFloat(document.getElementById('val-q-winter').textContent) !== w, coatWinter);
+  const fortWinter = parseFloat(await text(page, 'val-q-winter'));
+
+  assert.ok(fortWinter > coatWinter && coatWinter > bareWinter,
+    `winter should rise with insulation: ${bareWinter} < ${coatWinter} < ${fortWinter}`);
+  assert.equal(await page.locator('input[name="insulation"]:checked').count(), 1,
+    'only one wall option can be selected');
+  assert.equal(await page.locator('input[name="windows"]:checked').count(), 1,
+    'only one glazing option can be selected');
+});
 
 test('T22: the Comfort Rate badge opens a populated detail modal', async (t) => {
   const page = await openApp(t);
@@ -266,6 +286,37 @@ test('T28/T29: the direct-sun readout reflects the sun and the buildings', async
   await page.locator('#hour-slider').fill('15');
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '15:00');
   assert.match(await text(page, 'val-sun-direct'), /ombra/, 'low winter sun in a courtyard → shadow');
+});
+
+test('T16: the compass sets the facade and highlights the chosen direction', async (t) => {
+  const page = await openApp(t, { buildings: false });
+
+  await page.locator('.compass-dir[data-az="90"]').click();   // East
+  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Est'));
+  assert.match(await text(page, 'telemetry-cardinal'), /^90°/);
+  assert.equal(await page.locator('.compass-dir.active').textContent(), 'E', 'East is highlighted');
+  assert.equal(await page.locator('#compass-needle').evaluate(el => el.style.transform), 'rotate(90deg)');
+
+  const eastSummer = await text(page, 'val-q-summer');
+  await page.locator('.compass-dir[data-az="180"]').click();  // South
+  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Sud'));
+  assert.notEqual(await text(page, 'val-q-summer'), eastSummer, 'a different wall gives a different estimate');
+  assert.equal(await page.locator('.compass-dir.active').textContent(), 'S');
+});
+
+test('T31: the compass marks the sun and mirrors the direct-sun verdict', async (t) => {
+  const page = await openApp(t, { buildings: false });
+  await page.locator('#month-slider').fill('6');
+  await page.locator('#hour-slider').fill('2');               // night
+  await page.waitForFunction(() => document.getElementById('hour-label').textContent === '02:00');
+  assert.ok(await page.locator('#compass-sun').evaluate(el => el.classList.contains('hidden')),
+    'the sun marker hides when the sun is down');
+
+  await page.locator('#hour-slider').fill('12');
+  await page.waitForFunction(() => document.getElementById('hour-label').textContent === '12:00');
+  assert.equal(await page.locator('#compass-sun').evaluate(el => el.classList.contains('hidden')), false);
+  assert.equal(await text(page, 'compass-state'), await text(page, 'val-sun-direct'),
+    'the compass caption matches the sidebar readout');
 });
 
 test('T30: a wall facing away reads "sun on the other side", not "in sun"', async (t) => {

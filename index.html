@@ -196,33 +196,48 @@
         <strong class="value" id="val-manual-obs">--</strong>
       </div>
 
-      <div class="slider-row">
-        <div class="slider-header">
-          <span data-i18n="facade-rotation">Rotazione parete</span>
-          <strong id="val-manual-angle">180°</strong>
+      <p class="card-hint" data-i18n="placement-hint">💡 Posiziona il punto in linea con il muro da analizzare: né dentro l'edificio né in mezzo alla strada, altrimenti la lettura non è attendibile.</p>
+
+      <div class="choice-row">
+        <span class="choice-label" data-i18n="facade-windows">Tipo di Infissi</span>
+        <div class="choice-group" role="radiogroup" data-i18n-aria="windows-select-aria" aria-label="Seleziona tipo di infissi">
+          <label class="choice">
+            <input type="radio" name="windows" value="single">
+            <span class="choice-emoji" aria-hidden="true">🪟</span>
+            <span class="choice-text" data-i18n="windows-single">Vetro Singolo</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="windows" value="double" checked>
+            <span class="choice-emoji" aria-hidden="true">🪟🪟</span>
+            <span class="choice-text" data-i18n="windows-double">Doppio Vetro</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="windows" value="triple">
+            <span class="choice-emoji" aria-hidden="true">🛡️</span>
+            <span class="choice-text" data-i18n="windows-triple">Triplo / Termico</span>
+          </label>
         </div>
-        <input type="range" id="manual-angle-slider" min="0" max="359" value="180" data-i18n-aria="rotation-slider-aria" aria-label="Angolo di rotazione parete">
       </div>
 
-      <div class="select-row">
-        <div class="select-header">
-          <span data-i18n="facade-windows">Tipo di Infissi</span>
+      <div class="choice-row">
+        <span class="choice-label" data-i18n="facade-insulation">Isolamento Muri</span>
+        <div class="choice-group" role="radiogroup" data-i18n-aria="insulation-select-aria" aria-label="Seleziona isolamento pareti">
+          <label class="choice">
+            <input type="radio" name="insulation" value="none" checked>
+            <span class="choice-emoji" aria-hidden="true">🧱</span>
+            <span class="choice-text" data-i18n="insulation-none">Muro Storico</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="insulation" value="coat">
+            <span class="choice-emoji" aria-hidden="true">🧱🧱</span>
+            <span class="choice-text" data-i18n="insulation-coat">Cappotto Termico</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="insulation" value="fortress">
+            <span class="choice-emoji" aria-hidden="true">🏰</span>
+            <span class="choice-text" data-i18n="insulation-fortress">Da Fortezza</span>
+          </label>
         </div>
-        <select id="windows-select" class="property-select" data-i18n-aria="windows-select-aria" aria-label="Seleziona tipo di infissi">
-          <option value="single" data-i18n="windows-single">Vetro Singolo</option>
-          <option value="double" selected data-i18n="windows-double">Doppio Vetro</option>
-          <option value="triple" data-i18n="windows-triple">Triplo Vetro / Taglio Termico</option>
-        </select>
-      </div>
-
-      <div class="select-row">
-        <div class="select-header">
-          <span data-i18n="facade-insulation">Isolamento Muri</span>
-        </div>
-        <select id="insulation-select" class="property-select" data-i18n-aria="insulation-select-aria" aria-label="Seleziona isolamento pareti">
-          <option value="none" selected data-i18n="insulation-none">Nessuno (Muro Storico)</option>
-          <option value="coat" data-i18n="insulation-coat">Cappotto Termico</option>
-        </select>
       </div>
     </section>
 
@@ -284,6 +299,25 @@
         <li><span class="lg-swatch lg-shadow"></span><span data-i18n="legend-shadow">Ombra proiettata</span></li>
         <li><span class="lg-swatch lg-area"></span><span data-i18n="legend-area">Area di analisi</span></li>
       </ul>
+    </div>
+
+    <!-- Facade compass: pick which wall you are analysing, and see at a glance
+         where the sun is and whether it reaches that wall. -->
+    <div id="compass" class="compass" role="group" data-i18n-aria="compass-aria" aria-label="Orientamento della facciata">
+      <div class="compass-dial">
+        <div class="compass-needle" id="compass-needle"></div>
+        <div class="compass-sun" id="compass-sun" aria-hidden="true">☀</div>
+        <div class="compass-hub" id="compass-hub" aria-hidden="true"></div>
+        <button type="button" class="compass-dir" data-az="0" style="left:51.0px;top:3.0px" data-i18n="dir-n">N</button>
+        <button type="button" class="compass-dir" data-az="45" style="left:87.8px;top:18.2px" data-i18n="dir-ne">NE</button>
+        <button type="button" class="compass-dir" data-az="90" style="left:103.0px;top:55.0px" data-i18n="dir-e">E</button>
+        <button type="button" class="compass-dir" data-az="135" style="left:87.8px;top:91.8px" data-i18n="dir-se">SE</button>
+        <button type="button" class="compass-dir" data-az="180" style="left:51.0px;top:107.0px" data-i18n="dir-s">S</button>
+        <button type="button" class="compass-dir" data-az="225" style="left:14.2px;top:91.8px" data-i18n="dir-sw">SO</button>
+        <button type="button" class="compass-dir" data-az="270" style="left:-1.0px;top:55.0px" data-i18n="dir-w">O</button>
+        <button type="button" class="compass-dir" data-az="315" style="left:14.2px;top:18.2px" data-i18n="dir-nw">NO</button>
+      </div>
+      <p class="compass-state" id="compass-state">--</p>
     </div>
 
     <div

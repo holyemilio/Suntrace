@@ -94,6 +94,14 @@ test('seasonalTemperatures: insulation warms winter and cools summer', () => {
   assert.ok(coat.summer < bare.summer, 'insulation should lower summer heat');
 });
 
+test('seasonalTemperatures: the three insulation tiers are ordered', () => {
+  const bare = seasonalTemperatures(noonSun, 180, 41.9, 1.0, null, 'double', 'none');
+  const coat = seasonalTemperatures(noonSun, 180, 41.9, 1.0, null, 'double', 'coat');
+  const fort = seasonalTemperatures(noonSun, 180, 41.9, 1.0, null, 'double', 'fortress');
+  assert.ok(fort.winter > coat.winter && coat.winter > bare.winter, 'winter comfort rises with insulation');
+  assert.ok(fort.summer < coat.summer && coat.summer < bare.summer, 'summer heat falls with insulation');
+});
+
 test('seasonalTemperatures: single glazing lets in more solar heat than triple', () => {
   const single = seasonalTemperatures(noonSun, 180, 41.9, 1.0, null, 'single', 'none');
   const triple = seasonalTemperatures(noonSun, 180, 41.9, 1.0, null, 'triple', 'none');

@@ -94,8 +94,11 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
     
     temp += gain;
     
-    // Insulation modifier
-    if (insulationType === 'coat') {
+    // Insulation modifier: bare wall → external coat → fortress-grade envelope
+    if (insulationType === 'fortress') {
+      if (s.key === 'winter') temp += 4.0;
+      else if (s.key === 'summer') temp -= 3.5;
+    } else if (insulationType === 'coat') {
       if (s.key === 'winter') temp += 2.5;
       else if (s.key === 'summer') temp -= 2.0;
     } else {

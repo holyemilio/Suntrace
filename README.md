@@ -24,13 +24,14 @@
 | **Dati climatici reali (Open-Meteo)** | Medie mensili 1991–2020 del punto cliccato, cache in `localStorage`, fallback su Roma. |
 | **Fattori atmosferici** | Umidità e vento reali → temperatura percepita (*feels-like*) integrata nel Comfort Rate; umidità e pioggia annua nel dettaglio. |
 | **Comfort Rate** | Indice a 5 stelle (orientamento, sole, ostruzioni, infissi, isolamento) con dettaglio, esposizione solare e consigli. |
+| **Bussola facciata** | Selettore circolare sulla mappa con le 8 direzioni: mostra l'ago della facciata, la posizione del sole e se lo riceve davvero. |
 | **Stima termica stagionale** | Ciclo diurno sinusoidale con guadagno solare sulla facciata; modificatori per infissi e isolamento. |
 | **Geofencing Italia** | Reverse-geocoding: distingue terraferma IT, acque nazionali ed estero, con messaggi dedicati. |
-| **Orientamento reale (OSM)** | Facciata e ostruzione derivate dagli edifici OpenStreetMap vicini (Overpass), con cache e fallback neutro. |
+| **Ombre reali (OSM)** | Facciata dal muro più vicino e ombre calcolate tracciando un raggio verso il sole attraverso gli edifici vicini, dall'altezza del piano scelto. |
 | **Bilingue IT/EN** | Selettore in-app, rilevamento automatico della lingua del browser, scelta memorizzata. |
 | **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia; la ricerca parte solo col pulsante «Vai». |
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
-| **Zero dipendenze di runtime** | Solo Leaflet (CDN) + API pubbliche (Nominatim, Open-Meteo). Nessun bundler. |
+| **Zero dipendenze di runtime** | Solo Leaflet (CDN) + API pubbliche e senza chiave: OpenStreetMap (mappa e edifici), Nominatim, Open-Meteo. Nessun bundler. |
 | **59 unit test** | `node --test` nativo: motore solare (oracle SunCalc, DST, bisestili), modello termico/Comfort Rate e geometria delle ombre. |
 
 ---
