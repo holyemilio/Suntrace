@@ -67,6 +67,7 @@
     <a href="#tour">2. Panoramica dell'interfaccia</a><br>
     <a href="#uso">3. Come si usa (passo-passo)</a><br>
     <a href="#comfort">4. Il Comfort Rate</a><br>
+    <a href="#sole">4-bis. Sole diretto</a><br>
     <a href="#facciata">5. Parametri della facciata</a><br>
     <a href="#mappa">6. Mappa: simboli e controlli</a><br>
     <a href="#cta">7. Pulsanti e notifiche</a><br>
@@ -124,13 +125,28 @@
     <li><strong>Esposizione al sole</strong> di oggi su quella facciata e un <strong>consiglio</strong> pratico.</li>
   </ul>
 
+  <h2 id="sole">4-bis. Sole diretto: sei al sole o all'ombra?</h2>
+  <p>Nella sezione <em>Dati Solari</em> la voce <strong>Sole diretto</strong> risponde alla domanda più concreta:
+  in questo preciso momento (mese e ora scelti) il sole <strong>colpisce davvero</strong> la tua facciata?</p>
+  <ul>
+    <li><strong>☀️ In sole</strong> — nessun edificio si frappone: la facciata riceve sole diretto.</li>
+    <li><strong>🌑 In ombra</strong> — un edificio vicino blocca il sole; resta solo la luce diffusa del cielo
+        (la temperatura stimata scende di conseguenza).</li>
+    <li><strong>— Sotto l'orizzonte</strong> — è notte o il sole è troppo basso.</li>
+  </ul>
+  <p>Il calcolo è geometrico: dal punto scelto viene "tirato" un raggio verso il sole e si controlla se incontra
+  un edificio abbastanza alto da bloccarlo, usando sagome e altezze reali di OpenStreetMap. Muovendo il cursore
+  dell'<strong>ora</strong> vedi l'esito cambiare con il muoversi del sole; cambiando <strong>piano</strong> si
+  alza il punto di osservazione, quindi spesso si esce dall'ombra.</p>
+
   <h2 id="facciata">5. Parametri della facciata</h2>
   <table>
     <tr><th>Parametro</th><th>Cosa fa</th></tr>
     <tr><td>Orientamento / Cardinale</td><td>La direzione verso cui guarda la parete. Viene rilevata dagli edifici
       reali della zona; puoi correggerla con il cursore «Rotazione parete».</td></tr>
-    <tr><td>Schermatura rilevata</td><td>Quanta ombra fanno gli edifici vicini (stimata dai dati OpenStreetMap):
-      più sono numerosi e alti, minore è il sole che arriva.</td></tr>
+    <tr><td>Schermatura rilevata</td><td>Quanto sole arriva davvero nel mese scelto: l'app simula il percorso
+      del sole ora per ora e verifica se gli edifici vicini (sagome e altezze reali da OpenStreetMap) lo bloccano,
+      dal piano che hai selezionato.</td></tr>
     <tr><td>Tipo di Infissi</td><td>Vetro singolo, doppio o triplo: incide su quanto caldo/freddo entra.</td></tr>
     <tr><td>Isolamento Muri</td><td>Nessuno o cappotto termico: riduce le escursioni tra inverno ed estate.</td></tr>
   </table>

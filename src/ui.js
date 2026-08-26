@@ -42,6 +42,11 @@ const OPEN_METEO_URL = 'https://climate-api.open-meteo.com/v1/climate';
 const OPEN_METEO_RANGE = 'models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean,relative_humidity_2m_mean,windspeed_10m_mean,precipitation_sum';
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+// Shadow model: one storey ≈ 3 m, and a facade in shadow still receives diffuse
+// sky light — never zero, just a small fraction of the direct gain.
+const FLOOR_HEIGHT_M = 3;
+const DIFFUSE_K = 0.15;
+
 // Nominatim reverse geocoding — precise land/water/country classification.
 // Land returns address.country_code; open sea returns an error (no country).
 const REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
@@ -70,7 +75,7 @@ let currentScan = {
   lat: 41.9028,
   lng: 12.4964,
   angleDeg: 180,   // facade azimuth 0=N, 90=E, 180=S, 270=W
-  kOmbra: 1.0,     // obstruction factor 0..1
+  buildings: [],   // OSM footprints + heights near the point (for shadow casting)
   userAdjusted: false, // true when user manually moved the angle slider
 };
 
@@ -277,9 +282,7 @@ async function detectBuildingContext(lat, lng) {
   if (currentScan.lat !== lat || currentScan.lng !== lng) return; // superseded — a newer call owns the loading state
   setBuildingLoading(false);
   if (!ctx) return;                                              // no building nearby → keep the last values
-  currentScan.baseK = ctx.baseK;                                 // obstruction at ground level
-  currentScan.neighborH = ctx.neighborH;                         // representative nearby rooftop height (m)
-  currentScan.kOmbra = effectiveObstruction(ctx.baseK, ctx.neighborH, currentFloor);
+  currentScan.buildings = ctx.buildings;                        // OSM footprints + heights, for shadow casting
   if (!currentScan.userAdjusted) {
     currentScan.angleDeg = ctx.facadeAz;
     const slider = $('manual-angle-slider');
@@ -288,30 +291,20 @@ async function detectBuildingContext(lat, lng) {
   refreshUI();
 }
 
-// Obstruction seen from the user's floor: as the floor rises toward the nearby
-// rooftops the ground-level obstruction eases, reaching none (1.0) once above them.
-function effectiveObstruction(baseK, neighborH, floor) {
-  if (!neighborH || neighborH <= 0) return 1.0;
-  const userH = floor * 3;                          // ~3 m per floor
-  const cleared = Math.min(1, userH / neighborH);   // 0 at ground, 1 once above the rooftops
-  return baseK + (1 - baseK) * cleared;
-}
-
-// Recompute obstruction for the current floor and re-render (floor-bar handler).
+// Floor-bar handler: the floor sets the observer height, so just re-render —
+// refreshUI recomputes the shadow geometrically from currentScan.buildings.
 function applyFloor() {
-  if (!currentScan) return;
-  currentScan.kOmbra = effectiveObstruction(currentScan.baseK ?? 1.0, currentScan.neighborH ?? 9, currentFloor);
-  refreshUI();
+  if (currentScan) refreshUI();
 }
 
 async function fetchBuildingContext(lat, lng) {
-  const cacheKey = `osm2_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  const cacheKey = `osm3_${lat.toFixed(4)}_${lng.toFixed(4)}`;
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) return JSON.parse(cached);
   } catch { /* corrupted cache — refetch */ }
 
-  const q = `[out:json][timeout:20];(way["building"](around:70,${lat},${lng});relation["building"](around:70,${lat},${lng}););out geom;`;
+  const q = `[out:json][timeout:20];(way["building"](around:90,${lat},${lng});relation["building"](around:90,${lat},${lng}););out geom;`;
   const res = await fetch(OVERPASS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
@@ -320,28 +313,24 @@ async function fetchBuildingContext(lat, lng) {
   if (!res.ok) throw new Error('Overpass ' + res.status);
   const data = await res.json();
 
-  const buildings = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
-  const ctx = buildings.length
-    ? {
-        facadeAz: nearestFacadeAzimuth(lat, lng, buildings),
-        baseK: obstructionFromDensity(buildings),  // obstruction at ground level
-        neighborH: neighborHeight(buildings),       // representative rooftop height (m)
-      }
-    : null;
+  const raw = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
+  let ctx = null;
+  if (raw.length) {
+    const buildings = raw.map(e => ({ geom: e.geometry.map(p => ({ lat: p.lat, lon: p.lon })), h: heightOf(e) }));
+    ctx = { facadeAz: nearestFacadeAzimuth(lat, lng, raw), buildings };
+  }
   try { localStorage.setItem(cacheKey, JSON.stringify(ctx)); } catch { /* storage unavailable */ }
   return ctx;
 }
 
-// Representative height (m) of the nearby buildings, from OSM levels (~3 m each,
-// default 3 levels when unknown).
-function neighborHeight(buildings) {
-  let sum = 0, counted = 0;
-  for (const b of buildings) {
-    const lv = parseFloat(b.tags && b.tags['building:levels']);
-    if (!isNaN(lv)) { sum += lv; counted++; }
-  }
-  const avgLevels = counted ? sum / counted : 3;
-  return avgLevels * 3;
+// Building height in metres: OSM `height` tag, else levels × 3 m, default 3 storeys.
+function heightOf(el) {
+  const t = el.tags || {};
+  const h = parseFloat(t.height);
+  if (!isNaN(h) && h > 0) return h;
+  const lv = parseFloat(t['building:levels']);
+  if (!isNaN(lv) && lv > 0) return lv * 3;
+  return 9;
 }
 
 // Facade azimuth = outward normal (facing the click) of the nearest building edge.
@@ -382,19 +371,78 @@ function outwardNormalAz(a, c, click) {
   return Math.atan2(nx, ny) * 180 / Math.PI;
 }
 
-// Obstruction factor from local building density/height (1 = open, 0.2 = dense).
-function obstructionFromDensity(buildings) {
-  const n = buildings.length;
-  let sumLevels = 0, counted = 0;
-  for (const b of buildings) {
-    const lv = parseFloat(b.tags && b.tags['building:levels']);
-    if (!isNaN(lv)) { sumLevels += lv; counted++; }
+// ─── shadow / solar access (line-of-sight to the sun through OSM buildings) ────
+
+// Local-metres projector centred on the observer point.
+function localXY(clat, clng) {
+  const mLat = 111320;
+  const mLng = 111320 * Math.cos(clat * Math.PI / 180);
+  return (la, lo) => ({ x: (lo - clng) * mLng, y: (la - clat) * mLat });
+}
+
+function pointInPolygon(px, py, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i].x, yi = ring[i].y, xj = ring[j].x, yj = ring[j].y;
+    if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) inside = !inside;
   }
-  const avgLevels = counted ? sumLevels / counted : 3;
-  let k = 1.0;
-  if (n >= 8) k = 0.35; else if (n >= 4) k = 0.6; else if (n >= 2) k = 0.8;
-  if (avgLevels >= 6) k -= 0.15;
-  return Math.max(0.2, Math.min(1.0, k));
+  return inside;
+}
+
+/**
+ * True when a neighbouring building blocks the direct sun for an observer at the
+ * point, at the given floor height (obsH, m). Casts a horizontal ray toward the
+ * sun and checks whether any roof rises above the ray where it crosses a footprint.
+ */
+function sunBlocked(clat, clng, buildings, azDeg, elevDeg, obsH) {
+  if (elevDeg <= 1) return true; // sun on/below the horizon → no direct sun
+  const xy = localXY(clat, clng);
+  const az = azDeg * Math.PI / 180;
+  const dir = { x: Math.sin(az), y: Math.cos(az) }; // horizontal sun direction (E, N)
+  const tanE = Math.tan(elevDeg * Math.PI / 180);
+
+  for (const b of buildings) {
+    const ring = b.geom.map(p => xy(p.lat, p.lon));
+    if (pointInPolygon(0, 0, ring)) continue; // skip the observer's own building
+    for (let i = 0; i < ring.length - 1; i++) {
+      const a = ring[i], c = ring[i + 1];
+      const ex = c.x - a.x, ey = c.y - a.y;
+      const det = dir.x * (-ey) - (-ex) * dir.y;
+      if (Math.abs(det) < 1e-9) continue;             // ray parallel to the edge
+      const tt = (-a.x * ey + ex * a.y) / det;        // distance along the ray
+      const ss = (dir.x * a.y - dir.y * a.x) / det;   // position along the edge
+      if (tt > 1 && ss >= 0 && ss <= 1) {
+        const rayH = obsH + tt * tanE;                // sun-ray height at that distance
+        if (b.h > rayH) return true;                  // roof above the ray → shadow
+      }
+    }
+  }
+  return false;
+}
+
+// Fraction of the daylight hours the point gets direct sun for a given month
+// (0 = always shaded, 1 = always sunlit). Samples the representative day hourly.
+function sunAccessFraction(clat, clng, buildings, obsH, month) {
+  if (!buildings || !buildings.length) return 1.0;
+  let sunlit = 0, daylight = 0;
+  for (let h = 4; h <= 21; h++) {
+    const { elevation, azimuth } = solarPosition(localToUTC(DEFAULT_YEAR, month, 15, h, TIMEZONE), clat, clng);
+    if (elevation <= 1) continue;
+    daylight++;
+    if (!sunBlocked(clat, clng, buildings, azimuth, elevation, obsH)) sunlit++;
+  }
+  return daylight ? sunlit / daylight : 1.0;
+}
+
+// Cached per (point, floor, building set) so dragging the sliders stays cheap.
+let accessCache = { key: null, byMonth: {} };
+function monthlySunAccess(clat, clng, buildings, obsH, month) {
+  const key = `${clat.toFixed(5)},${clng.toFixed(5)},${obsH},${buildings ? buildings.length : 0}`;
+  if (accessCache.key !== key) accessCache = { key, byMonth: {} };
+  if (accessCache.byMonth[month] === undefined) {
+    accessCache.byMonth[month] = sunAccessFraction(clat, clng, buildings, obsH, month);
+  }
+  return accessCache.byMonth[month];
 }
 
 // ─── Open-Meteo climate normals ───────────────────────────────────────────────
@@ -482,13 +530,7 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
   const keepManual = isDrag && currentScan.userAdjusted;
   const angleDeg = currentScan.angleDeg;
 
-  currentScan = {
-    lat, lng, angleDeg,
-    kOmbra: currentScan.kOmbra,
-    baseK: currentScan.baseK ?? 1.0,
-    neighborH: currentScan.neighborH ?? 9,
-    userAdjusted: keepManual,
-  };
+  currentScan = { lat, lng, angleDeg, buildings: [], userAdjusted: keepManual };
   customBaseTemps = null; // reset to Rome fallback; upgraded async below if the fetch succeeds
   climateExtra = null;    // humidity/wind/precip reset with the point
 
@@ -519,7 +561,7 @@ function analyzePoint(lat, lng, isDrag = false, skipGeofence = false) {
 }
 
 function refreshUI() {
-  const { lat, lng, angleDeg, kOmbra } = currentScan;
+  const { lat, lng, angleDeg, buildings } = currentScan;
   const month = getSelectedMonth();
   const localHour = getSelectedLocalHour();
   const utcDate = getSelectedUTCDate();
@@ -532,10 +574,25 @@ function refreshUI() {
   const windowsType = $('windows-select')?.value ?? 'double';
   const insulationType = $('insulation-select')?.value ?? 'none';
 
+  // Real shadow: cast a ray to the sun through the nearby OSM buildings from the
+  // observer's floor height. When blocked, only diffuse sky light reaches the wall.
+  const obsH = currentFloor * FLOOR_HEIGHT_M;
+  const hasBuildings = !!(buildings && buildings.length);
+  const hasSun = elevClamped > 1;
+  const inShadow = hasSun && hasBuildings
+    && sunBlocked(lat, lng, buildings, azimuth, elevation, obsH);
+
+  // Sun access over the month (0 = always shaded … 1 = always sunlit) drives the
+  // seasonal figures and the shading readout; the live gain uses the instant verdict.
+  const kMonth = m => hasBuildings
+    ? Math.max(DIFFUSE_K, monthlySunAccess(lat, lng, buildings, obsH, m))
+    : 1.0;
+  const kOmbra = kMonth(month);
+
   // Facade irradiance and room temperature
   const irr = facadeIrradiance(elevClamped, azimuth, angleDeg);
   const airTemp = airTemperature(month, localHour, lat, customBaseTemps);
-  const gain = solarThermalGain(month, irr, kOmbra);
+  const gain = solarThermalGain(month, irr, inShadow ? DIFFUSE_K : 1.0);
   const roomTemp = airTemp + gain;
 
   // Sunrise / sunset
@@ -551,7 +608,7 @@ function refreshUI() {
   // Seasonal analysis
   const seasonal = seasonalTemperatures(
     m => solarPosition(localToUTC(DEFAULT_YEAR, m, 15, 12, TIMEZONE), lat, lng),
-    angleDeg, lat, kOmbra, customBaseTemps, windowsType, insulationType
+    angleDeg, lat, kMonth, customBaseTemps, windowsType, insulationType
   );
 
   const seasonMap = {
@@ -609,6 +666,7 @@ function refreshUI() {
   setText('val-day-length', dayLength > 0 ? `${dayLength.toFixed(1)}h` : '--');
   setText('val-sun-elevation', elevClamped > 0 ? `${elevation.toFixed(1)}°` : t('below-horizon'));
   setText('val-sun-azimuth', `${azimuth.toFixed(0)}°`);
+  setText('val-sun-direct', !hasSun ? t('sun-night') : (inShadow ? t('sun-shadow') : t('sun-yes')));
 
   // Facade info
   setText('val-manual-angle', `${angleDeg}°`);

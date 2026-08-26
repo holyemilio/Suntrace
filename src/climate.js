@@ -79,9 +79,11 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
     const irr = elev > 0
       ? Math.max(0, Math.cos(elev * Math.PI / 180) * Math.cos((azimuth - facadeAz) * Math.PI / 180))
       : 0;
-    
+
+    // obstrK may be a number or a per-season function (month) => factor 0..1
+    const k = typeof obstrK === 'function' ? obstrK(s.month) : obstrK;
     let temp = airTemperature(s.month, s.noonHour, lat, customBaseTemps);
-    let gain = solarThermalGain(s.month, irr, obstrK);
+    let gain = solarThermalGain(s.month, irr, k);
     
     // Windows modifier
     if (windowsType === 'single') {
