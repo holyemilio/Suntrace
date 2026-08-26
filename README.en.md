@@ -75,6 +75,10 @@ Based on **Meeus, "Astronomical Algorithms" 2nd ed. (1998), ch. 25–27**:
 server and opens the browser on the right page. To stop it, press `Ctrl+C` in
 the Terminal window that opens.
 
+> The server sends `Cache-Control: no-store`, so a plain reload always shows the
+> latest edit. If an older server is still running from before, stop it and
+> relaunch `start.command`.
+
 **In VSCode:** install the *Live Server* extension, then right-click
 `index.html` → **"Open with Live Server"**.
 

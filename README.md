@@ -75,6 +75,10 @@ Basato su **Meeus, "Astronomical Algorithms" 2nd ed. (1998), cap. 25–27**:
 Avvia un server locale e apre il browser sulla pagina giusta. Per fermarlo,
 premi `Ctrl+C` nella finestra del Terminale che si apre.
 
+> Il server invia `Cache-Control: no-store`, così dopo una modifica basta
+> ricaricare la pagina per vedere subito la versione nuova. Se avessi lasciato
+> aperto un server avviato prima, chiudilo e rilancia `start.command`.
+
 **In VSCode:** installa l'estensione *Live Server*, poi tasto destro su
 `index.html` → **"Open with Live Server"**.
 
