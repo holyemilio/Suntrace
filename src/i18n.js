@@ -57,8 +57,9 @@ const STRINGS = {
     'solar-direct': 'Sole diretto',
     'sun-yes': '☀️ In sole',
     'sun-shadow': '🌑 In ombra',
+    'sun-other-side': '🧭 Sole sull\'altro lato',
     'sun-night': '— Sotto l\'orizzonte',
-    'tip-direct-sun': 'Dice se in questo momento il sole colpisce davvero la facciata o se è bloccato dagli edifici vicini: il calcolo usa le sagome e le altezze reali (OpenStreetMap) e il piano che hai scelto.',
+    'tip-direct-sun': 'Dice se in questo momento il sole colpisce davvero questa facciata. «In ombra» = un edificio vicino lo blocca (sagome e altezze reali da OpenStreetMap, viste dal piano scelto); «Sole sull\'altro lato» = nessun ostacolo, ma la parete è rivolta altrove.',
     'below-horizon': '< orizzonte',
 
     // Facade
@@ -219,8 +220,9 @@ const STRINGS = {
     'solar-direct': 'Direct sun',
     'sun-yes': '☀️ In sun',
     'sun-shadow': '🌑 In shadow',
+    'sun-other-side': '🧭 Sun on the other side',
     'sun-night': '— Below horizon',
-    'tip-direct-sun': 'Tells you whether the sun actually reaches the facade right now or is blocked by nearby buildings: computed from real OpenStreetMap footprints and heights, and the floor you picked.',
+    'tip-direct-sun': 'Tells you whether the sun actually reaches this facade right now. "In shadow" = a nearby building blocks it (real OpenStreetMap footprints and heights, seen from your floor); "Sun on the other side" = nothing blocks it, but the wall faces elsewhere.',
     'below-horizon': '< horizon',
 
     'facade-card-aria': 'Facade parameters',

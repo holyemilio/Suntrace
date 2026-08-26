@@ -560,7 +560,14 @@ function refreshUI() {
   setText('val-day-length', dayLength > 0 ? `${dayLength.toFixed(1)}h` : '--');
   setText('val-sun-elevation', elevClamped > 0 ? `${elevation.toFixed(1)}°` : t('below-horizon'));
   setText('val-sun-azimuth', `${azimuth.toFixed(0)}°`);
-  setText('val-sun-direct', !hasSun ? t('sun-night') : (inShadow ? t('sun-shadow') : t('sun-yes')));
+  // Direct-sun verdict. Orientation comes first: a wall facing away from the sun
+  // gets nothing even under a clear sky, and removing the neighbours wouldn't help.
+  let sunKey;
+  if (!hasSun) sunKey = 'sun-night';
+  else if (irr <= 0) sunKey = 'sun-other-side';
+  else if (inShadow) sunKey = 'sun-shadow';
+  else sunKey = 'sun-yes';
+  setText('val-sun-direct', t(sunKey));
 
   // Facade info
   setText('val-manual-angle', `${angleDeg}°`);

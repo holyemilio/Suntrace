@@ -260,10 +260,33 @@ test('T28/T29: the direct-sun readout reflects the sun and the buildings', async
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '02:00');
   assert.match(await text(page, 'val-sun-direct'), /orizzonte/, 'night → below horizon');
 
-  await page.locator('#month-slider').fill('0');           // January, low sun
+  // Afternoon in January: the sun is low AND on the west-facing wall the stub
+  // produces, so a blocking roof is the only thing between them.
+  await page.locator('#month-slider').fill('0');
+  await page.locator('#hour-slider').fill('15');
+  await page.waitForFunction(() => document.getElementById('hour-label').textContent === '15:00');
+  assert.match(await text(page, 'val-sun-direct'), /ombra/, 'low winter sun in a courtyard → shadow');
+});
+
+test('T30: a wall facing away reads "sun on the other side", not "in sun"', async (t) => {
+  // The stubbed courtyard yields a west-facing facade. At 09:00 in January the
+  // sun sits in the south-east, so even with a clear line of sight from the top
+  // floor the wall itself gets nothing — and the estimate must not move.
+  const page = await openApp(t, { buildingHeight: 15 });
+
+  await page.locator('#month-slider').fill('0');
   await page.locator('#hour-slider').fill('9');
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '09:00');
-  assert.match(await text(page, 'val-sun-direct'), /ombra/, 'low winter sun in a courtyard → shadow');
+  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Ovest'));
+
+  const tempBefore = await text(page, 'thermal-result');
+  await page.locator('.floor-btn[data-floor="5"]').click();
+  await page.waitForFunction(() => document.getElementById('val-manual-obs').textContent.includes('Nessuna'));
+
+  assert.match(await text(page, 'val-sun-direct'), /altro lato/,
+    'a clear sky on a west wall at 09:00 is not "in sun"');
+  assert.equal(await text(page, 'thermal-result'), tempBefore,
+    'the estimate stays put, matching the label');
 });
 
 test('T27: choosing a higher floor escapes the shadow and changes the reading', async (t) => {
