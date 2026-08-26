@@ -36,5 +36,6 @@
 "T24";"Lingua";"App avviata.";"Clicca ""EN"" nel selettore in basso a sinistra.";"Tutta l'interfaccia passa in inglese, testi statici e dinamici (anche col dettaglio aperto).";"";""
 "T25";"Lingua";"Lingua impostata su EN.";"Ricarica la pagina.";"L'app resta in inglese (scelta ricordata).";"";""
 "T26";"Mobile";"-";"Apri da smartphone o restringi la finestra sotto 768px.";"Compare l'avviso a schermo intero ""Ops! SunTrace ha bisogno di spazio..."".";"";""
+"T33";"Finestra";"App aperta a schermo intero.";"1) Restringi la finestra sotto i 768 px (o premi Cmd/Ctrl + per zoomare). 2) Riporta la finestra alla larghezza iniziale.";"Restringendo compare l'avviso ""serve un computer"" invece di una mappa senza controlli; riallargando l'app torna completa.";"";""
 
 "Legenda esito";"P = Superato / F = Fallito / B = Bloccato o N.A."

@@ -946,17 +946,29 @@ function initFloorBar() {
 
 // ─── app bootstrap ────────────────────────────────────────────────────────────
 
-export function init() {
-  setLang(getLang());  // sync <html lang> + persist the resolved language
-  applyTranslations(); // fill static UI text (including the mobile overlay below)
+let appStarted = false;
 
-  const isMobile = window.innerWidth < 768 || navigator.maxTouchPoints > 1;
-  if (isMobile) {
-    const warning = $('mobile-warning');
-    if (warning) warning.style.display = 'flex';
-    return;
-  }
+// The app is desktop-only: below this width the map controls have no room.
+function isSmallScreen() {
+  return window.innerWidth < 768 || navigator.maxTouchPoints > 1;
+}
 
+/**
+ * Show the explanation whenever the window is too small — not only at load.
+ * Otherwise shrinking the window (or zooming the browser in, which narrows the
+ * CSS viewport) silently hides every map control with nothing to explain why.
+ */
+function updateMobileBlock() {
+  const warning = $('mobile-warning');
+  const small = isSmallScreen();
+  if (warning) warning.style.display = small ? 'flex' : 'none';
+  if (small) return;
+  if (!appStarted) startApp();
+  else map?.invalidateSize();   // the map container just changed size
+}
+
+function startApp() {
+  appStarted = true;
   initMap();
   initSliders();
   initCompass();
@@ -982,4 +994,11 @@ export function init() {
 
   // Initial render (Rome is a known-valid point — skip the geofence check)
   analyzePoint(ROME.lat, ROME.lng, false, true);
+}
+
+export function init() {
+  setLang(getLang());  // sync <html lang> + persist the resolved language
+  applyTranslations(); // fill static UI text (including the mobile overlay below)
+  updateMobileBlock();
+  window.addEventListener('resize', updateMobileBlock);
 }

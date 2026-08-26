@@ -70,10 +70,10 @@ function overpassPayload(lat, lon, height = 30) {
 
 const ROME_RESULT = { display_name: 'Via Giusti, Roma', lat: '41.8955', lon: '12.5010' };
 
-async function openApp(t, { buildings = true, buildingHeight = 30, searchResult = ROME_RESULT } = {}) {
+async function openApp(t, { buildings = true, buildingHeight = 30, searchResult = ROME_RESULT, viewport = null } = {}) {
   // An Italian locale makes the app start in Italian through its own auto-detect,
   // so the language-persistence test isn't fighting a forced localStorage value.
-  const context = await browser.newContext({ locale: 'it-IT' });
+  const context = await browser.newContext({ locale: 'it-IT', ...(viewport ? { viewport } : {}) });
   t.after(() => context.close());
   const page = await context.newPage();
 
@@ -88,7 +88,10 @@ async function openApp(t, { buildings = true, buildingHeight = 30, searchResult 
   }));
 
   await page.goto(`${origin}/index.html`);
-  await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
+  // A window narrower than the desktop threshold shows the overlay instead of the app.
+  if (!viewport || viewport.width >= 768) {
+    await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
+  }
   return page;
 }
 
@@ -107,6 +110,35 @@ test('T01: the app loads and renders an analysis, with no page errors', async (t
   assert.match(await text(page, 'comfort-rate-stars'), /⭐/);
   assert.equal(await page.locator('#mobile-warning').isVisible(), false, 'no mobile block on desktop');
   assert.deepEqual(errors, []);
+});
+
+test('T33: shrinking the window explains itself instead of hiding every control', async (t) => {
+  const page = await openApp(t);
+  assert.ok(await page.locator('#compass').isVisible(), 'the compass is there to begin with');
+
+  // Narrower than the desktop threshold — the same thing browser zoom does.
+  await page.setViewportSize({ width: 700, height: 820 });
+  await page.waitForFunction(() =>
+    getComputedStyle(document.getElementById('mobile-warning')).display === 'flex');
+  assert.equal(await page.locator('#compass').isVisible(), false,
+    'controls stand down, but the overlay now says why');
+
+  // Back to a usable width: the app returns, controls included.
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await page.waitForFunction(() =>
+    getComputedStyle(document.getElementById('mobile-warning')).display === 'none');
+  assert.ok(await page.locator('#compass').isVisible(), 'the compass comes back');
+  assert.ok(await page.locator('#floor-bar').isVisible(), 'so does the floor bar');
+});
+
+test('T34: opening straight into a narrow window still starts once resized', async (t) => {
+  const page = await openApp(t, { viewport: { width: 700, height: 820 } });
+  assert.equal(await page.locator('#compass').isVisible(), false);
+
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
+  assert.ok(await page.locator('#map').isVisible(), 'the map initialises late, not never');
+  assert.ok(await page.locator('#compass').isVisible());
 });
 
 // ─── T14 / T15 — time controls ────────────────────────────────────────────────
