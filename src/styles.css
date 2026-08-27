@@ -142,11 +142,9 @@ body { display: flex; height: 100vh; overflow: hidden; }
   background: #0b0e12;
 }
 
-/* Dark basemap without a paid provider: invert the OSM raster and rotate the
-   hues back. Only the tile pane is filtered, so our own overlays (green facade,
-   amber sun ray, grey shadow) keep their true colours. */
+/* Light basemap: clear tiles for crisp high contrast with sun/shadow overlays */
 .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.94) contrast(0.92) saturate(0.6);
+  filter: saturate(1.05) contrast(1.02);
 }
 
 /* soften Leaflet's controls into the dark theme */

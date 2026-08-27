@@ -18,6 +18,8 @@
 
 | Feature | Detail |
 |---|---|
+| **Dynamic solar arc** | Parabolic sky dome in SVG with real-time solar orb tracking, sunrise/sunset times, and bento telemetry grid. |
+| **Vector Brand Icon** | New 1024×1024 vector icon with sun, trajectory, architectural facade, warm glowing window, and cast shadow wedge. |
 | **Meeus/SPA solar engine** | Declination, Equation of Time, atmospheric refraction (Bennet). Error < 0.5° on elevation and azimuth vs SunCalc. |
 | **Accurate sunrise / sunset** | Computed with the −0.833° depression angle (refraction + solar disc). |
 | **Time zone + DST** | Uses `Intl.DateTimeFormat / Europe/Rome` — no hardcoded offset. |

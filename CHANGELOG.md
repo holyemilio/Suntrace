@@ -5,6 +5,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.3.0] — 2026-08-27
+
+Nuovo Brand Icon, Arco Solare Dinamico e Restyling UI Bento.
+
+- 🎨 **Nuovo Brand Icon SunTrace** — icona vettoriale ad alta definizione con sole dorato, arco di traiettoria, facciata architettonica con finestra illuminata e cuneo d'ombra (`docs/app-icon.svg`, `docs/logo.svg`, favicon e logo header).
+- ☀️ **Widget "Dati Solari" con Arco Traiettoria (Sky Dome)** — sostituita la barra lineare con un arco parabolico dinamico in SVG: un globo solare luminoso si muove in tempo reale lungo la traiettoria celeste tra alba (🌅) e tramonto (🌇).
+- 📊 **Griglia Telemetrica Bento** — per elevazione solare, azimut e stato del sole diretto con pillole glassmorphism ad alto contrasto.
+- 📐 **Allineamento Verticale Hero** — centratura verticale del box Estimate / Coordinate (`.hero-top`) per una migliore pulizia visiva.
+- 🗺️ **Mappa Chiara ad Alto Contrasto** — tiles chiare e nitide per la massima leggibilità geometrica di ombre e orientamenti.
+
+---
+
 ## [2.2.0] — 2026-08-26
 
 Interfaccia rinnovata, mappa leggibile e dati climatici in evidenza.

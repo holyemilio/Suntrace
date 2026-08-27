@@ -18,6 +18,8 @@
 
 | Feature | Dettaglio |
 |---|---|
+| **Arco solare dinamico** | Cupola celeste parabolica (Sky Dome) in SVG con punto solare in tempo reale, alba/tramonto e griglia bento telemetrica. |
+| **Brand Icon vettoriale** | Nuova icona a 1024×1024 con sole, traiettoria, facciata architettonica, finestra calda e cuneo d'ombra. |
 | **Motore solare Meeus/SPA** | Declinazione, Equazione del Tempo, rifrazione atmosferica (Bennet). Errore < 0.5° su elevazione e azimut rispetto a SunCalc. |
 | **Alba / tramonto precisi** | Calcolo con angolo di depressione −0.833° (rifrazione + disco solare). |
 | **Fuso orario + ora legale** | Usa `Intl.DateTimeFormat / Europe/Rome` — nessun offset hardcoded. |

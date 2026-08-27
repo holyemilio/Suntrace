@@ -28,7 +28,7 @@ Il percorso di sviluppo di **SunTrace** racconta l'evoluzione di uno strumento d
 
 ---
 
-## 🏡 v2.0.0 — Lo Strumento per la Casa (Versione Corrente, Luglio 2026)
+## 🏡 v2.0.0 — Lo Strumento per la Casa (Luglio 2026)
 *Evoluzione dell'app in uno strumento mirato alla valutazione degli appartamenti.*
 
 *   **Addio Classe Energetica, Benvenuto Comfort Rate**: La classe energetica (A-G), ritenuta confondibile con quella degli elettrodomestici, viene sostituita dall'indice **Comfort Rate** (Comfort Abitativo Stimato), rappresentato graficamente da una valutazione a **5 stelle** e arricchito da un tooltip fluttuante in stile GitHub.
@@ -36,3 +36,13 @@ Il percorso di sviluppo di **SunTrace** racconta l'evoluzione di uno strumento d
 *   **Personalizzazione dell'Immobile**: Aggiunta di controlli interattivi nella barra laterale per impostare il tipo di finestre (*vetro singolo, doppio o triplo*) e l'isolamento delle pareti (*cappotto termico*). Questi parametri modificano attivamente le temperature stimate in inverno ed estate, influenzando il Comfort Rate.
 *   **Geofencing & Limitazione Italia**: L'applicazione viene ristretta al territorio italiano. Se l'utente clicca all'estero, appare un popup divertente: *"Ops! Ci hai scoperto... 🕵️‍♂️"*.
 *   **Esperienza Desktop Ottimizzata**: Per evitare problemi di clic e precisione sui piccoli schermi, viene introdotto un blocco che rileva l'uso da smartphone e invita l'utente a connettersi da computer.
+
+---
+
+## ✨ v2.3.0 — Nuovo Brand Icon & UI Bento Glassmorphism (Agosto 2026)
+*Rinnovamento visivo premium ispirato al design moderno di dashboard meteo e mobile widget.*
+
+*   **Nuovo Brand Icon**: Progettata e integrata una nuova icona vettoriale a 1024×1024 con sole dorato, arco solare, edificio architettonico con finestra illuminata e cuneo d'ombra geometrico.
+*   **Arco Traiettoria Solare Dinamico**: La sezione "Dati Solari" include una cupola celeste (Sky Dome) parabolica in SVG. Un punto solare dorato viaggia in tempo reale lungo la traiettoria celeste tra alba (🌅) e tramonto (🌇), con indicazione della durata del giorno.
+*   **Griglia Bento Telemetrica**: Indicatori di elevazione, azimut e sole diretto riorganizzati in card pillole con riflessi glassmorphism ad alto contrasto.
+*   **Mappa Chiara ad Alto Contrasto**: Rendering chiaro e nitido delle mappe per la massima leggibilità delle ombre proiettate dagli edifici e dell'orientamento delle pareti.
