@@ -7,7 +7,7 @@
 # SunTrace — Urban Microclimate Simulator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-59%20pass-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2022%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 
 **SunTrace** is an urban microclimate simulator that analyses the solar exposure of facades and rooms anywhere in Italy. Pick a point on the map, choose a month and hour, and get in real time: an accurate solar position (Meeus/SPA), real local climate normals (Open-Meteo), a seasonal thermal estimate and a star-based **Comfort Rate** with tips. Bilingual **IT/EN** interface.
@@ -32,7 +32,8 @@
 | **Nominatim autocomplete** | 420 ms debounce, restricted to Italy; search runs only via the “Go” button. |
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero runtime dependencies** | Only Leaflet (CDN) + key-free public APIs: OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
-| **59 unit tests** | Native `node --test`: solar engine (SunCalc oracle, DST, leap years), thermal model / Comfort Rate, and shadow geometry. |
+| **Local climate** | Humidity, wind, rainfall and feels-like for the selected month, from the point's real normals. |
+| **60 unit + 22 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
 
 ---
 
@@ -41,6 +42,7 @@
 - **[User Manual](docs/manuale-utente.html)** (Italian) — how to use the app, what it does, buttons and notifications (opens in the browser, printable to PDF).
 - **[Testbook](docs/testbook.html)** (Italian) — a table-based test plan with a blank outcome column to run through every feature.
 - **[Testbook (CSV)](docs/testbook.csv)** (Italian) — the same checklist, downloadable and Excel-ready (`;` separator, UTF-8).
+- **[Project status](docs/stato-lavori.md)** (Italian) — where things stand, what is pending, and the traps already hit.
 
 ---
 
@@ -101,25 +103,25 @@ python3 -m http.server 8000
 # Install suncalc (test-only devDependency)
 npm install
 
-# Run the 59 unit tests (Node 18+)
+# Run the 60 unit tests (Node 18+)
 npm test
 # or: node --test tests/solar.test.js
 ```
 
-**Expected output**: 59 pass, 0 fail.
+**Expected output**: 60 pass, 0 fail.
 
 ### End-to-end tests (real browser)
 
 These drive the app in a headless browser with the external APIs stubbed for
-deterministic runs. They cover testbook cases T01, T03–T06, T11, T14–T15,
-T17–T18, T22, T24–T25, T27–T29.
+deterministic runs: boot, search, geofencing, sliders, glazing/insulation,
+Comfort Rate, language, compass, floors, shadows, climate and narrow windows.
 
 ```bash
 npx playwright install chromium   # once (~95 MB)
 npm run test:e2e
 ```
 
-**Expected output**: 13 pass, 0 fail.
+**Expected output**: 22 pass, 0 fail.
 
 ---
 
@@ -146,9 +148,9 @@ SunTrace/
 │   └── styles.css      # Styles (mobile-first, WCAG AA)
 ├── tests/
 │   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
-│   ├── climate.test.js # 20 tests — thermal model and Comfort Rate
+│   ├── climate.test.js # 21 tests — thermal model and Comfort Rate
 │   ├── shadow.test.js  # 16 tests — facade geometry and shadows
-│   └── e2e/app.e2e.js  # 13 end-to-end tests (Playwright, headless browser)
+│   └── e2e/app.e2e.js  # 22 end-to-end tests (Playwright, headless browser)
 ├── docs/
 │   └── case-study.md   # Technical case study
 ├── README.md           # Italian

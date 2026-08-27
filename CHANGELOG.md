@@ -5,6 +5,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.2.0] — 2026-08-26
+
+Interfaccia rinnovata, mappa leggibile e dati climatici in evidenza.
+
+- 🗺️ **Mappa gratuita e leggibile** — passaggio a OpenStreetMap: CARTO ha iniziato a marchiare ogni stile con "API KEY REQUIRED".
+- 🧭 **Bussola sulla mappa** — scegli la parete fra le 8 direzioni; l'ago indica la facciata, il ☀ dove sta il sole, e sotto leggi se lo riceve. Sostituisce il cursore "Rotazione parete".
+- 🌡️ **Clima del luogo nella sidebar** — umidità, vento, pioggia e temperatura percepita del mese scelto, dai dati reali del punto.
+- 🏠 **Selettori più compatti** — infissi e muri come tre icone su una riga, col nome che appare passandoci sopra. Il terzo livello del muro ora si chiama "Casa Passiva".
+- ✍️ **Tipografia** — Space Grotesk per il testo, IBM Plex Mono per i numeri.
+- 💡 **Promemoria sul posizionamento** — sulla mappa: il punto va messo in linea con il muro, né dentro né fuori.
+- 🐛 **Corretto** — con la finestra stretta (o con lo zoom del browser) sparivano tutti i controlli senza spiegazione.
+- 🐛 **Corretto** — Città del Vaticano e San Marino venivano respinti come "estero".
+- 🛟 **Errori visibili** — un guasto imprevisto ora compare come avviso invece di lasciare la pagina muta; `start.command` non fa più cachare il browser.
+- ✅ **Test** — da 23 a **60 unit + 22 end-to-end** eseguiti in un browser vero.
+
+---
+
 ## [2.1.0] — 2026-07-15
 
 Grande aggiornamento: dati reali, nuova interfaccia e app bilingue.
