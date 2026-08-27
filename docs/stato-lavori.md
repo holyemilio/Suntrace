@@ -72,10 +72,11 @@ print('ok' if ki==ke else sorted(ki^ke))"
 3. **Fallback mirror Overpass** — codice in `overpassQuery()`, mai provato per
    irraggiungibilità del servizio. Se orientamento e schermatura restano fermi
    su "Sud / Nessuna", è quasi certamente Overpass che non risponde.
-4. **Segnalazione "pagina bianca"** — l'utente ha riferito un errore cliccando
-   sulla mappa, mai riprodotto: click, doppio click, trascinamento, rete reale e
-   payload OSM malformati non producono crash. Ora un errore imprevisto compare
-   come avviso: **serve il testo di quell'avviso** per andare avanti.
+4. ~~Segnalazione "pagina bianca"~~ — **chiusa** il 26/08/2026: l'utente conferma
+   che non si presenta più. Non era mai stata riprodotta (click, doppio click,
+   trascinamento, rete reale e payload OSM malformati non producono crash) ed è
+   compatibile con la versione vecchia servita dalla cache del browser, ora
+   impedita da `Cache-Control: no-store`.
 
 ---
 
