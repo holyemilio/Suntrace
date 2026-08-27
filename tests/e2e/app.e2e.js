@@ -87,7 +87,7 @@ async function openApp(t, { buildings = true, buildingHeight = 30, searchResult 
     json: buildings ? overpassPayload(41.9028, 12.4964, buildingHeight) : { elements: [] },
   }));
 
-  await page.goto(`${origin}/index.html`);
+  await page.goto(`${origin}/app.html`);
   // A window narrower than the desktop threshold shows the overlay instead of the app.
   if (!viewport || viewport.width >= 768) {
     await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');

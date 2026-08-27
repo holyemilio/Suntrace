@@ -1,0 +1,66 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SunTrace — shared design tokens.
+
+   Pulled out of styles.css so the landing page (a separate document, with its
+   own layout rules) can reuse the same palette without inheriting the app
+   shell's body/height rules. No build step, so this stays a plain @import.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* surfaces — each step is a real elevation, not just a shade */
+  --bg:            #080a0d;   /* app ground */
+  --bg-elev:       #0e1116;   /* sidebar */
+  --card:          #151a21;   /* card surface */
+  --card-2:        #1c222b;   /* tile inside a card */
+  --track:         #262d38;   /* slider / bar track */
+  --glass:         rgba(14, 17, 22, 0.78);
+
+  --stroke:        rgba(255, 255, 255, 0.06);
+  --stroke-2:      rgba(255, 255, 255, 0.11);
+  --highlight:     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* text */
+  --text:          #dfe6f0;
+  --text-strong:   #ffffff;
+  --text-muted:    #7d8798;
+
+  /* accents */
+  --accent:        #f5b301;   /* solar amber — the brand */
+  --accent-hover:  #ffc534;
+  --accent-soft:   rgba(245, 179, 1, 0.13);
+  --accent-ink:    #0b0f14;
+  --cool:          #4c8dff;   /* ambience only, never a control colour */
+
+  /* semantic / seasonal */
+  --red:    #f0555a;
+  --orange: #f8913a;
+  --yellow: #f5c443;
+  --green:  #35d07f;
+
+  /* legacy tokens kept pointing at the new palette */
+  --panel:         var(--bg-elev);
+  --panel-2:       var(--card-2);
+  --border:        var(--stroke);
+  --border-strong: var(--stroke-2);
+  --primary:       var(--accent);
+  --primary-hover: var(--accent-hover);
+  --border-focus:  var(--accent);
+  --sidebar-bg:    var(--bg-elev);
+  --input-bg:      var(--card-2);
+  --dark:          var(--bg);
+
+  --radius-xl: 26px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --pill:      999px;
+
+  --shadow-card: 0 20px 44px -26px rgba(0, 0, 0, 0.95);
+  --shadow-pop:  0 24px 50px -18px rgba(0, 0, 0, 0.85);
+
+  --sidebar-width: 420px;
+
+  /* Space Grotesk carries the voice, IBM Plex Mono keeps the numbers legible. */
+  --sans: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}

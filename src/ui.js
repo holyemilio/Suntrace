@@ -751,6 +751,56 @@ function initCompass() {
       refreshUI();
     });
   });
+  initCompassDrag();
+}
+
+/**
+ * Drag the dial itself to rotate the facade, snapping to the nearest of the
+ * 8 cardinal/intercardinal points as you go — grabbing and turning a dial
+ * reads more naturally than hunting for one of 8 small buttons, especially
+ * on touch. The buttons stay for an exact one-tap choice; dragging anywhere
+ * else on the dial (needle, hub, sun, empty rim) rotates it live.
+ */
+function initCompassDrag() {
+  const dial = document.querySelector('.compass-dial');
+  if (!dial) return;
+
+  let dragging = false;
+
+  const bearingAt = (clientX, clientY) => {
+    const r = dial.getBoundingClientRect();
+    const dx = clientX - (r.left + r.width / 2);
+    const dy = clientY - (r.top + r.height / 2);
+    const deg = Math.atan2(dx, -dy) * 180 / Math.PI; // 0=N, clockwise
+    return (deg + 360) % 360;
+  };
+  const snap45 = deg => Math.round(deg / 45) * 45 % 360;
+
+  const applyBearing = (clientX, clientY) => {
+    currentScan.angleDeg = snap45(bearingAt(clientX, clientY));
+    currentScan.userAdjusted = true;
+    refreshUI();
+  };
+
+  dial.addEventListener('pointerdown', e => {
+    if (e.target.closest('.compass-dir') || !currentScan) return; // let button clicks behave normally
+    dragging = true;
+    dial.classList.add('dragging');
+    try { dial.setPointerCapture(e.pointerId); } catch { /* e.g. a synthetic/invalid pointer id */ }
+    applyBearing(e.clientX, e.clientY);
+  });
+  dial.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    applyBearing(e.clientX, e.clientY);
+  });
+  const endDrag = e => {
+    if (!dragging) return;
+    dragging = false;
+    dial.classList.remove('dragging');
+    if (dial.hasPointerCapture?.(e.pointerId)) dial.releasePointerCapture(e.pointerId);
+  };
+  dial.addEventListener('pointerup', endDrag);
+  dial.addEventListener('pointercancel', endDrag);
 }
 
 /**
@@ -777,8 +827,6 @@ function updateCompass(facadeAz, sunAz, sunUp, stateKey) {
   document.querySelectorAll('.compass-dir').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.az, 10) === nearest);
   });
-
-  setText('compass-state', t(stateKey));
 }
 
 // ─── property selectors (infissi / isolamento) ────────────────────────────────
@@ -987,6 +1035,7 @@ function changeLang(lang) {
   if (lang === getLang()) return;
   setLang(lang);
   applyTranslations();          // static text
+  panelRemeasurers.forEach(fn => fn()); // IT/EN copy differs in length
   markActiveLang();
   if (currentScan) refreshUI(); // dynamic text (temps, labels, exposure…)
   if ($('kpi-modal')?.classList.contains('open')) openKPIModal(); // refresh an open modal
@@ -1002,6 +1051,46 @@ function initLangSwitch() {
     btn.addEventListener('click', () => changeLang(btn.dataset.lang));
   });
   markActiveLang();
+}
+
+// ─── collapsible mini panels (map legend / placement hint) ─────────────────────
+
+// Re-measured after a language switch, since IT/EN copy differs in length.
+const panelRemeasurers = [];
+
+/**
+ * Wire a panel that folds down to a single 42×42 icon button (the geolocation
+ * button's own footprint) and back. CSS can't transition to/from `auto`, so we
+ * measure the panel's real laid-out width and height once and drive the
+ * animation from explicit `--panel-w`/`--panel-h` custom properties instead.
+ * @param {string} panelId
+ * @param {string} toggleId
+ */
+function initCollapsiblePanel(panelId, toggleId) {
+  const panel = $(panelId);
+  const toggle = $(toggleId);
+  if (!panel || !toggle) return;
+
+  const measure = () => {
+    const wasCollapsed = panel.classList.contains('collapsed');
+    if (wasCollapsed) panel.classList.remove('collapsed'); // measure the true expanded size
+    panel.style.setProperty('--panel-w', panel.scrollWidth + 'px');
+    panel.style.setProperty('--panel-h', panel.scrollHeight + 'px');
+    if (wasCollapsed) panel.classList.add('collapsed');
+  };
+  measure();
+  panelRemeasurers.push(measure);
+
+  toggle.addEventListener('click', () => {
+    const collapsed = !panel.classList.contains('collapsed');
+    panel.classList.toggle('collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+  });
+}
+
+function initCollapsiblePanels() {
+  initCollapsiblePanel('map-hint', 'map-hint-toggle');
+  initCollapsiblePanel('map-legend', 'map-legend-toggle');
 }
 
 // ─── floor selector (building height) ─────────────────────────────────────────
@@ -1057,6 +1146,7 @@ function startApp() {
   initMobileToggle();
   initLangSwitch();
   initFloorBar();
+  initCollapsiblePanels();
 
   // KPI modal wiring
   const badge = $('energy-class-field');
@@ -1071,8 +1161,17 @@ function startApp() {
     if (e.key === 'Escape') closeKPIModal();
   });
 
-  // Initial render (Rome is a known-valid point — skip the geofence check)
-  analyzePoint(ROME.lat, ROME.lng, false, true);
+  // Arriving from the landing page's search bar (index.html?q=...): run that
+  // search right away instead of the default Rome view.
+  const handoffQuery = new URLSearchParams(location.search).get('q');
+  if (handoffQuery) {
+    const input = $('search-input');
+    if (input) input.value = handoffQuery;
+    searchAddress();
+  } else {
+    // Initial render (Rome is a known-valid point — skip the geofence check)
+    analyzePoint(ROME.lat, ROME.lng, false, true);
+  }
 }
 
 /**

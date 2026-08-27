@@ -9,6 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2022%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
+[![Live Demo](https://img.shields.io/badge/demo-live-f5b301)](https://holyemilio.github.io/Suntrace/)
+
+**[🌐 Try SunTrace live](https://holyemilio.github.io/Suntrace/)** — no install needed.
 
 **SunTrace** is an urban microclimate simulator that analyses the solar exposure of facades and rooms anywhere in Italy. Pick a point on the map, choose a month and hour, and get in real time: an accurate solar position (Meeus/SPA), real local climate normals (Open-Meteo), a seasonal thermal estimate and a star-based **Comfort Rate** with tips. Bilingual **IT/EN** interface.
 
@@ -69,15 +72,21 @@ Based on **Meeus, "Astronomical Algorithms" 2nd ed. (1998), ch. 25–27**:
 
 ## 🚀 How to run
 
-> ⚠️ **Do not open `index.html` by double-clicking it.** The app uses ES modules
-> (`<script type="module">`), geolocation and calls to external APIs — all of
-> which the browser **blocks** under `file://`. Opened directly, the app looks
-> "dead" (buttons and search don't respond). You need a local server on
-> `http://localhost`.
+The app has two pages: **`index.html`** is the landing page (the project's
+mission and a search bar) and **`app.html`** is the actual simulator.
+Searching an address from the landing takes you straight to `app.html`
+already loaded on that point; the «← Home» button in the simulator goes
+back to the landing.
+
+> ⚠️ **Do not open the `.html` files by double-clicking them.** The app uses
+> ES modules (`<script type="module">`), geolocation and calls to external
+> APIs — all of which the browser **blocks** under `file://`. Opened
+> directly, the app looks "dead" (buttons and search don't respond). You
+> need a local server on `http://localhost`.
 
 **Easiest way (macOS):** double-click **`start.command`**. It starts a local
-server and opens the browser on the right page. To stop it, press `Ctrl+C` in
-the Terminal window that opens.
+server and opens the browser on the landing page. To stop it, press `Ctrl+C`
+in the Terminal window that opens.
 
 > The server sends `Cache-Control: no-store`, so a plain reload always shows the
 > latest edit. If an older server is still running from before, stop it and
@@ -129,10 +138,10 @@ npm run test:e2e
 
 ## 🌍 Deploy to GitHub Pages
 
-1. Go to **Settings → Pages** in your repository
-2. Source: **Deploy from a branch** → `main` → `/` (root)
-3. Save and wait ~60 seconds
-4. Update the "Live Demo" link in this README with your `https://username.github.io/suntrace/` URL
+**Live at <https://holyemilio.github.io/Suntrace/>** — Source: **Deploy from
+a branch** → `main` → `/` (root), from **Settings → Pages** in the
+repository. Since `index.html` is the landing page, the root domain shows
+that; the simulator lives at `/app.html`.
 
 ---
 
@@ -140,14 +149,18 @@ npm run test:e2e
 
 ```
 SunTrace/
-├── index.html          # Full app (entry point)
+├── index.html          # Landing page: the project's mission + search
+├── app.html            # The actual simulator (former entry point)
 ├── src/
 │   ├── solar.js        # Pure astronomical engine (Meeus/SPA) — no DOM
 │   ├── climate.js      # Seasonal thermal model and Comfort Rate
 │   ├── shadow.js       # Geometry: facade orientation and shadows (line-of-sight)
-│   ├── ui.js           # UI logic, Leaflet, modal, geofencing
-│   ├── i18n.js         # IT/EN dictionary and translation engine
-│   └── styles.css      # Styles (mobile-first, WCAG AA)
+│   ├── ui.js           # Simulator logic, Leaflet, modal, geofencing
+│   ├── landing.js      # Landing logic: language, search → app.html, reveal
+│   ├── i18n.js         # IT/EN dictionary and translation engine (shared)
+│   ├── tokens.css      # Design tokens (:root) shared by both pages
+│   ├── styles.css      # Simulator styles (mobile-first, WCAG AA)
+│   └── landing.css     # Landing page styles
 ├── tests/
 │   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
 │   ├── climate.test.js # 21 tests — thermal model and Comfort Rate

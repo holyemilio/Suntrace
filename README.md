@@ -9,6 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2022%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
+[![Live Demo](https://img.shields.io/badge/demo-live-f5b301)](https://holyemilio.github.io/Suntrace/)
+
+**[🌐 Prova SunTrace live](https://holyemilio.github.io/Suntrace/)** — nessuna installazione richiesta.
 
 **SunTrace** è un simulatore microclimatico urbano che analizza l'esposizione solare di facciate e locali in qualsiasi punto d'Italia. Seleziona un punto sulla mappa, scegli mese e ora, e ottieni in tempo reale: posizione solare corretta (Meeus/SPA), medie climatiche reali del luogo (Open-Meteo), stima termica stagionale e un **Comfort Rate** a stelle con consigli. Interfaccia bilingue **IT/EN**.
 
@@ -69,14 +72,19 @@ Basato su **Meeus, "Astronomical Algorithms" 2nd ed. (1998), cap. 25–27**:
 
 ## 🚀 Come avviare
 
-> ⚠️ **Non aprire `index.html` con doppio click.** L'app usa moduli ES
+L'app ha due pagine: **`index.html`** è la landing page (missione del progetto
+e barra di ricerca) e **`app.html`** è il simulatore vero e proprio. Cercare un
+indirizzo dalla landing porta direttamente su `app.html` già caricato su quel
+punto; il pulsante «← Home» nel simulatore riporta alla landing.
+
+> ⚠️ **Non aprire i file `.html` con doppio click.** L'app usa moduli ES
 > (`<script type="module">`), la geolocalizzazione e chiamate a API esterne:
-> tutte cose che il browser **blocca** in modalità `file://`. Se apri il file
+> tutte cose che il browser **blocca** in modalità `file://`. Se apri un file
 > direttamente, l'app risulta "morta" (pulsanti e ricerca non rispondono).
 > Serve un server locale su `http://localhost`.
 
 **Metodo più semplice (macOS):** doppio click su **`start.command`**.
-Avvia un server locale e apre il browser sulla pagina giusta. Per fermarlo,
+Avvia un server locale e apre il browser sulla landing page. Per fermarlo,
 premi `Ctrl+C` nella finestra del Terminale che si apre.
 
 > Il server invia `Cache-Control: no-store`, così dopo una modifica basta
@@ -129,10 +137,10 @@ npm run test:e2e
 
 ## 🌍 Deploy su GitHub Pages
 
-1. Vai su **Settings → Pages** nel tuo repository
-2. Source: **Deploy from a branch** → `main` → `/` (root)
-3. Salva e attendi ~60 secondi
-4. Aggiorna il link "Live Demo" in questo README con il tuo URL `https://username.github.io/suntrace/`
+**Live su <https://holyemilio.github.io/Suntrace/>** — Source: **Deploy from
+a branch** → `main` → `/` (root), da **Settings → Pages** nel repository.
+Essendo `index.html` la landing page, il dominio radice mostra quella; il
+simulatore è su `/app.html`.
 
 ---
 
@@ -140,14 +148,18 @@ npm run test:e2e
 
 ```
 SunTrace/
-├── index.html          # App completa (entry point)
+├── index.html          # Landing page: missione del progetto + ricerca
+├── app.html            # Simulatore vero e proprio (ex entry point)
 ├── src/
 │   ├── solar.js        # Motore astronomico puro (Meeus/SPA) — senza DOM
 │   ├── climate.js      # Modello termico stagionale e Comfort Rate
 │   ├── shadow.js       # Geometria: orientamento facciata e ombre (line-of-sight)
-│   ├── ui.js           # Logica interfaccia, Leaflet, modal, geofencing
-│   ├── i18n.js         # Dizionario IT/EN e motore di traduzione
-│   └── styles.css      # Stili (mobile-first, WCAG AA)
+│   ├── ui.js           # Logica del simulatore, Leaflet, modal, geofencing
+│   ├── landing.js      # Logica della landing: lingua, ricerca → app.html, reveal
+│   ├── i18n.js         # Dizionario IT/EN e motore di traduzione (condiviso)
+│   ├── tokens.css      # Design token (:root) condivisi da entrambe le pagine
+│   ├── styles.css      # Stili del simulatore (mobile-first, WCAG AA)
+│   └── landing.css     # Stili della landing page
 ├── tests/
 │   ├── solar.test.js   # 23 test — motore astronomico (oracle SunCalc)
 │   ├── climate.test.js # 21 test — modello termico e Comfort Rate

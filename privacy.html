@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy — SunTrace</title>
+
+  <link rel="icon" type="image/svg+xml" href="docs/app-icon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="src/tokens.css">
+  <link rel="stylesheet" href="src/legal.css">
+</head>
+<body>
+
+  <div class="legal-page">
+    <a href="index.html" class="legal-back" data-i18n="privacy-back">← Torna a SunTrace</a>
+
+    <header class="legal-head">
+      <h1 data-i18n="privacy-h1">Privacy</h1>
+      <div id="lang-switch" class="lang-switch" role="group" data-i18n-aria="lang-aria" aria-label="Lingua / Language">
+        <button type="button" class="lang-btn" data-lang="it">IT</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <p class="legal-lead" data-i18n="privacy-lead">In breve: SunTrace non ha un server, non ha account, non usa cookie di profilazione e non ti traccia. Quello che segue spiega esattamente cosa succede quando usi il sito.</p>
+
+    <section class="legal-section">
+      <h2 data-i18n="privacy-s1-title">Nessun server, nessun account</h2>
+      <p data-i18n="privacy-s1-body">SunTrace è un sito statico: non esiste un server che riceve o conserva i tuoi dati, non c'è registrazione, non c'è login. Il calcolo (posizione del sole, temperature, Comfort Rate) avviene nel tuo browser.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2 data-i18n="privacy-s2-title">Cosa resta nel tuo browser</h2>
+      <p data-i18n="privacy-s2-body">Due cose, salvate solo sul tuo dispositivo (mai su un server nostro): la lingua scelta (IT/EN), e una cache degli indirizzi e dei dati climatici già cercati, per non ripetere le stesse richieste. Puoi cancellarle in qualsiasi momento dalle impostazioni del browser ("cancella dati del sito") o navigando in una finestra privata/in incognito.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2 data-i18n="privacy-s3-title">Servizi di terze parti</h2>
+      <p data-i18n="privacy-s3-body">Per funzionare, il tuo browser contatta direttamente questi servizi esterni, ciascuno secondo la propria informativa: OpenStreetMap (mappa), Nominatim (ricerca indirizzi), Overpass (dati sugli edifici), Open-Meteo (clima), Google Fonts (caratteri) e la libreria Leaflet. Questi servizi vedono la richiesta e il tuo indirizzo IP, come per qualunque sito che li utilizza — SunTrace non aggiunge tracciamento oltre a questo.</p>
+    </section>
+
+    <section class="legal-section">
+      <h2 data-i18n="privacy-s4-title">Nessuna analytics, nessuna pubblicità</h2>
+      <p data-i18n="privacy-s4-body">Non usiamo Google Analytics né strumenti simili, non ci sono pixel di tracciamento, non vendiamo né condividiamo dati con terzi per scopi pubblicitari — semplicemente perché non ne raccogliamo.</p>
+    </section>
+
+    <footer class="legal-footer">
+      <p data-i18n="footer-copy">© 2026 SunTrace. Motore Meeus/SPA — solo uso indicativo.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="src/legal.js"></script>
+</body>
+</html>

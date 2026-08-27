@@ -5,6 +5,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.4.0] — 2026-08-27
+
+Landing page, deploy live e pulizia dei pannelli sulla mappa.
+
+- 🏠 **Landing page** (`index.html`) — nuova pagina di missione/vision con hero animato (cielo stellato, sole pulsante, arco solare), 4 sezioni "Perché SunTrace" con mini-grafici SVG che si disegnano allo scroll, e una CTA finale. Il simulatore vero e proprio è ora su `app.html`, raggiungibile dalla ricerca in home (che porta con sé l'indirizzo cercato) o dal pulsante "Inizia ora"; un link «← Home» in `app.html` torna alla landing.
+- 🌍 **Deploy live** — pubblicato su GitHub Pages: <https://holyemilio.github.io/Suntrace/>.
+- 🗺️ **Legenda e suggerimento comprimibili** — sulla mappa, entrambi ora collassano in un bottone 42×42 (stessa misura del pulsante di geolocalizzazione) con un'animazione fluida, invece di restare sempre aperti a occupare spazio.
+- ✂️ **Suggerimento più corto e leggibile** — il testo copriva troppo spazio sulla mappa; ora è più breve, con caratteri più grandi e più chiari.
+- 🧭 **Bussola pulita** — rimosso il testo di stato sotto la bussola, che ripeteva l'informazione già presente in sidebar ("Sole diretto").
+- 🐛 **Corretto** — il box "Temperature" si comprimeva a una striscia di pochi pixel quando il contenuto della sidebar superava l'altezza della finestra (era l'unica card con `overflow: hidden`, su cui il flexbox scaricava tutto il ridimensionamento).
+- 🧱 **Riordino sidebar** — Ricerca → Temperature → Crono-Solare → Facciata → Dati Solari, con i titoli dei box rimossi e i parametri di orientamento/schermatura (calcolati ma non editabili) tolti dalla vista.
+
+---
+
 ## [2.3.0] — 2026-08-27
 
 Nuovo Brand Icon, Arco Solare Dinamico e Restyling UI Bento.

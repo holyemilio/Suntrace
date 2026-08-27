@@ -6,66 +6,9 @@
    Numbers are the loudest thing on screen; chrome stays quiet.
    ──────────────────────────────────────────────────────────────────────────── */
 
+@import url('tokens.css');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  /* surfaces — each step is a real elevation, not just a shade */
-  --bg:            #080a0d;   /* app ground */
-  --bg-elev:       #0e1116;   /* sidebar */
-  --card:          #151a21;   /* card surface */
-  --card-2:        #1c222b;   /* tile inside a card */
-  --track:         #262d38;   /* slider / bar track */
-  --glass:         rgba(14, 17, 22, 0.78);
-
-  --stroke:        rgba(255, 255, 255, 0.06);
-  --stroke-2:      rgba(255, 255, 255, 0.11);
-  --highlight:     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-
-  /* text */
-  --text:          #dfe6f0;
-  --text-strong:   #ffffff;
-  --text-muted:    #7d8798;
-
-  /* accents */
-  --accent:        #f5b301;   /* solar amber — the brand */
-  --accent-hover:  #ffc534;
-  --accent-soft:   rgba(245, 179, 1, 0.13);
-  --accent-ink:    #0b0f14;
-  --cool:          #4c8dff;   /* ambience only, never a control colour */
-
-  /* semantic / seasonal */
-  --red:    #f0555a;
-  --orange: #f8913a;
-  --yellow: #f5c443;
-  --green:  #35d07f;
-
-  /* legacy tokens kept pointing at the new palette */
-  --panel:         var(--bg-elev);
-  --panel-2:       var(--card-2);
-  --border:        var(--stroke);
-  --border-strong: var(--stroke-2);
-  --primary:       var(--accent);
-  --primary-hover: var(--accent-hover);
-  --border-focus:  var(--accent);
-  --sidebar-bg:    var(--bg-elev);
-  --input-bg:      var(--card-2);
-  --dark:          var(--bg);
-
-  --radius-xl: 26px;
-  --radius-lg: 20px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
-  --pill:      999px;
-
-  --shadow-card: 0 20px 44px -26px rgba(0, 0, 0, 0.95);
-  --shadow-pop:  0 24px 50px -18px rgba(0, 0, 0, 0.85);
-
-  --sidebar-width: 420px;
-
-  /* Space Grotesk carries the voice, IBM Plex Mono keeps the numbers legible. */
-  --sans: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-}
 
 /* ─── base layout ────────────────────────────────────────────────────────── */
 html, body {
@@ -124,7 +67,14 @@ body { display: flex; height: 100vh; overflow: hidden; }
     radial-gradient(80% 45% at 110% 108%, rgba(76, 141, 255, 0.12), transparent 60%);
   z-index: 0;
 }
-#sidebar > * { position: relative; z-index: 1; }
+/* Regression fix: a flex column shrinks its items to fit when content grows
+   taller than the viewport — and any item with its own `overflow: hidden`
+   (the hero card clips a decorative glow) reports an automatic minimum size
+   of 0, so ALL the squeeze lands on it first, collapsing it to a sliver while
+   its siblings hold their content size. #sidebar already scrolls (overflow-y:
+   auto) for exactly this case, so no card should ever shrink below its
+   content — that's what actually happened to the temperature card. */
+#sidebar > * { position: relative; z-index: 1; flex-shrink: 0; }
 
 /* ─── map ────────────────────────────────────────────────────────────────── */
 #map-container {
@@ -165,6 +115,21 @@ body { display: flex; height: 100vh; overflow: hidden; }
   font-size: 10px !important;
 }
 .leaflet-control-attribution a { color: var(--accent) !important; }
+
+/* ─── back-to-home link (app.html only) ──────────────────────────────────── */
+.back-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 2px;
+  transition: color 0.15s, gap 0.15s;
+}
+.back-home-link:hover { color: var(--accent); gap: 9px; }
 
 /* ─── brand header ───────────────────────────────────────────────────────── */
 .brand-container {
@@ -222,17 +187,6 @@ body { display: flex; height: 100vh; overflow: hidden; }
   flex-direction: column;
   gap: 12px;
   box-shadow: var(--shadow-card), var(--highlight);
-}
-
-.card-title {
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 /* ─── search ─────────────────────────────────────────────────────────────── */
@@ -356,6 +310,7 @@ input[type="text"]:focus {
   font-weight: 600;
   font-family: var(--mono);
   max-width: 62%;
+  line-height: 1.3;
 }
 
 .coord-row {
@@ -366,6 +321,7 @@ input[type="text"]:focus {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   opacity: 0.85;
+  line-height: 1.3;
 }
 
 .hero-main {
@@ -581,6 +537,58 @@ input[type="text"]:focus {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* "Percepita ora": feels-like now lives beside the seasons it's derived from,
+   not off in its own untitled climate card. */
+.hero-feels-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--stroke);
+  font-size: 0.78rem;
+}
+.hero-feels-row .label { color: var(--text-muted); }
+.hero-feels-row .value {
+  font-weight: 700;
+  color: var(--text-strong);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── climate widgets (humidity / wind / rain) ───────────────────────────── */
+/* Untitled card: each row is a label plus a small tinted pill carrying the
+   value and its glyph — the "Humidity: 52% 💧" treatment from the reference. */
+.climate-widget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--stroke);
+  gap: 10px;
+}
+.climate-widget-row:first-child { padding-top: 0; }
+.climate-widget-row:last-child { border-bottom: none; padding-bottom: 0; }
+.cw-label { font-size: 0.83rem; color: var(--text); }
+.cw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: var(--pill);
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+  background: var(--card-2);
+  border: 1px solid var(--stroke-2);
+}
+.cw-ico { font-size: 0.86rem; line-height: 1; }
+.cw-chip-blue   { background: rgba(76, 141, 255, 0.12);  border-color: rgba(76, 141, 255, 0.28); }
+.cw-chip-teal   { background: rgba(53, 208, 127, 0.12);  border-color: rgba(53, 208, 127, 0.28); }
+.cw-chip-indigo { background: rgba(140, 130, 255, 0.14); border-color: rgba(140, 130, 255, 0.3); }
 
 /* ─── sliders ────────────────────────────────────────────────────────────── */
 .slider-row { display: flex; flex-direction: column; gap: 8px; }
@@ -927,8 +935,7 @@ button:active { transform: translateY(1px); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 10px 10px 8px;
+  padding: 10px;
   border-radius: var(--radius-lg);
 }
 
@@ -939,8 +946,11 @@ button:active { transform: translateY(1px); }
   border-radius: 50%;
   border: 1px solid var(--stroke-2);
   background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035), transparent 70%);
-  pointer-events: none;   /* only the direction buttons are clickable */
+  cursor: grab;
+  touch-action: none;   /* dragging rotates the facade, not the page/map */
 }
+.compass-dial.dragging { cursor: grabbing; }
+.compass-dial.dragging .compass-needle { transition: none; }
 
 /* the eight direction buttons, laid out around the rim */
 .compass-dir {
@@ -1010,15 +1020,6 @@ button:active { transform: translateY(1px); }
 .compass-sun.hidden { opacity: 0; }
 .compass-sun.shaded { color: var(--text-muted); opacity: 0.55; text-shadow: none; }
 
-.compass-state {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--text);
-  text-align: center;
-  max-width: 114px;
-  line-height: 1.35;
-}
-
 @media (max-width: 768px) { .compass { display: none; } }
 
 /* ─── floor selector (top-center of the map) ─────────────────────────────── */
@@ -1069,7 +1070,13 @@ button:active { transform: translateY(1px); }
 @media (max-width: 768px) { .floor-bar { display: none; } }
 
 /* ─── custom map marker (clean green dot) ────────────────────────────────── */
-.suntrace-marker { background: transparent; border: none; }
+.suntrace-marker {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .suntrace-marker-dot {
   display: block;
   width: 16px;
@@ -1080,6 +1087,62 @@ button:active { transform: translateY(1px); }
   box-shadow: 0 0 0 1.5px var(--green), 0 0 16px rgba(53, 208, 127, 0.7);
 }
 
+/* ─── collapsible mini panels (legend / hint) ────────────────────────────────
+   Both fold down to a single 42×42 icon button — the geolocation button's own
+   footprint — and back out again. `--panel-w`/`--panel-h` are set once from
+   JS (the panel's natural, laid-out size) so the browser can transition a
+   real `width`/`height` instead of the unanimatable `auto`; re-measured on
+   language change since IT/EN copy differs in length. */
+.mini-panel {
+  overflow: hidden;
+  transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.3s ease;
+}
+.mini-panel-row {
+  width: var(--panel-w, auto);
+  height: var(--panel-h, auto);
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+.mini-panel-col {
+  width: var(--panel-w, auto);
+  height: var(--panel-h, auto);
+  display: flex;
+  flex-direction: column;
+}
+.mini-panel.collapsed { width: 42px; height: 42px; border-radius: 14px; }
+
+.mini-panel-toggle {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 14px;
+  transition: background 0.15s;
+}
+.mini-panel-toggle:hover { background: rgba(255, 255, 255, 0.07); filter: none; }
+
+.mini-panel-body {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.mini-panel.collapsed .mini-panel-body { opacity: 0; pointer-events: none; }
+
 /* ─── map legend ─────────────────────────────────────────────────────────── */
 .map-legend {
   position: absolute;
@@ -1087,10 +1150,9 @@ button:active { transform: translateY(1px); }
   right: 12px;
   z-index: 1100;
   border-radius: var(--radius-md);
-  padding: 11px 13px;
   color: var(--text);
-  max-width: 186px;
 }
+.map-legend .mini-panel-body { padding: 0 13px 11px; max-width: 186px; }
 .map-legend-title {
   font-weight: 700;
   font-size: 0.58rem;
@@ -1127,13 +1189,16 @@ button:active { transform: translateY(1px); }
   top: 66px;
   left: 14px;
   z-index: 1100;
-  max-width: 252px;
-  padding: 8px 11px;
-  border-left: 2px solid var(--accent);
   border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 0.63rem;
-  line-height: 1.4;
+}
+.map-hint .mini-panel-body {
+  max-width: 168px;
+  padding: 9px 12px 9px 9px;
+  border-left: 2px solid var(--accent);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.45;
 }
 @media (max-width: 768px) { .map-hint { display: none; } }
 
