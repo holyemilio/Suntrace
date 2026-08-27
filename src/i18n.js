@@ -63,6 +63,15 @@ const STRINGS = {
     'tip-direct-sun': 'Dice se in questo momento il sole colpisce davvero questa facciata. «In ombra» = un edificio vicino lo blocca (sagome e altezze reali da OpenStreetMap, viste dal piano scelto); «Sole sull\'altro lato» = nessun ostacolo, ma la parete è rivolta altrove.',
     'below-horizon': '< orizzonte',
 
+    // Local climate
+    'climate-card-aria': 'Clima del luogo',
+    'climate-title': 'Clima del Luogo',
+    'climate-humidity': 'Umidità media',
+    'climate-wind': 'Vento medio',
+    'climate-rain': 'Pioggia del mese',
+    'climate-feels': 'Percepita ora',
+    'tip-climate': 'Medie climatiche reali del mese scelto per questo punto (Open-Meteo, normali 1991–2020). La «percepita» combina temperatura, umidità e vento.',
+
     // Facade
     'facade-card-aria': 'Parametri Geometrici Facciata',
     'facade-title': 'Parametri Facciata',
@@ -80,7 +89,7 @@ const STRINGS = {
     'insulation-select-aria': 'Seleziona isolamento pareti',
     'insulation-none': 'Muro Storico',
     'insulation-coat': 'Cappotto Termico',
-    'insulation-fortress': 'Da Fortezza',
+    'insulation-fortress': 'Casa Passiva',
     'placement-hint': '💡 Posiziona il punto in linea con il muro da analizzare: né dentro l\'edificio né in mezzo alla strada, altrimenti la lettura non è attendibile.',
 
     // Footer
@@ -230,6 +239,15 @@ const STRINGS = {
     'tip-direct-sun': 'Tells you whether the sun actually reaches this facade right now. "In shadow" = a nearby building blocks it (real OpenStreetMap footprints and heights, seen from your floor); "Sun on the other side" = nothing blocks it, but the wall faces elsewhere.',
     'below-horizon': '< horizon',
 
+    // Local climate
+    'climate-card-aria': 'Local climate',
+    'climate-title': 'Local Climate',
+    'climate-humidity': 'Avg humidity',
+    'climate-wind': 'Avg wind',
+    'climate-rain': 'Rain this month',
+    'climate-feels': 'Feels like now',
+    'tip-climate': 'Real climate normals for the selected month at this point (Open-Meteo, 1991–2020). "Feels like" combines temperature, humidity and wind.',
+
     'facade-card-aria': 'Facade parameters',
     'facade-title': 'Facade Parameters',
     'facade-orientation': 'Orientation / Cardinal',
@@ -246,7 +264,7 @@ const STRINGS = {
     'insulation-select-aria': 'Select wall insulation',
     'insulation-none': 'Bare Wall',
     'insulation-coat': 'External Coat',
-    'insulation-fortress': 'Fortress-grade',
+    'insulation-fortress': 'Passive House',
     'placement-hint': '💡 Place the point in line with the wall you are analysing — not inside the building, not out in the street — otherwise the reading is not reliable.',
 
     'footer-links-aria': 'Useful links',

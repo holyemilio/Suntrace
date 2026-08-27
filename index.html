@@ -177,6 +177,33 @@
       </div>
     </section>
 
+    <!-- Local climate for the selected month (real Open-Meteo normals) -->
+    <section class="card" data-i18n-aria="climate-card-aria" aria-label="Clima del luogo">
+      <p class="card-title">
+        <span data-i18n="climate-title">Clima del Luogo</span>
+        <span class="info-tip" tabindex="0" data-i18n-aria="tip-climate">
+          <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
+          <span class="info-tip-box" role="tooltip" data-i18n="tip-climate">Medie reali del mese scelto per questo punto (Open-Meteo, normali 1991–2020).</span>
+        </span>
+      </p>
+      <div class="info-row">
+        <span class="label" data-i18n="climate-humidity">Umidità media</span>
+        <span class="value" id="val-humidity">—</span>
+      </div>
+      <div class="info-row">
+        <span class="label" data-i18n="climate-wind">Vento medio</span>
+        <span class="value" id="val-wind">—</span>
+      </div>
+      <div class="info-row">
+        <span class="label" data-i18n="climate-rain">Pioggia del mese</span>
+        <span class="value" id="val-rain">—</span>
+      </div>
+      <div class="info-row">
+        <span class="label" data-i18n="climate-feels">Percepita ora</span>
+        <span class="value" id="val-feels">—</span>
+      </div>
+    </section>
+
     <!-- Facade parameters -->
     <section class="card" data-i18n-aria="facade-card-aria" aria-label="Parametri Geometrici Facciata">
       <p class="card-title" data-i18n="facade-title">🛠 Parametri Facciata</p>
@@ -211,7 +238,7 @@
           </label>
           <label class="choice">
             <input type="radio" name="windows" value="double" checked>
-            <span class="choice-emoji" aria-hidden="true">🪟🪟</span>
+            <span class="choice-emoji" aria-hidden="true">🧊</span>
             <span class="choice-text" data-i18n="windows-double">Doppio Vetro</span>
           </label>
           <label class="choice">
@@ -232,7 +259,7 @@
           </label>
           <label class="choice">
             <input type="radio" name="insulation" value="coat">
-            <span class="choice-emoji" aria-hidden="true">🧱🧱</span>
+            <span class="choice-emoji" aria-hidden="true">🧥</span>
             <span class="choice-text" data-i18n="insulation-coat">Cappotto Termico</span>
           </label>
           <label class="choice">

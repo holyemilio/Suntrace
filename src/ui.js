@@ -586,6 +586,17 @@ function refreshUI() {
   setText('val-sun-direct', t(sunKey));
   updateCompass(angleDeg, azimuth, hasSun, sunKey);
 
+  // Local climate for the selected month (— when the API gave us nothing)
+  const rhNow = climateExtra?.rh?.[month];
+  const windNow = climateExtra?.wind?.[month];
+  const rainNow = climateExtra?.precip?.[month];
+  setText('val-humidity', rhNow != null ? Math.round(rhNow) + '%' : '—');
+  setText('val-wind', windNow != null ? windNow.toFixed(1) + ' km/h' : '—');
+  setText('val-rain', rainNow != null ? Math.round(rainNow * DAYS_IN_MONTH[month]) + ' mm' : '—');
+  setText('val-feels', (rhNow != null && windNow != null)
+    ? apparentTemperature(roomTemp, rhNow, windNow).toFixed(1) + '°C'
+    : '—');
+
   // Facade info
   setText('val-manual-obs', t(obstructionLabel(kOmbra)));
   setText('telemetry-cardinal', `${angleDeg}° (${t(cardinalLabel(angleDeg))})`);

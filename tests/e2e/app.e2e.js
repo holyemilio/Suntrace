@@ -195,6 +195,21 @@ test('T18: insulation warms winter and cools summer', async (t) => {
   assert.ok(parseFloat(await text(page, 'val-q-summer')) < summerBefore);
 });
 
+test('T37: the local-climate card follows the selected month', async (t) => {
+  const page = await openApp(t);
+  await page.waitForFunction(() => document.getElementById('val-humidity').textContent !== '—');
+
+  assert.match(await text(page, 'val-humidity'), /^\d+%$/);
+  assert.match(await text(page, 'val-wind'), /km\/h$/);
+  assert.match(await text(page, 'val-rain'), /mm$/);
+  assert.match(await text(page, 'val-feels'), /°C$/);
+
+  const julyRain = await text(page, 'val-rain');
+  await page.locator('#month-slider').fill('1');   // February has fewer days
+  await page.waitForFunction(r => document.getElementById('val-rain').textContent !== r, julyRain);
+  assert.notEqual(await text(page, 'val-rain'), julyRain, 'rainfall is per month, not fixed');
+});
+
 // ─── T22 — Comfort Rate detail ────────────────────────────────────────────────
 
 test('T32: the choice cards are single-select and the fortress tier is the strongest', async (t) => {
