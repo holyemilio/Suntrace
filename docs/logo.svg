@@ -1,11 +1,56 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="56" viewBox="0 0 240 56" fill="none" role="img" aria-label="SunTrace">
-  <g transform="translate(4,12)">
-    <circle cx="16" cy="16" r="6" fill="#eab308"/>
-    <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
-    <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-    <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
+  <defs>
+    <clipPath id="logo-sq"><rect x="0" y="0" width="40" height="40" rx="9"/></clipPath>
+    <linearGradient id="logo-gSun" gradientUnits="userSpaceOnUse" x1="10" y1="5" x2="22" y2="21">
+      <stop offset="0" stop-color="#FFD75E"/>
+      <stop offset="0.55" stop-color="#FFA22B"/>
+      <stop offset="1" stop-color="#FF6B1A"/>
+    </linearGradient>
+    <linearGradient id="logo-gBld" gradientUnits="userSpaceOnUse" x1="21" y1="16" x2="33" y2="31">
+      <stop offset="0" stop-color="#33495F"/>
+      <stop offset="1" stop-color="#1A2938"/>
+    </linearGradient>
+    <linearGradient id="logo-gWin" gradientUnits="userSpaceOnUse" x1="24" y1="18" x2="30" y2="25">
+      <stop offset="0" stop-color="#FFE3AE"/>
+      <stop offset="1" stop-color="#FFB25C"/>
+    </linearGradient>
+    <linearGradient id="logo-gBg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="40" y2="40">
+      <stop offset="0" stop-color="#FFF8EC"/>
+      <stop offset="1" stop-color="#FFE7C6"/>
+    </linearGradient>
+    <linearGradient id="logo-gShad" gradientUnits="userSpaceOnUse" x1="24" y1="31" x2="40" y2="34">
+      <stop offset="0" stop-color="#E8620C" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#E8620C" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="logo-gArc" gradientUnits="userSpaceOnUse" x1="2" y1="0" x2="24" y2="0">
+      <stop offset="0" stop-color="#FF8A2E" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FF8A2E" stop-opacity="0.5"/>
+      <stop offset="0.94" stop-color="#FF8A2E" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(6, 8)">
+    <rect x="0" y="0" width="40" height="40" rx="9" fill="url(#logo-gBg)"/>
+    <g clip-path="url(#logo-sq)">
+      <path d="M2.3,30 Q15.3,-5 28.3,30" fill="none" stroke="url(#logo-gArc)" stroke-width="0.7" stroke-linecap="round"/>
+      <path d="M21.3,30.3 L32.3,30.3 L39.6,32.8 L28.6,32.8 Z" fill="url(#logo-gShad)"/>
+      <circle cx="15.3" cy="12.4" r="4.8" fill="url(#logo-gSun)"/>
+      <g fill="url(#logo-gSun)">
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(45 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(90 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(135 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(180 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(225 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(270 15.3 12.4)"/>
+        <rect x="14.6" y="2.8" width="1.4" height="2.9" rx="0.7" transform="rotate(315 15.3 12.4)"/>
+      </g>
+      <rect x="21.3" y="15.7" width="11" height="14.6" rx="0.4" fill="url(#logo-gBld)"/>
+      <rect x="23.7" y="18" width="6.2" height="6.2" rx="0.8" fill="url(#logo-gWin)"/>
+    </g>
   </g>
-  <text x="44" y="37" font-family="'Segoe UI',system-ui,-apple-system,Arial,sans-serif" font-size="28" font-weight="800">
-    <tspan fill="#0f172a">Sun</tspan><tspan fill="#ea580c">Trace</tspan>
+
+  <text x="56" y="36" font-family="'Space Grotesk', system-ui, -apple-system, sans-serif" font-size="24" font-weight="700">
+    <tspan fill="#f1f5f9">Sun</tspan><tspan fill="#f5b301">Trace</tspan>
   </text>
 </svg>

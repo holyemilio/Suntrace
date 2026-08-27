@@ -1,0 +1,49 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="sq"><rect x="0" y="0" width="1024" height="1024" rx="228"/></clipPath>
+    <linearGradient id="gSun" gradientUnits="userSpaceOnUse" x1="252" y1="118" x2="560" y2="520">
+      <stop offset="0" stop-color="#FFD75E"/>
+      <stop offset="0.55" stop-color="#FFA22B"/>
+      <stop offset="1" stop-color="#FF6B1A"/>
+    </linearGradient>
+    <linearGradient id="gBld" gradientUnits="userSpaceOnUse" x1="546" y1="402" x2="826" y2="776">
+      <stop offset="0" stop-color="#33495F"/>
+      <stop offset="1" stop-color="#1A2938"/>
+    </linearGradient>
+    <linearGradient id="gWin" gradientUnits="userSpaceOnUse" x1="606" y1="462" x2="766" y2="622">
+      <stop offset="0" stop-color="#FFE3AE"/>
+      <stop offset="1" stop-color="#FFB25C"/>
+    </linearGradient>
+    <linearGradient id="gBgWarm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1024" y2="1024">
+      <stop offset="0" stop-color="#FFF8EC"/>
+      <stop offset="1" stop-color="#FFE7C6"/>
+    </linearGradient>
+    <linearGradient id="gShad" gradientUnits="userSpaceOnUse" x1="600" y1="776" x2="1024" y2="860">
+      <stop offset="0" stop-color="#E8620C" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#E8620C" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gArc" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="596" y2="0">
+      <stop offset="0" stop-color="#FF8A2E" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FF8A2E" stop-opacity="0.5"/>
+      <stop offset="0.94" stop-color="#FF8A2E" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="228" fill="url(#gBgWarm)"/>
+  <g clip-path="url(#sq)">
+    <path d="M60,760 Q392,-124 724,760" fill="none" stroke="url(#gArc)" stroke-width="16" stroke-linecap="round"/>
+    <path d="M546,776 L826,776 L1014,840 L734,840 Z" fill="url(#gShad)"/>
+    <circle cx="392" cy="318" r="122" fill="url(#gSun)"/>
+    <g fill="url(#gSun)">
+      <rect x="375" y="71" width="34" height="74" rx="17"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(45 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(90 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(135 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(180 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(225 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(270 392 318)"/>
+      <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(315 392 318)"/>
+    </g>
+    <rect x="546" y="402" width="280" height="374" rx="10" fill="url(#gBld)"/>
+    <rect x="606" y="462" width="160" height="160" rx="22" fill="url(#gWin)"/>
+  </g>
+</svg>

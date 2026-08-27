@@ -14,7 +14,6 @@ const STRINGS = {
 
     // Search
     'search-card-aria': 'Ricerca Geografica',
-    'search-title': 'Cerca Indirizzo',
     'search-hint': 'Cerca un indirizzo per iniziare, poi premi «Vai».',
     'search-ph': 'Via o città in Italia…',
     'search-input-aria': 'Campo di ricerca indirizzo',
@@ -193,7 +192,6 @@ const STRINGS = {
     'sidebar-aria': 'SunTrace Control Panel',
 
     'search-card-aria': 'Address search',
-    'search-title': 'Search Address',
     'search-hint': 'Search an address to begin, then press “Go”.',
     'search-ph': 'Street or city in Italy…',
     'search-input-aria': 'Address search field',

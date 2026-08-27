@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SunTrace — Simulatore Microclimatico Urbano</title>
 
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%23eab308'/%3E%3Cpath d='M16 4v4m0 16v4M4 16h4m16 0h4' stroke='%23ea580c' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="docs/app-icon.svg">
 
   <!-- Type: Space Grotesk for the voice, IBM Plex Mono for readings -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,26 +26,74 @@
     <!-- Brand -->
     <header class="brand-container">
       <div class="logo-wrapper">
-        <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <circle cx="16" cy="16" r="6" fill="#eab308"/>
-          <path d="M16 2V6M16 26V30M2 16H6M26 16H30" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M6 6L9.5 9.5M22.5 22.5L26 26" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-          <path d="M28 4C22 10 10 22 4 28" stroke="#059669" stroke-width="1.5" stroke-dasharray="2 2"/>
-        </svg>
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 1024 1024" fill="none">
+            <defs>
+              <clipPath id="hdr-sq"><rect x="0" y="0" width="1024" height="1024" rx="228"/></clipPath>
+              <linearGradient id="hdr-gSun" gradientUnits="userSpaceOnUse" x1="252" y1="118" x2="560" y2="520">
+                <stop offset="0" stop-color="#FFD75E"/>
+                <stop offset="0.55" stop-color="#FFA22B"/>
+                <stop offset="1" stop-color="#FF6B1A"/>
+              </linearGradient>
+              <linearGradient id="hdr-gBld" gradientUnits="userSpaceOnUse" x1="546" y1="402" x2="826" y2="776">
+                <stop offset="0" stop-color="#33495F"/>
+                <stop offset="1" stop-color="#1A2938"/>
+              </linearGradient>
+              <linearGradient id="hdr-gWin" gradientUnits="userSpaceOnUse" x1="606" y1="462" x2="766" y2="622">
+                <stop offset="0" stop-color="#FFE3AE"/>
+                <stop offset="1" stop-color="#FFB25C"/>
+              </linearGradient>
+              <linearGradient id="hdr-gBgWarm" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1024" y2="1024">
+                <stop offset="0" stop-color="#FFF8EC"/>
+                <stop offset="1" stop-color="#FFE7C6"/>
+              </linearGradient>
+              <linearGradient id="hdr-gShad" gradientUnits="userSpaceOnUse" x1="600" y1="776" x2="1024" y2="860">
+                <stop offset="0" stop-color="#E8620C" stop-opacity="0.34"/>
+                <stop offset="1" stop-color="#E8620C" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="hdr-gArc" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="596" y2="0">
+                <stop offset="0" stop-color="#FF8A2E" stop-opacity="0"/>
+                <stop offset="0.5" stop-color="#FF8A2E" stop-opacity="0.5"/>
+                <stop offset="0.94" stop-color="#FF8A2E" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="1024" height="1024" rx="228" fill="url(#hdr-gBgWarm)"/>
+            <g clip-path="url(#hdr-sq)">
+              <path d="M60,760 Q392,-124 724,760" fill="none" stroke="url(#hdr-gArc)" stroke-width="16" stroke-linecap="round"/>
+              <path d="M546,776 L826,776 L1014,840 L734,840 Z" fill="url(#hdr-gShad)"/>
+              <circle cx="392" cy="318" r="122" fill="url(#hdr-gSun)"/>
+              <g fill="url(#hdr-gSun)">
+                <rect x="375" y="71" width="34" height="74" rx="17"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(45 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(90 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(135 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(180 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(225 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(270 392 318)"/>
+                <rect x="375" y="71" width="34" height="74" rx="17" transform="rotate(315 392 318)"/>
+              </g>
+              <rect x="546" y="402" width="280" height="374" rx="10" fill="url(#hdr-gBld)"/>
+              <rect x="606" y="462" width="160" height="160" rx="22" fill="url(#hdr-gWin)"/>
+            </g>
+          </svg>
+        </span>
         <h1 class="logo-text">Sun<span>Trace</span></h1>
       </div>
       <div class="scanner-badge">
-        <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="#059669"/></svg>
+        <svg width="7" height="7" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="#22c55e"/></svg>
         v4.0 Meeus
       </div>
     </header>
 
     <!-- Address search (primo passo: scegli il luogo da analizzare) -->
-    <section class="card" data-i18n-aria="search-card-aria" aria-label="Ricerca Geografica">
-      <p class="card-title" data-i18n="search-title">📍 Cerca Indirizzo</p>
-      <p class="search-hint" data-i18n="search-hint">Cerca un indirizzo per iniziare, poi premi «Vai».</p>
+    <section class="card search-card" data-i18n-aria="search-card-aria" aria-label="Ricerca Geografica">
       <div class="flex-group">
         <div class="search-wrapper">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>
+            </svg>
+          </span>
           <input
             type="text"
             id="search-input"
@@ -61,12 +109,54 @@
         </div>
         <button id="search-btn" data-i18n="search-go" data-i18n-aria="search-go-aria" aria-label="Cerca indirizzo">Vai</button>
       </div>
+      <p class="search-hint" data-i18n="search-hint">Cerca un indirizzo per iniziare, poi premi «Vai».</p>
     </section>
 
     <!-- Main output -->
     <section class="output-box" aria-labelledby="main-output-title">
-      <p class="output-subtitle" id="main-output-title" data-i18n="output-initial">Stima temperatura vano</p>
-      <div class="output-temp" id="thermal-result" aria-live="polite">--°C</div>
+      <div class="hero-glow" aria-hidden="true"></div>
+
+      <div class="hero-top">
+        <p class="output-subtitle" id="main-output-title" data-i18n="output-initial">Stima temperatura vano</p>
+        <div class="coord-row">
+          <span id="coord-lat">--°N</span>
+          <span id="coord-lng">--°E</span>
+        </div>
+      </div>
+
+      <div class="hero-main">
+        <div class="hero-figure">
+          <div class="output-temp" id="thermal-result" aria-live="polite">--°C</div>
+          <p class="hero-range" aria-hidden="true">
+            <span class="hr-item"><span class="hr-ico cold">❄</span><span id="hero-lo">--°</span></span>
+            <span class="hr-sep"></span>
+            <span class="hr-item"><span class="hr-ico warm">☀</span><span id="hero-hi">--°</span></span>
+          </p>
+        </div>
+
+        <!-- Soft solar glyph: dims when the sun is below the horizon -->
+        <div class="hero-sun" id="hero-sun" aria-hidden="true">
+          <svg viewBox="0 0 120 120" fill="none">
+            <defs>
+              <radialGradient id="sunCore" cx="50%" cy="45%" r="55%">
+                <stop offset="0%" stop-color="#ffe9a8"/>
+                <stop offset="55%" stop-color="#f5b301"/>
+                <stop offset="100%" stop-color="#e07b00"/>
+              </radialGradient>
+              <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%">
+                <stop offset="35%" stop-color="rgba(245,179,1,0.34)"/>
+                <stop offset="100%" stop-color="rgba(245,179,1,0)"/>
+              </radialGradient>
+            </defs>
+            <circle cx="60" cy="60" r="58" fill="url(#sunHalo)"/>
+            <circle cx="60" cy="60" r="27" fill="url(#sunCore)"/>
+            <g stroke="#f5b301" stroke-width="4.5" stroke-linecap="round" opacity="0.75">
+              <path d="M60 12v11M60 97v11M12 60h11M97 60h11"/>
+              <path d="M26 26l7.8 7.8M86.2 86.2L94 94M94 26l-7.8 7.8M33.8 86.2L26 94" opacity="0.6"/>
+            </g>
+          </svg>
+        </div>
+      </div>
 
       <div class="comfort-rate-wrapper">
         <div class="comfort-rate-caption" data-i18n="comfort-estimated">Comfort Rate Stimato</div>
@@ -78,7 +168,7 @@
           data-i18n-aria="comfort-open-aria"
           aria-label="Apri dettaglio comfort"
         >
-          <span id="comfort-rate-stars" style="letter-spacing:1px;font-size:0.85rem;margin-right:4px;">⭐⭐⭐⭐⭐</span>
+          <span id="comfort-rate-stars">⭐⭐⭐⭐⭐</span>
           <span id="comfort-rate-label">--</span>
           <!-- GitHub-style Tooltip -->
           <div class="comfort-rate-tooltip" role="tooltip" data-i18n="comfort-tooltip">
@@ -91,27 +181,25 @@
       <!-- Seasonal grid -->
       <div class="quadrant-grid" role="region" data-i18n-aria="seasonal-aria" aria-label="Temperature Stagionali">
         <div class="quadrant-card" id="quad-winter">
+          <span class="q-ico" aria-hidden="true">❄️</span>
           <span class="q-label" data-i18n="season-winter">Inverno</span>
           <strong class="q-value" id="val-q-winter">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-spring">
+          <span class="q-ico" aria-hidden="true">🌱</span>
           <span class="q-label" data-i18n="season-spring">Primavera</span>
           <strong class="q-value" id="val-q-spring">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-summer">
+          <span class="q-ico" aria-hidden="true">🔆</span>
           <span class="q-label" data-i18n="season-summer">Estate</span>
           <strong class="q-value" id="val-q-summer">--°C</strong>
         </div>
         <div class="quadrant-card" id="quad-autumn">
+          <span class="q-ico" aria-hidden="true">🍂</span>
           <span class="q-label" data-i18n="season-autumn">Autunno</span>
           <strong class="q-value" id="val-q-autumn">--°C</strong>
         </div>
-      </div>
-
-      <!-- Coordinates -->
-      <div class="coord-row">
-        <span id="coord-lat">--°N</span>
-        <span id="coord-lng">--°E</span>
       </div>
     </section>
 
@@ -137,7 +225,7 @@
     </section>
 
     <!-- Solar info -->
-    <section class="card" data-i18n-aria="solar-card-aria" aria-label="Informazioni Solari">
+    <section class="card solar-card" data-i18n-aria="solar-card-aria" aria-label="Informazioni Solari">
       <p class="card-title">
         <span data-i18n="solar-title">☀️ Dati Solari</span>
         <span class="info-tip" tabindex="0" data-i18n-aria="tip-solar-data">
@@ -145,35 +233,87 @@
           <span class="info-tip-box" role="tooltip" data-i18n="tip-solar-data">Posizione del Sole e durata del giorno per data, ora e luogo selezionati.</span>
         </span>
       </p>
-      <div class="info-row">
-        <span class="label" data-i18n="solar-sunrise">Alba (ora locale)</span>
-        <span class="value" id="val-sunrise">--:--</span>
+
+      <!-- Dynamic Sun Trajectory Arc Widget -->
+      <div class="solar-trajectory-widget" id="solar-trajectory-widget" aria-hidden="true">
+        <div class="solar-arc-svg-wrap">
+          <svg viewBox="0 0 280 84" class="solar-arc-svg" fill="none">
+            <defs>
+              <linearGradient id="arcSkyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                <stop offset="50%" stop-color="#f5b301" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#f97316" stop-opacity="0.35"/>
+              </linearGradient>
+              <linearGradient id="arcFillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="rgba(245, 179, 1, 0.16)"/>
+                <stop offset="100%" stop-color="rgba(245, 179, 1, 0.0)"/>
+              </linearGradient>
+              <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- Day Sky Fill under curve -->
+            <path id="solar-arc-fill" d="M 20 70 Q 140 14 260 70 Z" fill="url(#arcFillGrad)"/>
+            <!-- Background Arc Track -->
+            <path d="M 20 70 Q 140 14 260 70" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 5"/>
+            <!-- Active Sun Path Curve -->
+            <path id="solar-arc-path" d="M 20 70 Q 140 14 260 70" stroke="url(#arcSkyGrad)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Horizon Base Line -->
+            <line x1="12" y1="70" x2="268" y2="70" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-dasharray="2 3"/>
+            <!-- Moving Sun Orb -->
+            <g id="solar-arc-sun" transform="translate(140, 14)">
+              <circle r="14" fill="rgba(245,179,1,0.22)" filter="url(#sunGlow)"/>
+              <circle r="7.5" fill="#f5b301" stroke="#ffffff" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="solar-arc-footer">
+          <div class="solar-endpoint">
+            <span class="endpoint-ico">🌅</span>
+            <div class="endpoint-meta">
+              <span class="endpoint-lbl" data-i18n="solar-sunrise">Alba</span>
+              <strong class="endpoint-val" id="val-sunrise">--:--</strong>
+            </div>
+          </div>
+          <div class="solar-day-badge">
+            <span class="day-badge-lbl" data-i18n="solar-daylength">Giorno</span>
+            <strong class="day-badge-val" id="val-day-length">--</strong>
+          </div>
+          <div class="solar-endpoint endpoint-right">
+            <div class="endpoint-meta text-right">
+              <span class="endpoint-lbl" data-i18n="solar-sunset">Tramonto</span>
+              <strong class="endpoint-val" id="val-sunset">--:--</strong>
+            </div>
+            <span class="endpoint-ico">🌇</span>
+          </div>
+        </div>
       </div>
-      <div class="info-row">
-        <span class="label" data-i18n="solar-sunset">Tramonto (ora locale)</span>
-        <span class="value" id="val-sunset">--:--</span>
-      </div>
-      <div class="info-row">
-        <span class="label" data-i18n="solar-daylength">Durata del giorno</span>
-        <span class="value" id="val-day-length">--</span>
-      </div>
-      <div class="info-row">
-        <span class="label" data-i18n="solar-elevation">Elevazione solare</span>
-        <span class="value" id="val-sun-elevation">--°</span>
-      </div>
-      <div class="info-row">
-        <span class="label" data-i18n="solar-azimuth">Azimut solare</span>
-        <span class="value" id="val-sun-azimuth">--°</span>
-      </div>
-      <div class="info-row">
-        <span class="label-with-tip">
-          <span class="label" data-i18n="solar-direct">Sole diretto</span>
-          <span class="info-tip" tabindex="0" data-i18n-aria="tip-direct-sun">
-            <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
-            <span class="info-tip-box" role="tooltip" data-i18n="tip-direct-sun">Se il sole colpisce davvero la facciata o e' bloccato dagli edifici vicini.</span>
+
+      <!-- Bento Telemetry Grid -->
+      <div class="solar-telemetry-grid">
+        <div class="telemetry-pill">
+          <span class="telemetry-pill-lbl" data-i18n="solar-elevation">Elevazione solare</span>
+          <strong class="telemetry-pill-val" id="val-sun-elevation">--°</strong>
+        </div>
+        <div class="telemetry-pill">
+          <span class="telemetry-pill-lbl" data-i18n="solar-azimuth">Azimut solare</span>
+          <strong class="telemetry-pill-val" id="val-sun-azimuth">--°</strong>
+        </div>
+        <div class="telemetry-pill telemetry-pill-full">
+          <span class="label-with-tip">
+            <span class="telemetry-pill-lbl" data-i18n="solar-direct">Sole diretto</span>
+            <span class="info-tip" tabindex="0" data-i18n-aria="tip-direct-sun">
+              <span class="info-tip-icon" aria-hidden="true">ⓘ</span>
+              <span class="info-tip-box" role="tooltip" data-i18n="tip-direct-sun">Se il sole colpisce davvero la facciata o e' bloccato dagli edifici vicini.</span>
+            </span>
           </span>
-        </span>
-        <strong class="value" id="val-sun-direct">--</strong>
+          <strong class="value badge-value" id="val-sun-direct">--</strong>
+        </div>
       </div>
     </section>
 
@@ -188,19 +328,19 @@
       </p>
       <div class="info-row">
         <span class="label" data-i18n="climate-humidity">Umidità media</span>
-        <span class="value" id="val-humidity">—</span>
+        <span class="value with-ico"><span id="val-humidity">—</span><span class="v-ico" aria-hidden="true">💧</span></span>
       </div>
       <div class="info-row">
         <span class="label" data-i18n="climate-wind">Vento medio</span>
-        <span class="value" id="val-wind">—</span>
+        <span class="value with-ico"><span id="val-wind">—</span><span class="v-ico" aria-hidden="true">🌬️</span></span>
       </div>
       <div class="info-row">
         <span class="label" data-i18n="climate-rain">Pioggia del mese</span>
-        <span class="value" id="val-rain">—</span>
+        <span class="value with-ico"><span id="val-rain">—</span><span class="v-ico" aria-hidden="true">🌧️</span></span>
       </div>
       <div class="info-row">
         <span class="label" data-i18n="climate-feels">Percepita ora</span>
-        <span class="value" id="val-feels">—</span>
+        <span class="value with-ico"><span id="val-feels">—</span><span class="v-ico" aria-hidden="true">🌡️</span></span>
       </div>
     </section>
 
@@ -215,7 +355,7 @@
             <span class="info-tip-box" role="tooltip" data-i18n="tip-orientation">Direzione verso cui guarda la facciata analizzata.</span>
           </span>
         </span>
-        <strong class="value" id="telemetry-cardinal">--</strong>
+        <strong class="value badge-value" id="telemetry-cardinal">--</strong>
       </div>
       <div class="info-row">
         <span class="label-with-tip">
@@ -225,7 +365,7 @@
             <span class="info-tip-box" role="tooltip" data-i18n="tip-shading">Stima automatica dell'ostruzione solare in base alla posizione.</span>
           </span>
         </span>
-        <strong class="value" id="val-manual-obs">--</strong>
+        <strong class="value badge-value" id="val-manual-obs">--</strong>
       </div>
 
       <div class="choice-row">

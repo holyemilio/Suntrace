@@ -542,7 +542,7 @@ function refreshUI() {
       else if (s.temp >= 27.5) color = 'var(--orange)';
       else if (s.temp >= 26.0) color = 'var(--yellow)';
     }
-    card.style.backgroundColor = color;
+    card.style.setProperty('--q-color', color);
   }
 
   // Perceived ("feels-like") winter/summer temperatures from humidity + wind,
@@ -555,6 +555,10 @@ function refreshUI() {
     };
   }
 
+  // Hero range: the coldest and warmest season, beside the headline number
+  setText('hero-lo', seasonal.winter.toFixed(0) + '\u00b0');
+  setText('hero-hi', seasonal.summer.toFixed(0) + '\u00b0');
+
   // Comfort Rate
   const comfort = cozynessScore(seasonal.winter, seasonal.summer, kOmbra, windowsType, insulationType, feels);
   const comfortLabel = t('comfort-' + comfort.stars);
@@ -562,7 +566,7 @@ function refreshUI() {
   setText('comfort-rate-label', comfortLabel);
   const badge = $('energy-class-field');
   if (badge) {
-    badge.style.backgroundColor = comfort.color;
+    badge.style.setProperty('--comfort-color', comfort.color);
     badge.dataset.stars = String(comfort.stars);
     badge.dataset.label = comfortLabel;
   }
@@ -585,6 +589,8 @@ function refreshUI() {
   else sunKey = 'sun-yes';
   setText('val-sun-direct', t(sunKey));
   updateCompass(angleDeg, azimuth, hasSun, sunKey);
+  updateDayArc(sunrise, sunset, localHour);
+  $('hero-sun')?.classList.toggle('night', !hasSun);
 
   // Local climate for the selected month (— when the API gave us nothing)
   const rhNow = climateExtra?.rh?.[month];
@@ -641,7 +647,7 @@ function openKPIModal() {
   const classBadge = $('modal-class-badge');
   if (classBadge) {
     classBadge.textContent = `${t('comfort-rate')} ${'⭐'.repeat(comfort.stars)}`;
-    classBadge.style.backgroundColor = comfort.color;
+    classBadge.style.setProperty('--comfort-color', comfort.color);
   }
 
   setText('kpi-winter-temp', seasonal.winter.toFixed(1) + '°C');
@@ -665,16 +671,74 @@ function closeKPIModal() {
   $('kpi-modal').classList.remove('open');
 }
 
+// ─── daylight bar ─────────────────────────────────────────────────────────────
+
+/**
+ * Paint the daylight bar: the lit span of the day plus a dot on the hour being
+ * analysed. Purely decorative — the same numbers sit in the rows underneath.
+ * @param {Date|null} sunrise
+ * @param {Date|null} sunset
+ * @param {number} localHour  hour under analysis (0–23)
+ */
+function updateDayArc(sunrise, sunset, localHour) {
+  const sunOrb = $('solar-arc-sun');
+
+  const hourOf = d => {
+    // The Date is UTC; read it back in the app's timezone, as the rows do.
+    const parts = new Intl.DateTimeFormat('it-IT', {
+      timeZone: TIMEZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(d);
+    const h = +parts.find(p => p.type === 'hour').value;
+    const m = +parts.find(p => p.type === 'minute').value;
+    return h + m / 60;
+  };
+
+  // No sunrise or sunset (polar edge cases): show defaults
+  const rise = sunrise ? hourOf(sunrise) : 6;
+  const set = sunset ? hourOf(sunset) : 18;
+  const dayLength = Math.max(0.1, set - rise);
+  const now = localHour + 0.5;
+  const fraction = (now - rise) / dayLength;
+
+  // SVG coordinate dimensions: x from 20 to 260, yBase = 70, yApex = 14
+  const x0 = 20, x1 = 260, yBase = 70, yApex = 14;
+
+  if (sunOrb) {
+    if (fraction >= 0 && fraction <= 1) {
+      const u = Math.max(0, Math.min(1, fraction));
+      const x = x0 + u * (x1 - x0);
+      // Parabolic arc height formula: y = yBase - (yBase - yApex) * 4 * u * (1 - u)
+      const y = yBase - (yBase - yApex) * 4 * u * (1 - u);
+      sunOrb.setAttribute('transform', `translate(${x.toFixed(1)}, ${y.toFixed(1)})`);
+      sunOrb.classList.remove('night');
+    } else {
+      // Below horizon
+      const isBeforeRise = fraction < 0;
+      const x = isBeforeRise ? x0 : x1;
+      const y = yBase + 4;
+      sunOrb.setAttribute('transform', `translate(${x}, ${y})`);
+      sunOrb.classList.add('night');
+    }
+  }
+}
+
 // ─── time sliders ─────────────────────────────────────────────────────────────
 
-function initSliders() {
-  $('month-slider').addEventListener('input', () => {
-    if (currentScan) refreshUI(); // refreshUI updates the month/hour labels
-  });
+/** Fill the track up to the current value (CSS reads --p as 0…1). */
+function paintSlider(el) {
+  const min = +el.min, max = +el.max;
+  el.style.setProperty('--p', String((el.value - min) / (max - min)));
+}
 
-  $('hour-slider').addEventListener('input', () => {
-    if (currentScan) refreshUI(); // refreshUI updates the month/hour labels
-  });
+function initSliders() {
+  for (const id of ['month-slider', 'hour-slider']) {
+    const el = $(id);
+    paintSlider(el);
+    el.addEventListener('input', () => {
+      paintSlider(el);
+      if (currentScan) refreshUI(); // refreshUI updates the month/hour labels
+    });
+  }
 }
 
 // ─── facade orientation slider ────────────────────────────────────────────────
