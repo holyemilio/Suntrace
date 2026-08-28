@@ -36,7 +36,7 @@
 | **Bilingue IT/EN** | Selettore in-app, rilevamento automatico della lingua del browser, scelta memorizzata. |
 | **Autocomplete Nominatim** | Debounce 420ms, limitato all'Italia; la ricerca parte solo col pulsante «Vai». |
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
-| **Zero dipendenze di runtime** | Solo Leaflet (CDN) + API pubbliche e senza chiave: OpenStreetMap (mappa e edifici), Nominatim, Open-Meteo. Nessun bundler. |
+| **Zero dipendenze di runtime** | Leaflet e font serviti in locale (`vendor/`), nessun CDN: le uniche richieste esterne vanno alle API pubbliche senza chiave — OpenStreetMap (mappa e edifici), Nominatim, Open-Meteo. Nessun bundler. |
 | **Clima del luogo** | Umidità, vento, pioggia e percepita del mese scelto, dalle normali reali del punto. |
 | **60 unit + 22 e2e** | `node --test` per motore solare, modello termico e geometria delle ombre; Playwright guida l'app in un browser vero. |
 
@@ -160,13 +160,21 @@ SunTrace/
 │   ├── tokens.css      # Design token (:root) condivisi da entrambe le pagine
 │   ├── styles.css      # Stili del simulatore (mobile-first, WCAG AA)
 │   └── landing.css     # Stili della landing page
+├── vendor/
+│   ├── fonts/          # Space Grotesk + IBM Plex Mono self-hostati (niente Google Fonts)
+│   └── leaflet/        # Leaflet 1.9.4 self-hostato (niente CDN)
+├── server/
+│   └── overpass-cache/ # Cloudflare Worker: cache 30gg davanti a Overpass (opzionale)
 ├── tests/
 │   ├── solar.test.js   # 23 test — motore astronomico (oracle SunCalc)
 │   ├── climate.test.js # 21 test — modello termico e Comfort Rate
 │   ├── shadow.test.js  # 16 test — geometria facciate e ombre
 │   └── e2e/app.e2e.js  # 22 test end-to-end (Playwright, browser headless)
+├── .github/
+│   └── workflows/ci.yml # CI: unit + parità i18n + e2e a ogni push
 ├── docs/
 │   └── case-study.md   # Case study tecnico
+├── CLAUDE.md           # Contesto di progetto per le sessioni AI
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE             # MIT
@@ -184,7 +192,7 @@ Il motore astronomico (`solar.js`) è interamente **puro** (nessun accesso al DO
 - Testabile con `node --test` senza browser
 - Riutilizzabile in altri contesti (worker, server-side)
 
-L'interfaccia usa Leaflet (CDN) per la mappa e l'API pubblica Nominatim per il geocoding, rispettando i [termini di utilizzo](https://operations.osmfoundation.org/policies/nominatim/) con debounce ≥ 420ms e `countrycodes=it`.
+L'interfaccia usa Leaflet 1.9.4 (self-hosted in `vendor/leaflet/`, hash verificato contro leafletjs.com) per la mappa e l'API pubblica Nominatim per il geocoding, rispettando i [termini di utilizzo](https://operations.osmfoundation.org/policies/nominatim/) con debounce ≥ 420ms e `countrycodes=it`. Anche i font (Space Grotesk, IBM Plex Mono) sono self-hostati in `vendor/fonts/`: nessuna richiesta dei visitatori raggiunge Google o altri CDN.
 
 ---
 

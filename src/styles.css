@@ -1067,7 +1067,6 @@ button:active { transform: translateY(1px); }
   background: var(--accent);
   color: var(--accent-ink);
 }
-@media (max-width: 768px) { .floor-bar { display: none; } }
 
 /* ─── custom map marker (clean green dot) ────────────────────────────────── */
 .suntrace-marker {
@@ -1531,44 +1530,16 @@ button:active { transform: translateY(1px); }
 .footer-links a:hover { color: var(--accent); }
 .footer-copy { font-size: 0.66rem; color: var(--text-muted); opacity: 0.65; }
 
-/* ─── mobile sidebar toggle ──────────────────────────────────────────────── */
-#sidebar-toggle {
-  display: none;
-  position: absolute;
-  bottom: 24px;
-  right: 16px;
-  z-index: 1200;
-  padding: 12px 20px;
-}
-
 /* ─── responsive ─────────────────────────────────────────────────────────── */
+/* Below the breakpoint, the sidebar's content has already been moved into the
+   mobile-only elements below (see initMobileLayout in ui.js) — the sidebar
+   itself just gets out of the way, full width for the map. */
 @media (max-width: 768px) {
   body { flex-direction: column; }
 
-  #sidebar {
-    position: absolute;
-    bottom: 0;
-    left: 0; right: 0;
-    width: 100%;
-    height: 62%;
-    min-width: unset;
-    border-right: none;
-    border-top: 1px solid var(--stroke-2);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    z-index: 1500;
-  }
-
-  #sidebar.open { transform: translateY(0); }
+  #sidebar { display: none; }
 
   #map-container { height: 100vh; width: 100%; }
-
-  #sidebar-toggle { display: flex; align-items: center; gap: 6px; }
-
-  .output-temp { font-size: 2.7rem; }
-  .hero-sun { width: 76px; height: 76px; flex-basis: 76px; }
 
   .modal { margin: 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0; position: fixed; bottom: 0; max-width: 100%; animation: modalInMobile 0.25s ease; }
   @keyframes modalInMobile { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -1578,6 +1549,196 @@ button:active { transform: translateY(1px); }
 @media (min-width: 769px) and (max-width: 1024px) {
   :root { --sidebar-width: 384px; }
   .output-temp { font-size: 3rem; }
+}
+
+/* ─── mobile layout ──────────────────────────────────────────────────────────
+   Hidden on desktop; shown only below the breakpoint. The sidebar's content
+   is moved into these containers once at startup (initMobileLayout in ui.js),
+   so the map stays clear and everything you'd set lives in one drawer, one
+   Info sheet, and two small readouts you open on demand. ────────────────── */
+
+.mobile-info-btn, .mobile-drawer-toggle, .mobile-widgets, .mobile-bottom-bar,
+.mobile-sheet, .mobile-sheet-overlay { display: none; }
+
+@media (max-width: 768px) {
+  .mobile-info-btn, .mobile-drawer-toggle, .mobile-widgets, .mobile-bottom-bar {
+    display: flex;
+  }
+
+  /* the info toggle sits exactly where the placement hint used to */
+  .mobile-info-btn {
+    position: absolute;
+    top: 66px;
+    left: 14px;
+    z-index: 1100;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass);
+    color: var(--text);
+    border: 1px solid var(--stroke-2);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(12px);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0;
+  }
+  .mobile-info-btn:hover { border-color: rgba(245, 179, 1, 0.5); }
+
+  /* ── bottom sheets (Info / Drawer): shared shell ───────────────────────── */
+  /* Opacity + visibility (not display) transition, so closing can fade out
+     instead of vanishing instantly; the sheet itself stays display:block
+     always so its transform-based slide can animate both ways. */
+  .mobile-sheet-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(4, 6, 9, 0.62);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .mobile-sheet-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease;
+  }
+  .mobile-sheet {
+    display: block;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1500;
+    max-height: 78vh;
+    overflow-y: auto;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--stroke-2);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
+    padding: 14px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .mobile-sheet.open { transform: translateY(0); }
+  .mobile-sheet-handle {
+    width: 40px; height: 4px;
+    margin: 0 auto 12px;
+    border-radius: var(--pill);
+    background: var(--stroke-2);
+  }
+  .mobile-sheet-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card-2);
+    border: 1px solid var(--stroke-2);
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+  }
+  .mobile-sheet-close:hover { background: var(--track); color: var(--text-strong); filter: none; }
+  .mobile-sheet-body { display: flex; flex-direction: column; gap: 12px; }
+  /* the reparented sections keep their own .card look; just stack them */
+  .mobile-sheet-body > .card { box-shadow: none; }
+
+  /* the drawer additionally carries the current reading, above its controls */
+  .mobile-drawer .hero-top { display: flex; }
+
+  /* ── drawer toggle ──────────────────────────────────────────────────────── */
+  .mobile-drawer-toggle {
+    position: fixed;
+    left: 50%;
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 1100;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: linear-gradient(160deg, var(--accent-hover), var(--accent));
+    color: var(--accent-ink);
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.84rem;
+    box-shadow: 0 10px 26px -10px rgba(245, 179, 1, 0.85);
+    cursor: pointer;
+  }
+
+  /* ── solar / climate widgets, stacked bottom-right, above the bottom bar ── */
+  .mobile-widgets {
+    position: fixed;
+    right: 14px;
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    z-index: 1100;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .mobile-widget {
+    flex-direction: column;
+    border-radius: var(--radius-lg);
+    background: var(--glass);
+    border: 1px solid var(--stroke-2);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(14px);
+  }
+  .mobile-widget .mini-panel-body {
+    padding: 0 14px 14px;
+    width: 240px;
+    max-width: calc(100vw - 28px);
+  }
+  .mobile-widget .mini-panel-body > .card {
+    box-shadow: none;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  /* ── persistent bottom bar: the seasons, and the comfort badge ─────────── */
+  .mobile-bottom-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1050;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--glass);
+    border-top: 1px solid var(--stroke-2);
+    backdrop-filter: blur(14px);
+  }
+  .mobile-bottom-bar .quadrant-grid {
+    flex: 1;
+    margin-top: 0;
+    gap: 6px;
+  }
+  .mobile-bottom-bar .quadrant-card { padding: 6px 2px 5px; }
+  .mobile-bottom-bar .q-ico { font-size: 0.8rem; margin-bottom: 2px; }
+  .mobile-bottom-bar .q-label { font-size: 0.48rem; }
+  .mobile-bottom-bar .q-value { font-size: 0.76rem; }
+  .mobile-bottom-bar .comfort-rate-wrapper { flex: none; text-align: center; margin-top: 0; }
+  .mobile-bottom-bar .comfort-rate-caption,
+  .mobile-bottom-bar .kpi-hint { display: none; }
+  .mobile-bottom-bar .comfort-rate-badge { margin-top: 0; padding: 8px 10px; font-size: 0; gap: 0; }
+  .mobile-bottom-bar #comfort-rate-stars { font-size: 0.72rem; letter-spacing: 0; }
+  .mobile-bottom-bar #comfort-rate-label { display: none; }
+
+  /* the reparented hero: fits the drawer instead of the old sidebar card */
+  .mobile-drawer .output-temp { font-size: 2.7rem; }
+  .mobile-drawer .hero-sun { width: 76px; height: 76px; flex-basis: 76px; }
+
+  /* the persistent bottom bar now owns that bottom-left corner */
+  .lang-switch {
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    left: 14px;
+  }
 }
 
 /* ─── mobile warning overlay ─────────────────────────────────────────────── */

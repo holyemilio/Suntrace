@@ -144,13 +144,60 @@ function initMap() {
 }
 
 // Clean custom marker (a green dot) — replaces Leaflet's default pin + grey shadow.
+// The icon box is bigger than the visible dot on purpose: it's the drag/pinch
+// hit-area (Leaflet's 1-finger drag and our own 2-finger rotate gesture both
+// grab this element), and a 16px dot alone is too small a touch target.
 function markerIcon() {
   return L.divIcon({
     className: 'suntrace-marker',
     html: '<span class="suntrace-marker-dot"></span>',
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
+    iconSize: [56, 56],
+    iconAnchor: [28, 28],
   });
+}
+
+/**
+ * Two-finger rotate on the marker: on mobile there's no room for the compass
+ * dial, so grabbing the pin itself and twisting rotates the facade, snapping
+ * every 45° like the desktop drag. One finger still just moves the marker —
+ * that's Leaflet's own draggable, unrelated to this. A capture-phase listener
+ * on the map container sees a two-finger touch on the marker before Leaflet's
+ * own (bubble-phase) marker-drag and pinch-zoom handlers do, so it can claim
+ * it and stop it from reaching Leaflet at all.
+ */
+function initFacadeRotateGesture() {
+  let gesture = null; // { startAngle, startFacadeDeg } while a rotate is in progress
+
+  const touchAngle = (a, b) => Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180 / Math.PI;
+  const normalize360 = d => ((d % 360) + 360) % 360;
+  const snap45 = d => Math.round(d / 45) * 45 % 360;
+  const isOnMarker = target => {
+    const el = targetMarker?.getElement();
+    return !!el && (el === target || el.contains(target));
+  };
+
+  const container = map.getContainer();
+
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length !== 2 || !currentScan || !isOnMarker(e.target)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    gesture = { startAngle: touchAngle(e.touches[0], e.touches[1]), startFacadeDeg: currentScan.angleDeg };
+  }, { capture: true, passive: false });
+
+  container.addEventListener('touchmove', e => {
+    if (!gesture || e.touches.length !== 2) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = touchAngle(e.touches[0], e.touches[1]) - gesture.startAngle;
+    currentScan.angleDeg = snap45(normalize360(gesture.startFacadeDeg + delta));
+    currentScan.userAdjusted = true;
+    refreshUI();
+  }, { capture: true, passive: false });
+
+  const endGesture = e => { if (e.touches.length < 2) gesture = null; };
+  container.addEventListener('touchend', endGesture, { capture: true });
+  container.addEventListener('touchcancel', endGesture, { capture: true });
 }
 
 // ─── map overlays ─────────────────────────────────────────────────────────────
@@ -264,9 +311,16 @@ function loadClimateFor(lat, lng) {
 
 // ─── OSM building context (real facade orientation + obstruction) ─────────────
 
+// Optional edge cache (see server/overpass-cache): once deployed, paste its URL
+// here and it becomes the first stop — instant answers for already-seen areas,
+// no rate limits. Empty string = disabled; the public mirrors below always
+// remain as fallback, so the app never gains a new single point of failure.
+const OVERPASS_PROXY_URL = '';
+
 // The main Overpass instance is a heavily used free service that rate-limits and
 // refuses connections under load; fall through to the community mirrors.
 const OVERPASS_URLS = [
+  ...(OVERPASS_PROXY_URL ? [OVERPASS_PROXY_URL] : []),
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
@@ -317,7 +371,10 @@ async function fetchBuildingContext(lat, lng) {
     if (cached) return JSON.parse(cached);
   } catch { /* corrupted cache — refetch */ }
 
-  const q = `[out:json][timeout:20];(way["building"](around:90,${lat},${lng});relation["building"](around:90,${lat},${lng}););out geom;`;
+  // Coordinates rounded to 4 decimals (~11 m — same tolerance as the cache key
+  // above): identical queries from nearby clicks let the edge cache share results.
+  const qLat = lat.toFixed(4), qLng = lng.toFixed(4);
+  const q = `[out:json][timeout:20];(way["building"](around:90,${qLat},${qLng});relation["building"](around:90,${qLat},${qLng}););out geom;`;
   const data = await overpassQuery(q);
 
   const raw = (data.elements || []).filter(e => Array.isArray(e.geometry) && e.geometry.length >= 3);
@@ -1010,19 +1067,6 @@ function getLocation() {
   );
 }
 
-// ─── mobile sidebar toggle ────────────────────────────────────────────────────
-
-function initMobileToggle() {
-  const toggle  = $('sidebar-toggle');
-  const sidebar = $('sidebar');
-  if (!toggle || !sidebar) return;
-
-  toggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-    toggle.textContent = sidebar.classList.contains('open') ? t('panel-close') : t('panel-open');
-  });
-}
-
 // ─── language switcher (IT / EN) ──────────────────────────────────────────────
 
 function markActiveLang() {
@@ -1039,11 +1083,6 @@ function changeLang(lang) {
   markActiveLang();
   if (currentScan) refreshUI(); // dynamic text (temps, labels, exposure…)
   if ($('kpi-modal')?.classList.contains('open')) openKPIModal(); // refresh an open modal
-  const toggle = $('sidebar-toggle');
-  const sidebar = $('sidebar');
-  if (toggle && sidebar) {
-    toggle.textContent = sidebar.classList.contains('open') ? t('panel-close') : t('panel-open');
-  }
 }
 
 function initLangSwitch() {
@@ -1112,41 +1151,121 @@ function initFloorBar() {
   markActiveFloor();
 }
 
-// ─── app bootstrap ────────────────────────────────────────────────────────────
+// ─── mobile layout ──────────────────────────────────────────────────────────
+//
+// Below the desktop breakpoint the sidebar is hidden (see the CSS) and its
+// content is moved, once, into the mobile-only elements declared in app.html:
+// a persistent bottom bar for the seasons and the Comfort Rate, a settings
+// drawer for search/month/hour/infissi/isolamento, two small widgets for the
+// solar and climate readings, and one Info sheet folding the map legend and
+// the placement hint together. Reparenting the *existing* elements (not
+// duplicating markup) keeps every id and its already-wired event handlers —
+// setText() and friends keep working unchanged regardless of where in the
+// DOM an element now lives.
 
-let appStarted = false;
+// Matches the CSS breakpoint. Decided once at startup — the app does not
+// re-layout live across a resize that crosses it (same as before).
+function isMobileLayout() {
+  return window.innerWidth <= 768;
+}
 
-// The app is desktop-only: below this width the map controls have no room.
-function isSmallScreen() {
-  return window.innerWidth < 768 || navigator.maxTouchPoints > 1;
+function initMobileLayout() {
+  if (mobileLayoutActive) return; // idempotent: a resize can call this more than once
+  mobileLayoutActive = true;
+  const move = (el, into) => { if (el && into) into.appendChild(el); };
+
+  const bottomBar = $('mobile-bottom-bar');
+  move(document.querySelector('.quadrant-grid'), bottomBar);
+  move($('energy-class-field'), bottomBar);
+
+  const drawerBody = $('mobile-drawer-body');
+  move(document.querySelector('.hero-top'), drawerBody);
+  move(document.querySelector('.hero-main'), drawerBody);
+  move(document.querySelector('.hero-feels-row'), drawerBody);
+  move(document.querySelector('.search-card'), drawerBody);
+  move(document.querySelector('[data-i18n-aria="time-card-aria"]'), drawerBody);
+  move(document.querySelector('[data-i18n-aria="facade-card-aria"]'), drawerBody);
+
+  move(document.querySelector('.solar-card'), $('mobile-solar-body'));
+  move(document.querySelector('[data-i18n-aria="climate-card-aria"]'), $('mobile-climate-body'));
+
+  const infoBody = $('mobile-info-body');
+  move($('map-legend-body'), infoBody);
+  move($('map-hint-text'), infoBody);
+
+  initMobileSheet('mobile-info-btn', 'mobile-info-sheet', 'mobile-info-overlay', 'mobile-info-close');
+  initMobileSheet('mobile-drawer-toggle', 'mobile-drawer', 'mobile-drawer-overlay', 'mobile-drawer-close');
+  initCollapsiblePanel('mobile-solar-widget', 'mobile-solar-toggle');
+  initCollapsiblePanel('mobile-climate-widget', 'mobile-climate-toggle');
 }
 
 /**
+ * Wire one bottom sheet: a toggle button that opens it, an overlay and a
+ * close button that close it. `inert` keeps its (now off-screen) controls
+ * out of tab order and out of the accessibility tree while closed, without
+ * fighting the `display:block` the slide-up transform animation needs.
+ */
+function initMobileSheet(toggleId, sheetId, overlayId, closeId) {
+  const toggle = $(toggleId), sheet = $(sheetId), overlay = $(overlayId), close = $(closeId);
+  if (!toggle || !sheet) return;
+  sheet.inert = true;
+
+  const setOpen = open => {
+    sheet.classList.toggle('open', open);
+    overlay?.classList.toggle('open', open);
+    sheet.inert = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  toggle.addEventListener('click', () => setOpen(!sheet.classList.contains('open')));
+  close?.addEventListener('click', () => setOpen(false));
+  overlay?.addEventListener('click', () => setOpen(false));
+}
+
+// ─── app bootstrap ────────────────────────────────────────────────────────────
+
+let appStarted = false;
+let mobileLayoutActive = false; // initMobileLayout() has run and moved the sidebar's content out
+
+// Below this, even the mobile layout has nowhere to put things. Real phones
+// don't go this narrow; this only catches an extreme browser zoom.
+const MIN_USABLE_WIDTH = 320;
+
+/**
  * Show the explanation whenever the window is too small — not only at load.
- * Otherwise shrinking the window (or zooming the browser in, which narrows the
- * CSS viewport) silently hides every map control with nothing to explain why.
+ * Also the one live-resize case this app handles: starting wide and later
+ * resizing *down* past the mobile breakpoint activates the mobile layout on
+ * the spot, so shrinking the window never leaves you with neither the
+ * sidebar nor the mobile UI. Going back the other way (mobile → desktop) is
+ * not supported live — the sidebar's content has already been moved out —
+ * a reload picks the right layout for whatever width you land on.
  */
 function updateMobileBlock() {
   const warning = $('mobile-warning');
-  const small = isSmallScreen();
-  if (warning) warning.style.display = small ? 'flex' : 'none';
-  if (small) return;
-  if (!appStarted) startApp();
-  else map?.invalidateSize();   // the map container just changed size
+  const tooSmall = window.innerWidth < MIN_USABLE_WIDTH;
+  if (warning) warning.style.display = tooSmall ? 'flex' : 'none';
+  if (tooSmall) return;
+  if (!appStarted) { startApp(); return; }
+  if (!mobileLayoutActive && isMobileLayout()) initMobileLayout();
+  map?.invalidateSize();   // the map container just changed size
 }
 
 function startApp() {
   appStarted = true;
   initMap();
   initSliders();
-  initCompass();
   initPropertySelects();
   initSearchAutocomplete();
   initGeolocation();
-  initMobileToggle();
   initLangSwitch();
   initFloorBar();
-  initCollapsiblePanels();
+  initFacadeRotateGesture(); // 2-finger touch rotate on the marker — harmless where there's no touch
+
+  if (isMobileLayout()) {
+    initMobileLayout();
+  } else {
+    initCompass();
+    initCollapsiblePanels();
+  }
 
   // KPI modal wiring
   const badge = $('energy-class-field');

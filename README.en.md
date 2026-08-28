@@ -36,7 +36,7 @@
 | **Bilingual IT/EN** | In-app switcher, automatic browser-language detection, remembered choice. |
 | **Nominatim autocomplete** | 420 ms debounce, restricted to Italy; search runs only via the “Go” button. |
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
-| **Zero runtime dependencies** | Only Leaflet (CDN) + key-free public APIs: OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
+| **Zero runtime dependencies** | Leaflet and fonts served locally (`vendor/`), no CDNs: the only external requests go to key-free public APIs — OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
 | **Local climate** | Humidity, wind, rainfall and feels-like for the selected month, from the point's real normals. |
 | **60 unit + 22 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
 
@@ -161,13 +161,21 @@ SunTrace/
 │   ├── tokens.css      # Design tokens (:root) shared by both pages
 │   ├── styles.css      # Simulator styles (mobile-first, WCAG AA)
 │   └── landing.css     # Landing page styles
+├── vendor/
+│   ├── fonts/          # Self-hosted Space Grotesk + IBM Plex Mono (no Google Fonts)
+│   └── leaflet/        # Self-hosted Leaflet 1.9.4 (no CDN)
+├── server/
+│   └── overpass-cache/ # Cloudflare Worker: 30-day cache in front of Overpass (optional)
 ├── tests/
 │   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
 │   ├── climate.test.js # 21 tests — thermal model and Comfort Rate
 │   ├── shadow.test.js  # 16 tests — facade geometry and shadows
 │   └── e2e/app.e2e.js  # 22 end-to-end tests (Playwright, headless browser)
+├── .github/
+│   └── workflows/ci.yml # CI: unit + i18n parity + e2e on every push
 ├── docs/
 │   └── case-study.md   # Technical case study
+├── CLAUDE.md           # Project brief for AI coding sessions
 ├── README.md           # Italian
 ├── README.en.md        # English
 ├── CHANGELOG.md
@@ -186,7 +194,7 @@ The astronomical engine (`solar.js`) is entirely **pure** (no DOM access, no glo
 - Testable with `node --test`, no browser required
 - Reusable in other contexts (workers, server-side)
 
-The interface uses Leaflet (CDN) for the map and the public Nominatim API for geocoding, honouring its [usage policy](https://operations.osmfoundation.org/policies/nominatim/) with a ≥ 420 ms debounce and `countrycodes=it`.
+The interface uses Leaflet 1.9.4 (self-hosted in `vendor/leaflet/`, hash verified against leafletjs.com) for the map and the public Nominatim API for geocoding, honouring its [usage policy](https://operations.osmfoundation.org/policies/nominatim/) with a ≥ 420 ms debounce and `countrycodes=it`. The fonts (Space Grotesk, IBM Plex Mono) are self-hosted in `vendor/fonts/` too: no visitor request ever reaches Google or any other CDN.
 
 ---
 

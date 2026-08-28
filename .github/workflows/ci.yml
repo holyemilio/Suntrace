@@ -1,0 +1,46 @@
+# CI — gira su ogni push e pull request.
+# Tre livelli: unit (motore solare/clima/ombre), parità i18n IT/EN, e2e (Playwright).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (solar, climate, shadow)
+        run: npm test
+
+      - name: i18n parity IT/EN
+        run: |
+          python3 -c "
+          import re, sys
+          s = open('src/i18n.js').read()
+          it = s[s.index('  it: {'):s.index('  en: {')]
+          en = s[s.index('  en: {'):]
+          ki = set(re.findall(r\"'([a-z0-9-]+)':\", it))
+          ke = set(re.findall(r\"'([a-z0-9-]+)':\", en))
+          missing = sorted(ki ^ ke)
+          if missing:
+              print('Chiavi presenti in una sola lingua:', missing)
+              sys.exit(1)
+          print(f'ok — {len(ki)} chiavi in entrambe le lingue')
+          "
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E tests (Playwright)
+        run: npm run test:e2e

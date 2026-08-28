@@ -7,13 +7,11 @@
 
   <link rel="icon" type="image/svg+xml" href="docs/app-icon.svg">
 
-  <!-- Type: Space Grotesk for the voice, IBM Plex Mono for readings -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+  <!-- Type: Space Grotesk for the voice, IBM Plex Mono for readings (self-hosted) -->
+  <link rel="stylesheet" href="vendor/fonts/fonts.css">
 
-  <!-- Leaflet (CDN — no build step required) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- Leaflet 1.9.4 (self-hosted — sha256 verificato contro leafletjs.com) -->
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 
   <!-- App styles -->
   <link rel="stylesheet" href="src/styles.css">
@@ -419,9 +417,6 @@
       <span id="geo-icon" role="img" aria-hidden="true">🎯</span>
     </button>
 
-    <!-- Mobile sidebar toggle -->
-    <button id="sidebar-toggle" data-i18n="panel-open" data-i18n-aria="panel-open-aria" aria-label="Apri pannello di controllo">☰ Pannello</button>
-
     <!-- Language switcher (bottom-left of the map) -->
     <div id="lang-switch" class="lang-switch" role="group" data-i18n-aria="lang-aria" aria-label="Lingua / Language">
       <button type="button" class="lang-btn" data-lang="it">IT</button>
@@ -501,6 +496,53 @@
       </div>
     </div>
 
+    <!-- ── Mobile-only layout ────────────────────────────────────────────────
+         Below the desktop breakpoint the sidebar is hidden and its content is
+         moved here at startup (see initMobileLayout in ui.js): a persistent
+         strip for the seasonal temperatures, a settings drawer for everything
+         you set (search, month/hour, infissi/isolamento), two small widgets
+         for solar and climate readings, and one Info sheet that folds the map
+         legend and the placement hint together — the map itself stays clear. -->
+
+    <button type="button" class="mobile-info-btn" id="mobile-info-btn" aria-expanded="false" aria-controls="mobile-info-sheet" data-i18n-aria="mobile-info-aria" aria-label="Apri legenda e suggerimenti">
+      <span aria-hidden="true">ⓘ</span>
+    </button>
+
+    <div class="mobile-sheet-overlay" id="mobile-info-overlay"></div>
+    <div class="mobile-sheet" id="mobile-info-sheet" role="dialog" aria-modal="true" data-i18n-aria="mobile-info-aria" aria-label="Legenda e suggerimenti">
+      <div class="mobile-sheet-handle"></div>
+      <button type="button" class="mobile-sheet-close" id="mobile-info-close" data-i18n-aria="modal-close-aria" aria-label="Chiudi">✕</button>
+      <div class="mobile-sheet-body" id="mobile-info-body"></div>
+    </div>
+
+    <div class="mobile-sheet-overlay" id="mobile-drawer-overlay"></div>
+    <button type="button" class="mobile-drawer-toggle" id="mobile-drawer-toggle" aria-expanded="false" aria-controls="mobile-drawer" data-i18n-aria="mobile-drawer-aria" aria-label="Apri impostazioni">
+      <span aria-hidden="true">⚙️</span>
+      <span data-i18n="mobile-drawer-open">Imposta</span>
+    </button>
+    <div class="mobile-sheet mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" data-i18n-aria="mobile-drawer-aria" aria-label="Impostazioni">
+      <div class="mobile-sheet-handle"></div>
+      <button type="button" class="mobile-sheet-close" id="mobile-drawer-close" data-i18n-aria="modal-close-aria" aria-label="Chiudi">✕</button>
+      <div class="mobile-sheet-body" id="mobile-drawer-body"></div>
+    </div>
+
+    <div class="mobile-widgets" id="mobile-widgets">
+      <div class="mini-panel mini-panel-col mobile-widget collapsed" id="mobile-solar-widget">
+        <button type="button" class="mini-panel-toggle" id="mobile-solar-toggle" aria-expanded="false" aria-controls="mobile-solar-body" data-i18n-aria="mobile-solar-aria" aria-label="Dati solari">
+          <span aria-hidden="true">☀️</span>
+        </button>
+        <div class="mini-panel-body" id="mobile-solar-body"></div>
+      </div>
+      <div class="mini-panel mini-panel-col mobile-widget collapsed" id="mobile-climate-widget">
+        <button type="button" class="mini-panel-toggle" id="mobile-climate-toggle" aria-expanded="false" aria-controls="mobile-climate-body" data-i18n-aria="mobile-climate-aria" aria-label="Clima del luogo">
+          <span aria-hidden="true">🌡️</span>
+        </button>
+        <div class="mini-panel-body" id="mobile-climate-body"></div>
+      </div>
+    </div>
+
+    <div class="mobile-bottom-bar" id="mobile-bottom-bar"></div>
+
     <div
       id="map-error-toast"
       class="map-error-toast"
@@ -571,7 +613,7 @@
   </div>
 
   <!-- ── Scripts ─────────────────────────────────────────────────────────── -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
 
   <script type="module">
     import { init } from './src/ui.js';

@@ -5,6 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.5.0] — 2026-08-27
+
+Infrastruttura: CI, self-hosting delle risorse esterne e cache Overpass pronta al deploy.
+
+- ⚙️ **CI su GitHub Actions** (`.github/workflows/ci.yml`) — su ogni push e PR girano i 60 unit test, il controllo di parità i18n IT/EN (prima era un one-liner manuale) e i 22 e2e Playwright.
+- 🔐 **Font e Leaflet self-hostati** (`vendor/`) — Space Grotesk, IBM Plex Mono e Leaflet 1.9.4 (hash sha256 verificato contro leafletjs.com) sono ora serviti dal sito stesso: nessuna richiesta dei visitatori raggiunge più Google Fonts o unpkg (privacy GDPR + niente rischio supply-chain da CDN). Privacy policy aggiornata in entrambe le lingue.
+- 🚀 **Edge cache Overpass pronta al deploy** (`server/overpass-cache/`) — Cloudflare Worker con cache KV a 30 giorni davanti ai tre mirror Overpass; disattivata finché `OVERPASS_PROXY_URL` in `ui.js` resta vuota, e anche da attiva i mirror diretti restano come fallback. Istruzioni di deploy nel README della cartella.
+- 📐 **Query Overpass canoniche** — le coordinate nella query sono arrotondate a 4 decimali (~11 m, stessa tolleranza della cache in localStorage), così click vicini producono query identiche e condivisibili dalla cache.
+
+---
+
 ## [2.4.0] — 2026-08-27
 
 Landing page, deploy live e pulizia dei pannelli sulla mappa.

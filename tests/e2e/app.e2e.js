@@ -3,7 +3,8 @@
  *
  * Serves the project over HTTP (the app needs http://, not file://) and stubs the
  * three external data APIs so runs are deterministic and don't hammer public
- * services. Leaflet still loads from its CDN. Cases map to the testbook IDs.
+ * services. Leaflet and fonts are self-hosted (vendor/), so no network at all.
+ * Cases map to the testbook IDs.
  */
 
 import { test, before, after } from 'node:test';
@@ -88,8 +89,9 @@ async function openApp(t, { buildings = true, buildingHeight = 30, searchResult 
   }));
 
   await page.goto(`${origin}/app.html`);
-  // A window narrower than the desktop threshold shows the overlay instead of the app.
-  if (!viewport || viewport.width >= 768) {
+  // Only a genuinely too-small window (< 320px, MIN_USABLE_WIDTH in ui.js) shows
+  // the block instead of starting — desktop and mobile both render normally.
+  if (!viewport || viewport.width >= 320) {
     await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
   }
   return page;
@@ -112,33 +114,36 @@ test('T01: the app loads and renders an analysis, with no page errors', async (t
   assert.deepEqual(errors, []);
 });
 
-test('T33: shrinking the window explains itself instead of hiding every control', async (t) => {
+test('T33: shrinking the window activates the mobile layout instead of hiding controls', async (t) => {
   const page = await openApp(t);
   assert.ok(await page.locator('#compass').isVisible(), 'the compass is there to begin with');
+  assert.equal(await page.locator('#mobile-bottom-bar').isVisible(), false, 'no mobile UI yet, at desktop width');
 
-  // Narrower than the desktop threshold — the same thing browser zoom does.
-  await page.setViewportSize({ width: 700, height: 820 });
+  // Narrower than the desktop breakpoint — same as a live window resize or browser zoom.
+  // The mobile layout activates on the spot (see updateMobileBlock in ui.js): the
+  // sidebar's content moves into the mobile bottom bar / drawer / widgets, so
+  // shrinking the window never leaves you with neither UI.
+  await page.setViewportSize({ width: 500, height: 820 });
   await page.waitForFunction(() =>
-    getComputedStyle(document.getElementById('mobile-warning')).display === 'flex');
-  assert.equal(await page.locator('#compass').isVisible(), false,
-    'controls stand down, but the overlay now says why');
-
-  // Back to a usable width: the app returns, controls included.
-  await page.setViewportSize({ width: 1280, height: 820 });
-  await page.waitForFunction(() =>
-    getComputedStyle(document.getElementById('mobile-warning')).display === 'none');
-  assert.ok(await page.locator('#compass').isVisible(), 'the compass comes back');
-  assert.ok(await page.locator('#floor-bar').isVisible(), 'so does the floor bar');
+    getComputedStyle(document.getElementById('mobile-bottom-bar')).display !== 'none');
+  assert.equal(await page.locator('#compass').isVisible(), false, 'the dial has no room; the pinch gesture replaces it');
+  assert.match(await text(page, 'val-q-winter'), /°C$/, 'the seasonal reading followed into the bottom bar');
+  assert.equal(await page.locator('#mobile-warning').isVisible(), false, 'this width is usable, not blocked');
 });
 
-test('T34: opening straight into a narrow window still starts once resized', async (t) => {
-  const page = await openApp(t, { viewport: { width: 700, height: 820 } });
+test('T34: opening straight into a narrow window starts the mobile layout, not a block', async (t) => {
+  const page = await openApp(t, { viewport: { width: 500, height: 820 } });
+  assert.equal(await page.locator('#mobile-warning').isVisible(), false);
+  assert.ok(await page.locator('#mobile-bottom-bar').isVisible(), 'the seasonal strip is there from the start');
+  assert.ok(await page.locator('#mobile-drawer-toggle').isVisible(), 'so is the settings drawer handle');
   assert.equal(await page.locator('#compass').isVisible(), false);
+});
 
-  await page.setViewportSize({ width: 1280, height: 820 });
-  await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
-  assert.ok(await page.locator('#map').isVisible(), 'the map initialises late, not never');
-  assert.ok(await page.locator('#compass').isVisible());
+test('T35: an extreme width still gets the explanatory block', async (t) => {
+  const page = await openApp(t, { viewport: { width: 280, height: 700 } });
+  await page.waitForFunction(() =>
+    getComputedStyle(document.getElementById('mobile-warning')).display === 'flex');
+  assert.equal(await page.locator('#map').isVisible(), false);
 });
 
 // ─── T14 / T15 — time controls ────────────────────────────────────────────────

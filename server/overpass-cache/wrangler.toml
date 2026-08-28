@@ -1,0 +1,11 @@
+name = "suntrace-overpass"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+
+# Creato con: npx wrangler kv namespace create OSM_CACHE
+# Incolla qui l'id che il comando stampa, poi `npx wrangler deploy`.
+# Senza questo blocco il worker funziona comunque, ma da puro proxy (niente cache).
+#
+# [[kv_namespaces]]
+# binding = "OSM_CACHE"
+# id = "INCOLLA_QUI_L_ID"

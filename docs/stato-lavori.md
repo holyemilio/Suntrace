@@ -1,6 +1,6 @@
 # Stato dei lavori — SunTrace
 
-Ultimo aggiornamento: **27 agosto 2026** · versione **2.4.0** · repo: <https://github.com/holyemilio/Suntrace>
+Ultimo aggiornamento: **27 agosto 2026** · versione **2.5.0** · repo: <https://github.com/holyemilio/Suntrace>
 Live: <https://holyemilio.github.io/Suntrace/>
 
 Documento di passaggio di consegne: cosa è fatto, cosa è in sospeso e cosa
@@ -73,6 +73,15 @@ print('ok' if ki==ke else sorted(ki^ke))"
 
 ## In sospeso / Completati di recente
 
+0. ~~**CI + self-hosting risorse esterne**~~ — **completato** il 27/08/2026:
+   `.github/workflows/ci.yml` esegue unit, parità i18n ed e2e su ogni push
+   (nota: i test NON possono girare su questa macchina, Node non è installato —
+   la CI è l'unica rete di sicurezza attiva). Font e Leaflet ora in `vendor/`,
+   zero CDN; privacy policy aggiornata di conseguenza (IT+EN). In
+   `server/overpass-cache/` c'è un Cloudflare Worker con cache KV pronto al
+   deploy (istruzioni nel suo README): finché `OVERPASS_PROXY_URL` in `ui.js`
+   resta vuota il comportamento è identico a prima. **Il deploy del worker
+   richiede un account Cloudflare: azione manuale.**
 1. ~~**Landing page + separazione app**~~ — **completato** il 27/08/2026:
    `index.html` è ora la landing (mission/vision, 4 sezioni con grafici SVG
    animati, CTA), `app.html` è il simulatore. Ricerca sulla landing → redirect
