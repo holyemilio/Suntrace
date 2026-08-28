@@ -112,8 +112,13 @@ print('ok' if ki==ke else sorted(ki^ke))"
    trascina l'ago. `initCompass()` ora gira su entrambi i layout. I tre
    widget (☀️ 🌡️ 🧭) sono mutuamente esclusivi: aprirne uno chiude gli altri.
    Su desktop la bussola resta cliccabile e trascinabile (Pointer Events,
-   `initCompassDrag`), con scatto automatico ogni 45°. **Attenzione se si
-   ritocca**: l'aggiornamento UI durante il trascinamento deve essere una
+   `initCompassDrag`); il trascinamento ruota **liberamente, grado per
+   grado, senza scatto** — le facciate reali raramente guardano esattamente
+   N/E/S/O, e il modello sotto lavora già in gradi esatti, quindi vincolare
+   il drag a 45° serviva solo a complicare senza motivo. Chi vuole un punto
+   cardinale esatto usa uno degli 8 pulsanti, che restano invariati.
+   **Attenzione se si ritocca**: l'aggiornamento UI durante il trascinamento
+   deve essere una
    chiamata diretta a `refreshUI()`, non un `requestAnimationFrame` — rAF può
    restare silenzioso in tab in background o in headless, ed è così che il
    bug è stato trovato. Il selettore IT/EN su mobile sta in **alto a

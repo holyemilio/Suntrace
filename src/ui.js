@@ -768,11 +768,12 @@ function initCompass() {
 }
 
 /**
- * Drag the dial itself to rotate the facade, snapping to the nearest of the
- * 8 cardinal/intercardinal points as you go — grabbing and turning a dial
- * reads more naturally than hunting for one of 8 small buttons, especially
- * on touch. The buttons stay for an exact one-tap choice; dragging anywhere
- * else on the dial (needle, hub, sun, empty rim) rotates it live.
+ * Drag the dial itself to rotate the facade freely, degree by degree —
+ * grabbing and turning a dial reads more naturally than hunting for one of
+ * 8 small buttons, especially on touch, and real facades are rarely exactly
+ * N/E/S/W. The buttons stay for an exact one-tap cardinal choice; dragging
+ * anywhere else on the dial (needle, hub, sun, empty rim) rotates it live
+ * with no snapping.
  */
 function initCompassDrag() {
   const dial = document.querySelector('.compass-dial');
@@ -787,10 +788,9 @@ function initCompassDrag() {
     const deg = Math.atan2(dx, -dy) * 180 / Math.PI; // 0=N, clockwise
     return (deg + 360) % 360;
   };
-  const snap45 = deg => Math.round(deg / 45) * 45 % 360;
 
   const applyBearing = (clientX, clientY) => {
-    currentScan.angleDeg = snap45(bearingAt(clientX, clientY));
+    currentScan.angleDeg = Math.round(bearingAt(clientX, clientY)) % 360;
     currentScan.userAdjusted = true;
     refreshUI();
   };

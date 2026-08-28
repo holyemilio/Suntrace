@@ -126,7 +126,7 @@ test('T33: shrinking the window activates the mobile layout instead of hiding co
   await page.setViewportSize({ width: 500, height: 820 });
   await page.waitForFunction(() =>
     getComputedStyle(document.getElementById('mobile-bottom-bar')).display !== 'none');
-  assert.equal(await page.locator('#compass').isVisible(), false, 'the dial has no room; the pinch gesture replaces it');
+  assert.ok(await page.locator('#mobile-compass-widget #compass').count(), 'the dial moved into the 🧭 widget, not off-screen');
   assert.match(await text(page, 'val-q-winter'), /°C$/, 'the seasonal reading followed into the bottom bar');
   assert.equal(await page.locator('#mobile-warning').isVisible(), false, 'this width is usable, not blocked');
 });
@@ -136,7 +136,7 @@ test('T34: opening straight into a narrow window starts the mobile layout, not a
   assert.equal(await page.locator('#mobile-warning').isVisible(), false);
   assert.ok(await page.locator('#mobile-bottom-bar').isVisible(), 'the seasonal strip is there from the start');
   assert.ok(await page.locator('#mobile-drawer-toggle').isVisible(), 'so is the settings drawer handle');
-  assert.equal(await page.locator('#compass').isVisible(), false);
+  assert.ok(await page.locator('#mobile-compass-widget #compass').count(), 'the dial moved into the 🧭 widget');
 });
 
 test('T38: an extreme width still gets the explanatory block', async (t) => {
