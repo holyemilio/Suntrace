@@ -7,7 +7,7 @@
 # SunTrace — Urban Microclimate Simulator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2022%20e2e-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2023%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 [![Live Demo](https://img.shields.io/badge/demo-live-f5b301)](https://holyemilio.github.io/Suntrace/)
 
@@ -38,7 +38,7 @@
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero runtime dependencies** | Leaflet and fonts served locally (`vendor/`), no CDNs: the only external requests go to key-free public APIs — OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
 | **Local climate** | Humidity, wind, rainfall and feels-like for the selected month, from the point's real normals. |
-| **60 unit + 22 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
+| **60 unit + 23 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
 
 ---
 
@@ -170,7 +170,7 @@ SunTrace/
 │   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
 │   ├── climate.test.js # 21 tests — thermal model and Comfort Rate
 │   ├── shadow.test.js  # 16 tests — facade geometry and shadows
-│   └── e2e/app.e2e.js  # 22 end-to-end tests (Playwright, headless browser)
+│   └── e2e/app.e2e.js  # 23 end-to-end tests (Playwright, headless browser)
 ├── .github/
 │   └── workflows/ci.yml # CI: unit + i18n parity + e2e on every push
 ├── docs/

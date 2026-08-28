@@ -5,6 +5,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.6.0] — 2026-08-28
+
+Layout mobile per il simulatore, e prima esecuzione reale della CI.
+
+- 📱 **Layout mobile per `app.html`** — sotto i 768px la sidebar non è più bloccata: il suo contenuto si sposta in una barra inferiore persistente (le 4 temperature stagionali + il Comfort Rate), un drawer "Impostazioni" (ricerca, mese/ora, infissi/isolamento), un foglio "Info" unico che unisce legenda e suggerimento, e due widget a comparsa per i dati solari e il clima. Il blocco totale ora scatta solo sotto i 320px.
+- 🤏 **Bussola sostituita da gesture su mobile** — un dito sul marker lo sposta (già gestito da Leaflet), due dita lo ruotano con lo stesso scatto ai punti cardinali della bussola desktop.
+- 🧭 **Bussola desktop trascinabile** — oltre ai pulsanti, si può trascinare il quadrante per ruotare la facciata, con scatto automatico ogni 45°.
+- 🎯 **Marker centrato correttamente** — il pallino visibile non era centrato nella propria icona: ombra, raggio solare e linea di facciata sembravano partire dal bordo invece che dal centro esatto.
+- ✅ **CI verde alla prima esecuzione reale** — girata per la prima volta dopo l'introduzione della pipeline, ha trovato: uno script `npm test`/`test:e2e` con un glob non espandibile da Node 20 (va tolta la virgoletta, la espande la shell); tre test e2e rimasti agganciati a elementi rimossi in una modifica precedente (`#telemetry-cardinal`, `#val-manual-obs`, `#compass-state`); un `z-index` mancante sul pulsante di chiusura del modale Comfort Rate, che un titolo abbastanza lungo poteva coprire rendendolo non cliccabile.
+
+---
+
 ## [2.5.0] — 2026-08-27
 
 Infrastruttura: CI, self-hosting delle risorse esterne e cache Overpass pronta al deploy.
