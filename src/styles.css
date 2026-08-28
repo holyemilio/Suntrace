@@ -1275,6 +1275,9 @@ button:active { transform: translateY(1px); }
 .modal-close {
   position: absolute;
   top: 16px; right: 16px;
+  z-index: 2; /* `.modal > *` makes every child positioned for the glow behind
+                 them (z-index:auto); without this, a long title — h2 comes
+                 after this button in the DOM — paints over it and eats clicks */
   background: var(--card-2);
   border: 1px solid var(--stroke-2);
   border-radius: 50%;

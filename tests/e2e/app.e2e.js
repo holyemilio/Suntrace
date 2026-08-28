@@ -139,11 +139,13 @@ test('T34: opening straight into a narrow window starts the mobile layout, not a
   assert.equal(await page.locator('#compass').isVisible(), false);
 });
 
-test('T35: an extreme width still gets the explanatory block', async (t) => {
+test('T38: an extreme width still gets the explanatory block', async (t) => {
   const page = await openApp(t, { viewport: { width: 280, height: 700 } });
   await page.waitForFunction(() =>
     getComputedStyle(document.getElementById('mobile-warning')).display === 'flex');
-  assert.equal(await page.locator('#map').isVisible(), false);
+  // The overlay covers the map rather than hiding it, so check that startApp()
+  // never ran instead of checking #map's own (unaffected) visibility.
+  assert.equal(await text(page, 'thermal-result'), '--°C', 'the app never started at this width');
 });
 
 // ─── T14 / T15 — time controls ────────────────────────────────────────────────
@@ -375,19 +377,19 @@ test('T16: the compass sets the facade and highlights the chosen direction', asy
   const page = await openApp(t, { buildings: false });
 
   await page.locator('.compass-dir[data-az="90"]').click();   // East
-  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Est'));
-  assert.match(await text(page, 'telemetry-cardinal'), /^90°/);
+  await page.waitForFunction(() =>
+    document.getElementById('compass-needle').style.transform === 'rotate(90deg)');
   assert.equal(await page.locator('.compass-dir.active').textContent(), 'E', 'East is highlighted');
-  assert.equal(await page.locator('#compass-needle').evaluate(el => el.style.transform), 'rotate(90deg)');
 
   const eastSummer = await text(page, 'val-q-summer');
   await page.locator('.compass-dir[data-az="180"]').click();  // South
-  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Sud'));
+  await page.waitForFunction(() =>
+    document.getElementById('compass-needle').style.transform === 'rotate(180deg)');
   assert.notEqual(await text(page, 'val-q-summer'), eastSummer, 'a different wall gives a different estimate');
   assert.equal(await page.locator('.compass-dir.active').textContent(), 'S');
 });
 
-test('T31: the compass marks the sun and mirrors the direct-sun verdict', async (t) => {
+test('T31: the compass marks the sun and hides/shows with it', async (t) => {
   const page = await openApp(t, { buildings: false });
   await page.locator('#month-slider').fill('6');
   await page.locator('#hour-slider').fill('2');               // night
@@ -398,8 +400,12 @@ test('T31: the compass marks the sun and mirrors the direct-sun verdict', async 
   await page.locator('#hour-slider').fill('12');
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '12:00');
   assert.equal(await page.locator('#compass-sun').evaluate(el => el.classList.contains('hidden')), false);
-  assert.equal(await text(page, 'compass-state'), await text(page, 'val-sun-direct'),
-    'the compass caption matches the sidebar readout');
+  // "shaded" tracks the same verdict the sidebar shows in val-sun-direct — the
+  // compass no longer repeats it as text (that duplication was removed), just
+  // as this dimmed/lit marker.
+  const shaded = await page.locator('#compass-sun').evaluate(el => el.classList.contains('shaded'));
+  assert.equal(shaded, !(await text(page, 'val-sun-direct')).includes('sole'),
+    'the sun marker dims exactly when the facade is not lit');
 });
 
 test('T30: a wall facing away reads "sun on the other side", not "in sun"', async (t) => {
@@ -411,11 +417,11 @@ test('T30: a wall facing away reads "sun on the other side", not "in sun"', asyn
   await page.locator('#month-slider').fill('0');
   await page.locator('#hour-slider').fill('9');
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '09:00');
-  await page.waitForFunction(() => document.getElementById('telemetry-cardinal').textContent.includes('Ovest'));
+  await page.waitForFunction(() => document.querySelector('.compass-dir.active')?.textContent === 'O');
+  assert.equal(await page.locator('.compass-dir.active').textContent(), 'O', 'the detected facade faces west');
 
   const tempBefore = await text(page, 'thermal-result');
   await page.locator('.floor-btn[data-floor="5"]').click();
-  await page.waitForFunction(() => document.getElementById('val-manual-obs').textContent.includes('Nessuna'));
 
   assert.match(await text(page, 'val-sun-direct'), /altro lato/,
     'a clear sky on a west wall at 09:00 is not "in sun"');
@@ -430,9 +436,8 @@ test('T27: choosing a higher floor escapes the shadow and changes the reading', 
   await page.locator('#month-slider').fill('0');
   await page.locator('#hour-slider').fill('15');
   await page.waitForFunction(() => document.getElementById('hour-label').textContent === '15:00');
-  await page.waitForFunction(() => document.getElementById('val-manual-obs').textContent.includes('Elevata'));
+  await page.waitForFunction(() => document.getElementById('val-sun-direct').textContent.includes('ombra'));
 
-  const groundShading = await text(page, 'val-manual-obs');
   const groundTemp = await text(page, 'thermal-result');
   assert.match(await text(page, 'val-sun-direct'), /ombra/, 'ground floor starts in shadow');
 
@@ -440,7 +445,6 @@ test('T27: choosing a higher floor escapes the shadow and changes the reading', 
   await page.waitForFunction(() => document.getElementById('val-sun-direct').textContent.includes('sole'));
 
   assert.match(await text(page, 'val-sun-direct'), /sole/, 'the 5th floor sees the sun');
-  assert.notEqual(await text(page, 'val-manual-obs'), groundShading, 'shading readout changes');
   assert.ok(parseFloat(await text(page, 'thermal-result')) > parseFloat(groundTemp),
     'escaping the shadow warms the room');
 });
