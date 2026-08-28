@@ -89,6 +89,7 @@ const STRINGS = {
     'mobile-drawer-open': 'Imposta',
     'mobile-solar-aria': 'Dati solari',
     'mobile-climate-aria': 'Clima del luogo',
+    'mobile-compass-aria': 'Orientamento della facciata',
 
     // Footer
     'footer-links-aria': 'Link utili',
@@ -316,6 +317,7 @@ const STRINGS = {
     'mobile-drawer-open': 'Settings',
     'mobile-solar-aria': 'Solar data',
     'mobile-climate-aria': 'Local climate',
+    'mobile-compass-aria': 'Facade orientation',
 
     'footer-links-aria': 'Useful links',
     'footer-docs': 'Documentation',

@@ -1,6 +1,6 @@
 # Stato dei lavori — SunTrace
 
-Ultimo aggiornamento: **28 agosto 2026** · versione **2.6.0** · repo: <https://github.com/holyemilio/Suntrace>
+Ultimo aggiornamento: **28 agosto 2026** · versione **2.6.1** · repo: <https://github.com/holyemilio/Suntrace>
 Live: <https://holyemilio.github.io/Suntrace/> · CI: verde (unit + parità i18n + 23 e2e)
 
 Documento di passaggio di consegne: cosa è fatto, cosa è in sospeso e cosa
@@ -46,7 +46,7 @@ Da questa sessione l'app è **due pagine separate**, non più una sola:
 | `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo**: 23 test lo confrontano con SunCalc. |
 | `src/climate.js` | Modello termico stagionale, temperatura percepita, Comfort Rate. Puro. |
 | `src/shadow.js` | Geometria: orientamento della facciata e ombre reali (ray-cast verso il sole). Puro. |
-| `src/ui.js` | Il simulatore: Leaflet, geofencing, chiamate API, modale, bussola (click + drag-to-rotate desktop), piani, arco solare, pannelli comprimibili (legenda/suggerimento), **layout mobile** (`initMobileLayout`, `initMobileSheet`, reparenting DOM verso barra inferiore/drawer/foglio Info/widget) e gesture pinch-to-rotate sul marker (`initFacadeRotateGesture`). Legge `?q=` dall'URL per la ricerca in arrivo dalla landing. |
+| `src/ui.js` | Il simulatore: Leaflet, geofencing, chiamate API, modale, bussola (click + drag-to-rotate, condivisa dai due layout: sulla mappa su desktop, dentro il widget 🧭 su mobile), piani, arco solare, pannelli comprimibili (legenda/suggerimento), **layout mobile** (`initMobileLayout`, `initMobileSheet`, reparenting DOM verso barra inferiore/drawer/foglio Info/widget, widget mutuamente esclusivi). Legge `?q=` dall'URL per la ricerca in arrivo dalla landing. |
 | `src/i18n.js` | Dizionario IT/EN + motore di traduzione, **condiviso da entrambe le pagine**. Ogni testo visibile passa da qui. |
 | `src/styles.css` | Stili del simulatore: tema scuro "strumento", glassmorphism, widget solare bento, mappa chiara, blocco `@media (max-width:768px)` per il layout mobile (barra inferiore, drawer, foglio Info, widget solare/clima). Importa `tokens.css`. |
 | `docs/app-icon.svg` | Brand icon vettoriale (sole, facciata architettonica, finestra calda, cuneo d'ombra) — favicon di entrambe le pagine. |
@@ -103,15 +103,22 @@ print('ok' if ki==ke else sorted(ki^ke))"
    comparsa per i dati solari e il clima. Il blocco totale (schermo troppo
    piccolo per qualunque adattamento) scatta ora solo sotto i 320px, non più
    sotto i 768px.
-2. ~~**Gesture pinch-to-rotate + bussola desktop trascinabile**~~ —
-   **completato** il 28/08/2026: su mobile un dito sul marker lo sposta (già
-   gestito da Leaflet), due dita lo ruotano con lo stesso scatto ai punti
-   cardinali della bussola desktop. Su desktop la bussola resta cliccabile ma
-   ora si può anche trascinare (Pointer Events, `initCompassDrag`), con
-   scatto automatico ogni 45°. **Attenzione se si ritocca**: l'aggiornamento
-   UI durante il trascinamento deve essere una chiamata diretta a
-   `refreshUI()`, non un `requestAnimationFrame` — rAF può restare silenzioso
-   in tab in background o in headless, ed è così che il bug è stato trovato.
+2. ~~**Rotazione facciata su mobile**~~ — rivista in **v2.6.1** (28/08/2026):
+   la gesture pinch-to-rotate sul marker introdotta in v2.6.0 è stata
+   **rimossa** — intercettava qualunque pinch entro ~70px dal punto analizzato
+   (impossibile zoomare "dentro il cerchio") ed era comunque non scopribile.
+   Al suo posto un terzo widget mobile (🧭) contiene la **stessa bussola del
+   desktop**, reparentata in `initMobileLayout`: tocca una direzione o
+   trascina l'ago. `initCompass()` ora gira su entrambi i layout. I tre
+   widget (☀️ 🌡️ 🧭) sono mutuamente esclusivi: aprirne uno chiude gli altri.
+   Su desktop la bussola resta cliccabile e trascinabile (Pointer Events,
+   `initCompassDrag`), con scatto automatico ogni 45°. **Attenzione se si
+   ritocca**: l'aggiornamento UI durante il trascinamento deve essere una
+   chiamata diretta a `refreshUI()`, non un `requestAnimationFrame` — rAF può
+   restare silenzioso in tab in background o in headless, ed è così che il
+   bug è stato trovato. Il selettore IT/EN su mobile sta in **alto a
+   sinistra** (top:118, sotto geolocalizzazione e Info): la fascia in basso
+   (barra, Imposta, widget) è affollata — non rimettercelo.
 3. ~~**Marker non centrato nel cerchio**~~ — **completato** il 28/08/2026: il
    pallino visibile non era centrato nella propria icona Leaflet (`divIcon`),
    quindi ombra, raggio solare e linea di facciata sembravano partire dal

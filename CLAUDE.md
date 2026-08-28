@@ -9,7 +9,7 @@ Simulatore microclimatico urbano (esposizione solare di facciate in Italia).
 Vanilla JS, moduli ES nativi, **nessun build step, zero dipendenze di runtime**.
 Due pagine: `index.html` (landing) e `app.html` (simulatore, con layout mobile
 dedicato sotto i 768px). Live su GitHub Pages:
-<https://holyemilio.github.io/Suntrace/> · versione **2.6.0**.
+<https://holyemilio.github.io/Suntrace/> · versione **2.6.1**.
 
 ## Comandi
 
@@ -30,7 +30,7 @@ CI verde o prova equivalente (es. screenshot con Chrome headless, che c'è).
 |---|---|
 | `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo** (23 test vs SunCalc). |
 | `src/climate.js` · `src/shadow.js` | Modello termico / geometria ombre. Puri, testati. |
-| `src/ui.js` | Tutto il simulatore (Leaflet, API, bussola click+drag, pannelli, layout mobile con reparenting DOM, pinch-to-rotate). Monolite ~47 KB. |
+| `src/ui.js` | Tutto il simulatore (Leaflet, API, bussola click+drag condivisa dai due layout — sulla mappa su desktop, nel widget 🧭 su mobile —, pannelli, layout mobile con reparenting DOM e widget mutuamente esclusivi). Monolite ~47 KB. |
 | `src/landing.js` · `landing.css` | Landing. **Non importano `styles.css`** (che blocca lo scroll). |
 | `src/i18n.js` | Dizionario IT/EN. **Ogni stringa nuova va in ENTRAMBE le lingue** — la CI lo verifica. |
 | `src/tokens.css` | Design token condivisi dalle due pagine. |

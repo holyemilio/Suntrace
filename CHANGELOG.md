@@ -5,6 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.6.1] — 2026-08-28
+
+Mobile: pinch-zoom libero, bussola in un widget, lingua fuori dalla fascia bassa.
+
+- 🔍 **Pinch-zoom ovunque sulla mappa** — rimossa la gesture a due dita sul marker: intercettava qualunque pinch entro ~70px dal punto analizzato, rendendo impossibile zoomare "dentro il cerchio". Ora due dita zoomano sempre, come ci si aspetta.
+- 🧭 **Bussola nel widget mobile** — la rotazione della facciata su mobile ora ha un controllo esplicito: un terzo widget (🧭, sotto ☀️ e 🌡️) apre lo stesso quadrante del desktop — tocca una delle 8 direzioni o trascina l'ago (i Pointer Events funzionano al tocco). Sostituisce la gesture nascosta, che nessuno poteva scoprire.
+- ☝️ **Widget mutuamente esclusivi** — aprire uno dei tre widget (sole, clima, bussola) chiude gli altri: i pannelli espansi non si accavallano più tra loro né coprono la mappa.
+- 🌐 **Selettore IT/EN in alto a sinistra** — la fascia in basso era affollata (barra temperature, pulsante Imposta, widget): il selettore lingua si sposta nella colonna in alto a sinistra, sotto i pulsanti di geolocalizzazione e Info, dove non si sovrappone a nulla.
+
+---
+
 ## [2.6.0] — 2026-08-28
 
 Layout mobile per il simulatore, e prima esecuzione reale della CI.

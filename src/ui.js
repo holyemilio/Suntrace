@@ -144,9 +144,9 @@ function initMap() {
 }
 
 // Clean custom marker (a green dot) — replaces Leaflet's default pin + grey shadow.
-// The icon box is bigger than the visible dot on purpose: it's the drag/pinch
-// hit-area (Leaflet's 1-finger drag and our own 2-finger rotate gesture both
-// grab this element), and a 16px dot alone is too small a touch target.
+// The icon box is bigger than the visible dot on purpose: it's the drag
+// hit-area (Leaflet's 1-finger drag grabs this element), and a 16px dot
+// alone is too small a touch target.
 function markerIcon() {
   return L.divIcon({
     className: 'suntrace-marker',
@@ -154,64 +154,6 @@ function markerIcon() {
     iconSize: [56, 56],
     iconAnchor: [28, 28],
   });
-}
-
-/**
- * Two-finger rotate on the marker: on mobile there's no room for the compass
- * dial, so grabbing the pin itself and twisting rotates the facade, snapping
- * every 45° like the desktop drag. One finger still just moves the marker —
- * that's Leaflet's own draggable, unrelated to this. A capture-phase listener
- * on the map container sees a two-finger touch on the marker before Leaflet's
- * own (bubble-phase) marker-drag and pinch-zoom handlers do, so it can claim
- * it and stop it from reaching Leaflet at all.
- *
- * A touchstart's `e.target` is only the element under whichever finger
- * *triggered* that event (the newly-added one) — not both. Requiring the DOM
- * element under that single finger to be the 56×56 marker made the gesture
- * almost impossible to land with two real fingers in practice. Instead this
- * checks screen distance from either finger to the marker's true projected
- * position, with a much larger, forgiving radius.
- */
-function initFacadeRotateGesture() {
-  let gesture = null; // { startAngle, startFacadeDeg } while a rotate is in progress
-
-  const touchAngle = (a, b) => Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180 / Math.PI;
-  const normalize360 = d => ((d % 360) + 360) % 360;
-  const snap45 = d => Math.round(d / 45) * 45 % 360;
-
-  const container = map.getContainer();
-  const GRAB_RADIUS = 70; // px — generous; landing two fingers exactly on the dot is unrealistic
-
-  const nearMarker = touch => {
-    if (!targetMarker) return false;
-    const rect = container.getBoundingClientRect();
-    const pt = map.latLngToContainerPoint(targetMarker.getLatLng());
-    const dx = (touch.clientX - rect.left) - pt.x;
-    const dy = (touch.clientY - rect.top) - pt.y;
-    return Math.hypot(dx, dy) <= GRAB_RADIUS;
-  };
-
-  container.addEventListener('touchstart', e => {
-    if (e.touches.length !== 2 || !currentScan) return;
-    if (!nearMarker(e.touches[0]) && !nearMarker(e.touches[1])) return;
-    e.preventDefault();
-    e.stopPropagation();
-    gesture = { startAngle: touchAngle(e.touches[0], e.touches[1]), startFacadeDeg: currentScan.angleDeg };
-  }, { capture: true, passive: false });
-
-  container.addEventListener('touchmove', e => {
-    if (!gesture || e.touches.length !== 2) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const delta = touchAngle(e.touches[0], e.touches[1]) - gesture.startAngle;
-    currentScan.angleDeg = snap45(normalize360(gesture.startFacadeDeg + delta));
-    currentScan.userAdjusted = true;
-    refreshUI();
-  }, { capture: true, passive: false });
-
-  const endGesture = e => { if (e.touches.length < 2) gesture = null; };
-  container.addEventListener('touchend', endGesture, { capture: true });
-  container.addEventListener('touchcancel', endGesture, { capture: true });
 }
 
 // ─── map overlays ─────────────────────────────────────────────────────────────
@@ -1214,6 +1156,10 @@ function initMobileLayout() {
   move(document.querySelector('.solar-card'), $('mobile-solar-body'));
   move(document.querySelector('[data-i18n-aria="climate-card-aria"]'), $('mobile-climate-body'));
 
+  // The desktop compass dial moves into its own widget: same element, same
+  // handlers (tap a direction, or drag the dial — Pointer Events work on touch).
+  move($('compass'), $('mobile-compass-body'));
+
   const infoBody = $('mobile-info-body');
   move($('map-legend-body'), infoBody);
   move($('map-hint-text'), infoBody);
@@ -1222,6 +1168,24 @@ function initMobileLayout() {
   initMobileSheet('mobile-drawer-toggle', 'mobile-drawer', 'mobile-drawer-overlay', 'mobile-drawer-close');
   initCollapsiblePanel('mobile-solar-widget', 'mobile-solar-toggle');
   initCollapsiblePanel('mobile-climate-widget', 'mobile-climate-toggle');
+  initCollapsiblePanel('mobile-compass-widget', 'mobile-compass-toggle');
+
+  // The three widgets share the same corner: only one open at a time, or the
+  // expanded panels pile up over each other and over the map.
+  const widgets = [
+    ['mobile-solar-widget', 'mobile-solar-toggle'],
+    ['mobile-climate-widget', 'mobile-climate-toggle'],
+    ['mobile-compass-widget', 'mobile-compass-toggle'],
+  ];
+  widgets.forEach(([, toggleId]) => {
+    $(toggleId)?.addEventListener('click', () => {
+      widgets.forEach(([otherPanel, otherToggle]) => {
+        if (otherToggle === toggleId) return;
+        $(otherPanel)?.classList.add('collapsed');
+        $(otherToggle)?.setAttribute('aria-expanded', 'false');
+      });
+    });
+  });
 }
 
 /**
@@ -1283,12 +1247,11 @@ function startApp() {
   initGeolocation();
   initLangSwitch();
   initFloorBar();
-  initFacadeRotateGesture(); // 2-finger touch rotate on the marker — harmless where there's no touch
+  initCompass(); // wires the same dial on both layouts — on mobile it lives in the 🧭 widget
 
   if (isMobileLayout()) {
     initMobileLayout();
   } else {
-    initCompass();
     initCollapsiblePanels();
   }
 

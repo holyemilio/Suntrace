@@ -1709,6 +1709,23 @@ button:active { transform: translateY(1px); }
     border: none;
   }
 
+  /* The compass dial reparented into the 🧭 widget: shed the absolute
+     positioning and glass shell (the widget already provides both), and
+     override the bare `.compass { display: none }` mobile rule above. */
+  .mobile-widget .compass {
+    display: flex;
+    position: static;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 4px 0 2px;
+  }
+  #mobile-compass-body {
+    display: flex;
+    justify-content: center;
+  }
+
   /* ── persistent bottom bar: the seasons, and the comfort badge ─────────── */
   .mobile-bottom-bar {
     position: fixed;
@@ -1741,9 +1758,12 @@ button:active { transform: translateY(1px); }
   .mobile-drawer .output-temp { font-size: 2.7rem; }
   .mobile-drawer .hero-sun { width: 76px; height: 76px; flex-basis: 76px; }
 
-  /* the persistent bottom bar now owns that bottom-left corner */
+  /* The bottom strip is crowded (bottom bar, Imposta pill, widgets): the lang
+     switch moves to the top-left column instead, under the geolocation (14px)
+     and Info (66px) buttons — nothing else lives there. */
   .lang-switch {
-    bottom: calc(var(--mobile-bar-h, 80px) + 12px + env(safe-area-inset-bottom, 0px));
+    top: 118px;
+    bottom: auto;
     left: 14px;
   }
 }
