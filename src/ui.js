@@ -164,6 +164,13 @@ function markerIcon() {
  * on the map container sees a two-finger touch on the marker before Leaflet's
  * own (bubble-phase) marker-drag and pinch-zoom handlers do, so it can claim
  * it and stop it from reaching Leaflet at all.
+ *
+ * A touchstart's `e.target` is only the element under whichever finger
+ * *triggered* that event (the newly-added one) — not both. Requiring the DOM
+ * element under that single finger to be the 56×56 marker made the gesture
+ * almost impossible to land with two real fingers in practice. Instead this
+ * checks screen distance from either finger to the marker's true projected
+ * position, with a much larger, forgiving radius.
  */
 function initFacadeRotateGesture() {
   let gesture = null; // { startAngle, startFacadeDeg } while a rotate is in progress
@@ -171,15 +178,22 @@ function initFacadeRotateGesture() {
   const touchAngle = (a, b) => Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180 / Math.PI;
   const normalize360 = d => ((d % 360) + 360) % 360;
   const snap45 = d => Math.round(d / 45) * 45 % 360;
-  const isOnMarker = target => {
-    const el = targetMarker?.getElement();
-    return !!el && (el === target || el.contains(target));
-  };
 
   const container = map.getContainer();
+  const GRAB_RADIUS = 70; // px — generous; landing two fingers exactly on the dot is unrealistic
+
+  const nearMarker = touch => {
+    if (!targetMarker) return false;
+    const rect = container.getBoundingClientRect();
+    const pt = map.latLngToContainerPoint(targetMarker.getLatLng());
+    const dx = (touch.clientX - rect.left) - pt.x;
+    const dy = (touch.clientY - rect.top) - pt.y;
+    return Math.hypot(dx, dy) <= GRAB_RADIUS;
+  };
 
   container.addEventListener('touchstart', e => {
-    if (e.touches.length !== 2 || !currentScan || !isOnMarker(e.target)) return;
+    if (e.touches.length !== 2 || !currentScan) return;
+    if (!nearMarker(e.touches[0]) && !nearMarker(e.touches[1])) return;
     e.preventDefault();
     e.stopPropagation();
     gesture = { startAngle: touchAngle(e.touches[0], e.touches[1]), startFacadeDeg: currentScan.angleDeg };
@@ -1177,6 +1191,17 @@ function initMobileLayout() {
   const bottomBar = $('mobile-bottom-bar');
   move(document.querySelector('.quadrant-grid'), bottomBar);
   move($('energy-class-field'), bottomBar);
+
+  // The lang switch / drawer button / widgets float just above this bar.
+  // Its real height depends on content (season labels reflow between IT/EN,
+  // a wrapping label makes it taller) — measuring it beats guessing a fixed
+  // px offset, which is what let the lang switch drift over the bar's
+  // content on a real phone. Re-measured on language change (see below).
+  const measureBottomBar = () => {
+    if (bottomBar) document.documentElement.style.setProperty('--mobile-bar-h', bottomBar.getBoundingClientRect().height + 'px');
+  };
+  measureBottomBar();
+  panelRemeasurers.push(measureBottomBar);
 
   const drawerBody = $('mobile-drawer-body');
   move(document.querySelector('.hero-top'), drawerBody);
