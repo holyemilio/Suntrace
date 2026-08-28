@@ -1049,6 +1049,7 @@ button:active { transform: translateY(1px); }
   padding: 0 7px 0 5px;
 }
 .floor-btn {
+  position: relative; /* anchors .floor-tip */
   min-width: 30px;
   height: 30px;
   padding: 0 6px;
@@ -1071,6 +1072,47 @@ button:active { transform: translateY(1px); }
   background: var(--accent);
   color: var(--accent-ink);
 }
+
+/* Ground floor and roof are icons, not numbers — a tooltip on hover/focus
+   spells out what they mean (the roof one especially: no single glyph reads
+   unambiguously as "roof" across platforms). Triggered by the button itself,
+   so it also works on a tap that focuses the button, not just mouse hover. */
+.floor-tip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #10141a;
+  color: var(--text);
+  border: 1px solid var(--stroke-2);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: normal;
+  z-index: 1200;
+  box-shadow: var(--shadow-pop);
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.floor-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #10141a transparent transparent transparent;
+}
+.floor-btn:hover .floor-tip,
+.floor-btn:focus .floor-tip,
+.floor-btn:focus-visible .floor-tip { visibility: visible; opacity: 1; }
 
 /* ─── custom map marker (clean green dot) ────────────────────────────────── */
 .suntrace-marker {

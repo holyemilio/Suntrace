@@ -427,12 +427,21 @@
          nearby buildings still block the sun -->
     <div id="floor-bar" class="floor-bar" role="group" data-i18n-aria="floor-aria" aria-label="Piano dell'abitazione">
       <span class="floor-bar-label" data-i18n="floor-label">Piano</span>
-      <button type="button" class="floor-btn" data-floor="0" data-i18n-title="floor-ground" title="Piano terra">🏠</button>
+      <button type="button" class="floor-btn" data-floor="0" data-i18n-title="floor-ground" title="Piano terra">
+        🏠
+        <span class="floor-tip" role="tooltip" data-i18n="floor-ground">Piano terra</span>
+      </button>
       <button type="button" class="floor-btn" data-floor="1">1</button>
       <button type="button" class="floor-btn" data-floor="2">2</button>
       <button type="button" class="floor-btn" data-floor="3">3</button>
       <button type="button" class="floor-btn" data-floor="4">4</button>
-      <button type="button" class="floor-btn" data-floor="5" data-i18n-title="floor-roof" title="Tetto">🔺</button>
+      <button type="button" class="floor-btn" data-floor="5" data-i18n-title="floor-roof" title="Tetto">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 15 12 6l9 9"/>
+          <path d="M3 15h18"/>
+        </svg>
+        <span class="floor-tip" role="tooltip" data-i18n="floor-roof">Tetto</span>
+      </button>
     </div>
 
     <!-- Map legend: collapses to a single icon button, same footprint as the
