@@ -1,6 +1,6 @@
 # Stato dei lavori — SunTrace
 
-Ultimo aggiornamento: **28 agosto 2026** · versione **2.6.1** · repo: <https://github.com/holyemilio/Suntrace>
+Ultimo aggiornamento: **28 agosto 2026** · versione **2.6.2** · repo: <https://github.com/holyemilio/Suntrace>
 Live: <https://holyemilio.github.io/Suntrace/> · CI: verde (unit + parità i18n + 23 e2e)
 
 Documento di passaggio di consegne: cosa è fatto, cosa è in sospeso e cosa
@@ -129,45 +129,59 @@ print('ok' if ki==ke else sorted(ki^ke))"
    quindi ombra, raggio solare e linea di facciata sembravano partire dal
    bordo invece che dal centro esatto. Fix: `.suntrace-marker` centrato con
    flexbox.
-4. ~~**Landing page + separazione app**~~ — **completato** il 27/08/2026:
+4. ~~**Il 5° piano è il tetto**~~ — **completato** il 28/08/2026: non più una
+   parete verticale a 15m, ma una superficie orizzontale. `solar.js` guadagna
+   `roofIrradiance(elevation)` (= sin(elevazione), niente azimut — un tetto non
+   ha un lato a cui rivolgersi) e `dailyRoofSunHours()`; `seasonalTemperatures()`
+   in `climate.js` prende un flag `isRoof` che sceglie quale formula usare.
+   In `ui.js`, `ROOF_FLOOR = 5`: quando selezionato, la bussola si disattiva
+   (classe `.roof-disabled`, `pointer-events:none`, `aria-disabled`) e la linea
+   verde di facciata sparisce dalla mappa (`renderMapOverlays(..., isRoof)`) —
+   entrambe cose che altrimenti resterebbero visibili/interagibili senza avere
+   più alcun effetto sul calcolo, un'incoerenza peggiore di non implementarlo.
+   Il pulsante piano 5 ora mostra 🔺 con tooltip "Tetto"/"Roof"
+   (`floor-roof` in i18n). **Non tocca** `sunBlocked`/`monthlySunAccess`: il
+   ray-cast verso il sole attraverso gli edifici OSM vicini resta identico,
+   un tetto può comunque essere in ombra di un vicino più alto.
+5. ~~**Landing page + separazione app**~~ — **completato** il 27/08/2026:
    `index.html` è ora la landing (mission/vision, 4 sezioni con grafici SVG
    animati, CTA), `app.html` è il simulatore. Ricerca sulla landing → redirect
    ad `app.html?q=...` che avvia la ricerca in automatico; link «← Home» nel
    simulatore per tornare indietro. **Non ancora testata con Playwright**
    (nessun e2e sulla landing: solo verificata a occhio via screenshot
    headless).
-5. ~~**Deploy live**~~ — **completato**: <https://holyemilio.github.io/Suntrace/>.
+6. ~~**Deploy live**~~ — **completato**: <https://holyemilio.github.io/Suntrace/>.
    Essendo `index.html` la landing, il dominio radice mostra quella.
-6. ~~**Pannelli comprimibili mappa (legenda + suggerimento)**~~ — **completato**
+7. ~~**Pannelli comprimibili mappa (legenda + suggerimento)**~~ — **completato**
    il 27/08/2026: entrambi collassano in un bottone 42×42 (stessa misura del
    pulsante di geolocalizzazione) con animazione fluida; il testo del
    suggerimento è stato accorciato e reso più leggibile (font più grande,
    colore più chiaro) perché copriva troppo spazio sulla mappa. Su mobile
    (v2.6.0) legenda e suggerimento confluiscono in un unico foglio "Info"
    (vedi punto 1).
-7. ~~**Bussola: testo duplicato**~~ — **completato**: rimosso il paragrafo di
+8. ~~**Bussola: testo duplicato**~~ — **completato**: rimosso il paragrafo di
    stato sotto la bussola (`#compass-state`) perché ripeteva l'informazione
    già in sidebar ("Sole diretto"). Resta solo l'indicatore visivo (ago + sole).
-8. ~~**Regressione box Temperature**~~ — **completato**: il box si comprimeva a
+9. ~~**Regressione box Temperature**~~ — **completato**: il box si comprimeva a
    36px di altezza perché era l'unico elemento della sidebar con `overflow:
    hidden` mentre il flex-column della sidebar si restringeva per contenuto
    in eccesso. Fix: `flex-shrink: 0` su tutte le card della sidebar.
-9. **Fallback mirror Overpass** — codice in `overpassQuery()`, mai provato per
+10. **Fallback mirror Overpass** — codice in `overpassQuery()`, mai provato per
    irraggiungibilità del servizio. Se orientamento e schermatura restano fermi
    su "Sud / Nessuna", è quasi certamente Overpass che non risponde.
-10. **Landing page senza test automatici** — `landing.js`/`landing.css` sono
+11. **Landing page senza test automatici** — `landing.js`/`landing.css` sono
     stati verificati solo visivamente (screenshot Chrome headless, questa
     macchina non ha Node installato). Prima di fidarsene in produzione
     varrebbe la pena aggiungere qualche caso a `tests/e2e/` (submit ricerca →
     redirect corretto, `?q=` raccolto da `app.html`, cambio lingua, reveal on
     scroll). Stesso discorso per il nuovo layout mobile: niente e2e ancora,
     solo screenshot headless.
-11. **Documentazione utente non aggiornata** — `docs/manuale-utente.html`,
+12. **Documentazione utente non aggiornata** — `docs/manuale-utente.html`,
     `docs/testbook.html` e `docs/testbook.csv` parlano ancora della vecchia
     struttura a pagina singola su desktop-only. Non ancora rivisti per
     riflettere la landing page, la navigazione a due pagine e il layout
     mobile.
-12. **Audit accessibilità WCAG 2.2** — deliberatamente rimandato a una fase
+13. **Audit accessibilità WCAG 2.2** — deliberatamente rimandato a una fase
     separata futura (concordato con l'utente). Il lavoro mobile di questa
     sessione è stato costruito con attenzione ad aria-label/ruoli/focus, ma
     non è un audit completo.

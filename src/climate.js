@@ -59,12 +59,14 @@ export function solarThermalGain(month, irradianceCoeff, obstructionK) {
  * Returns temperature estimate for each season.
  *
  * @param {Function} getSolarPos — (month) => { elevation, azimuth }
- * @param {number}   facadeAz   — facade azimuth (degrees)
+ * @param {number}   facadeAz   — facade azimuth (degrees); ignored when isRoof
  * @param {number}   lat        — latitude
  * @param {number}   obstrK     — obstruction factor
+ * @param {boolean}  isRoof     — horizontal surface, no facing direction:
+ *   irradiance depends only on solar elevation, never on facadeAz
  * @returns {{ winter: number, spring: number, summer: number, autumn: number }}
  */
-export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customBaseTemps = null, windowsType = 'double', insulationType = 'none') {
+export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customBaseTemps = null, windowsType = 'double', insulationType = 'none', isRoof = false) {
   const SEASONS = [
     { key: 'winter', month: 0,  noonHour: 12 },  // January (worst winter)
     { key: 'spring', month: 3,  noonHour: 12 },  // April
@@ -76,9 +78,9 @@ export function seasonalTemperatures(getSolarPos, facadeAz, lat, obstrK, customB
   for (const s of SEASONS) {
     const { elevation, azimuth } = getSolarPos(s.month);
     const elev = Math.max(0, elevation);
-    const irr = elev > 0
-      ? Math.max(0, Math.cos(elev * Math.PI / 180) * Math.cos((azimuth - facadeAz) * Math.PI / 180))
-      : 0;
+    const irr = elev <= 0 ? 0
+      : isRoof ? Math.sin(elev * Math.PI / 180)
+      : Math.max(0, Math.cos(elev * Math.PI / 180) * Math.cos((azimuth - facadeAz) * Math.PI / 180));
 
     // obstrK may be a number or a per-season function (month) => factor 0..1
     const k = typeof obstrK === 'function' ? obstrK(s.month) : obstrK;

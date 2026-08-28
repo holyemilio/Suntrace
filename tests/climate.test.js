@@ -117,6 +117,13 @@ test('seasonalTemperatures: obstruction may be a per-season function', () => {
   assert.ok(shaded.summer < open.summer, 'a shaded facade must run cooler in summer');
 });
 
+test('seasonalTemperatures: isRoof ignores facadeAz — a wall facing away from the sun gets nothing, a roof still does', () => {
+  const eastSun = () => ({ elevation: 50, azimuth: 90 }); // sun due east
+  const southWall = seasonalTemperatures(eastSun, 180, 41.9, 1.0, null, 'double', 'none', false);
+  const roof = seasonalTemperatures(eastSun, 180, 41.9, 1.0, null, 'double', 'none', true);
+  assert.ok(roof.summer > southWall.summer, 'the roof gains heat even when every wall is turned away from the sun');
+});
+
 // ─── cozynessScore ────────────────────────────────────────────────────────────
 
 test('cozynessScore: comfortable temperatures earn five stars', () => {

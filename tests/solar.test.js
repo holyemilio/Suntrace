@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import SunCalc from 'suncalc';
 
-import { solarPosition, sunriseSunset, localToUTC, facadeIrradiance } from '../src/solar.js';
+import { solarPosition, sunriseSunset, localToUTC, facadeIrradiance, roofIrradiance } from '../src/solar.js';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -206,6 +206,22 @@ test('Facade irradiance: sun below horizon → zero', () => {
 test('Facade irradiance: sun behind facade → zero (no negative)', () => {
   const irr = facadeIrradiance(30, 0, 180); // sun to north, facade south → behind
   assert.strictEqual(irr, 0);
+});
+
+// ─── roof irradiance (horizontal surface, no facing direction) ────────────────
+
+test('Roof irradiance: depends only on elevation, matches sin(elevation)', () => {
+  const irr = roofIrradiance(30);
+  assert.ok(Math.abs(irr - Math.sin(30 * Math.PI / 180)) < 0.001,
+    `Expected ~${Math.sin(30 * Math.PI / 180).toFixed(3)}, got ${irr.toFixed(3)}`);
+});
+
+test('Roof irradiance: sun below horizon → zero', () => {
+  assert.strictEqual(roofIrradiance(-5), 0);
+});
+
+test('Roof irradiance: sun at zenith → maximum (1)', () => {
+  assert.ok(Math.abs(roofIrradiance(90) - 1) < 0.001);
 });
 
 // ─── additional Milan cases ───────────────────────────────────────────────────

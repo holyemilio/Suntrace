@@ -213,6 +213,37 @@ export function dailySunHours(date, lat, lon, facadeAzimuth) {
 }
 
 /**
+ * Cosine of the incidence angle on a horizontal roof surface — a roof has no
+ * facing direction, so unlike facadeIrradiance() this depends only on how
+ * high the sun is, never on its azimuth.
+ * @param {number} elevation — solar elevation in degrees
+ * @returns {number} 0..1
+ */
+export function roofIrradiance(elevation) {
+  return elevation <= 0 ? 0 : Math.sin(toRad(elevation));
+}
+
+/**
+ * Hours of direct sun received by a horizontal roof on a given day — same
+ * sampling as dailySunHours(), but azimuth-independent (see roofIrradiance()).
+ * @param {Date}   date
+ * @param {number} lat
+ * @param {number} lon
+ * @returns {number} hours of direct sun (0..~14)
+ */
+export function dailyRoofSunHours(date, lat, lon) {
+  const midnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const STEP_MIN = 10;
+  let count = 0;
+  for (let m = 0; m < 1440; m += STEP_MIN) {
+    const t = new Date(midnight + m * 60000);
+    const { elevation } = solarPosition(t, lat, lon);
+    if (roofIrradiance(elevation) > 0.01) count++;
+  }
+  return count * STEP_MIN / 60;
+}
+
+/**
  * Sun hours for all 8 cardinal/intercardinal facades on four sample days
  * (spring equinox, summer solstice, autumn equinox, winter solstice).
  *

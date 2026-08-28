@@ -952,6 +952,10 @@ button:active { transform: translateY(1px); }
 .compass-dial.dragging { cursor: grabbing; }
 .compass-dial.dragging .compass-needle { transition: none; }
 
+/* The roof has no facing direction — freeze and dim the dial rather than
+   leave it clickable with no effect on the result. */
+.compass.roof-disabled { opacity: 0.4; pointer-events: none; }
+
 /* the eight direction buttons, laid out around the rim */
 .compass-dir {
   position: absolute;

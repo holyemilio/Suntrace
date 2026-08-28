@@ -123,9 +123,13 @@ test('T33: shrinking the window activates the mobile layout instead of hiding co
   // The mobile layout activates on the spot (see updateMobileBlock in ui.js): the
   // sidebar's content moves into the mobile bottom bar / drawer / widgets, so
   // shrinking the window never leaves you with neither UI.
+  //
+  // Wait on the reparenting itself (initMobileLayout, run from the JS resize
+  // handler), not on #mobile-bottom-bar's CSS display: that div is already
+  // display:flex the instant the media query matches, which can beat the JS
+  // handler to it and made this assertion below flaky.
   await page.setViewportSize({ width: 500, height: 820 });
-  await page.waitForFunction(() =>
-    getComputedStyle(document.getElementById('mobile-bottom-bar')).display !== 'none');
+  await page.waitForFunction(() => document.querySelector('#mobile-compass-widget #compass'));
   assert.ok(await page.locator('#mobile-compass-widget #compass').count(), 'the dial moved into the 🧭 widget, not off-screen');
   assert.match(await text(page, 'val-q-winter'), /°C$/, 'the seasonal reading followed into the bottom bar');
   assert.equal(await page.locator('#mobile-warning').isVisible(), false, 'this width is usable, not blocked');
@@ -410,9 +414,11 @@ test('T31: the compass marks the sun and hides/shows with it', async (t) => {
 
 test('T30: a wall facing away reads "sun on the other side", not "in sun"', async (t) => {
   // The stubbed courtyard yields a west-facing facade. At 09:00 in January the
-  // sun sits in the south-east, so even with a clear line of sight from the top
-  // floor the wall itself gets nothing — and the estimate must not move.
-  const page = await openApp(t, { buildingHeight: 15 });
+  // sun sits in the south-east, so even with a clear line of sight from a high
+  // floor the wall itself gets nothing — and the estimate must not move. Floor 4
+  // (12m) clears the 10m stub buildings; floor 5 is the roof, which has no wall
+  // to face away with, so it doesn't belong in this case.
+  const page = await openApp(t, { buildingHeight: 10 });
 
   await page.locator('#month-slider').fill('0');
   await page.locator('#hour-slider').fill('9');
@@ -421,12 +427,36 @@ test('T30: a wall facing away reads "sun on the other side", not "in sun"', asyn
   assert.equal(await page.locator('.compass-dir.active').textContent(), 'O', 'the detected facade faces west');
 
   const tempBefore = await text(page, 'thermal-result');
-  await page.locator('.floor-btn[data-floor="5"]').click();
+  await page.locator('.floor-btn[data-floor="4"]').click();
 
   assert.match(await text(page, 'val-sun-direct'), /altro lato/,
     'a clear sky on a west wall at 09:00 is not "in sun"');
   assert.equal(await text(page, 'thermal-result'), tempBefore,
     'the estimate stays put, matching the label');
+});
+
+test('T39: the roof (floor 5) gets sun regardless of the facade\'s orientation, and disables the compass', async (t) => {
+  // Same west-facing facade and morning sun as T30 — a wall would read "in
+  // altro lato" here. The roof has no facing direction, so it must not.
+  const page = await openApp(t, { buildingHeight: 10 });
+
+  await page.locator('#month-slider').fill('0');
+  await page.locator('#hour-slider').fill('9');
+  await page.waitForFunction(() => document.getElementById('hour-label').textContent === '09:00');
+  await page.waitForFunction(() => document.querySelector('.compass-dir.active')?.textContent === 'O');
+
+  await page.locator('.floor-btn[data-floor="5"]').click();
+
+  assert.match(await text(page, 'val-sun-direct'), /sole/,
+    'the roof catches the sun even though every wall faces away from it');
+  assert.ok(await page.locator('#compass').evaluate(el => el.classList.contains('roof-disabled')),
+    'the compass is dimmed and inert once orientation stops mattering');
+
+  // Switching back off the roof restores normal wall behaviour.
+  await page.locator('.floor-btn[data-floor="4"]').click();
+  assert.match(await text(page, 'val-sun-direct'), /altro lato/, 'leaving the roof brings the wall verdict back');
+  assert.ok(!(await page.locator('#compass').evaluate(el => el.classList.contains('roof-disabled'))),
+    'the compass is interactive again off the roof');
 });
 
 test('T27: choosing a higher floor escapes the shadow and changes the reading', async (t) => {

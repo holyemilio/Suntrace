@@ -5,6 +5,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.6.2] — 2026-08-28
+
+Rotazione libera della bussola, e il tetto come vera e propria superficie.
+
+- 🎚️ **Bussola: rotazione libera, senza scatto a 45°** — il modello sotto lavora già in gradi esatti; trascinare il quadrante ora ruota grado per grado invece di agganciarsi al punto cardinale più vicino. Gli 8 pulsanti restano per chi vuole un punto esatto con un tap.
+- 🏚️ **Il 5° piano è il tetto** — non più "una parete a 15m", ma una superficie orizzontale senza un lato a cui rivolgersi: il guadagno solare dipende solo da quanto è alto il sole, mai dall'orientamento. La bussola si disattiva (visivamente e all'input) quando il tetto è selezionato, la linea di facciata sparisce dalla mappa, e il pulsante cambia icona (🔺, tooltip "Tetto").
+
+---
+
 ## [2.6.1] — 2026-08-28
 
 Mobile: pinch-zoom libero, bussola in un widget, lingua fuori dalla fascia bassa.

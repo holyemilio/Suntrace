@@ -9,7 +9,7 @@ Simulatore microclimatico urbano (esposizione solare di facciate in Italia).
 Vanilla JS, moduli ES nativi, **nessun build step, zero dipendenze di runtime**.
 Due pagine: `index.html` (landing) e `app.html` (simulatore, con layout mobile
 dedicato sotto i 768px). Live su GitHub Pages:
-<https://holyemilio.github.io/Suntrace/> · versione **2.6.1**.
+<https://holyemilio.github.io/Suntrace/> · versione **2.6.2**.
 
 ## Comandi
 

@@ -117,6 +117,7 @@ const STRINGS = {
     'floor-label': 'Piano',
     'floor-aria': 'Piano dell\'abitazione',
     'floor-ground': 'Piano terra',
+    'floor-roof': 'Tetto',
 
     // Modal
     'modal-close-aria': 'Chiudi modale',
@@ -343,6 +344,7 @@ const STRINGS = {
     'floor-label': 'Floor',
     'floor-aria': 'Home floor',
     'floor-ground': 'Ground floor',
+    'floor-roof': 'Roof',
 
     'modal-close-aria': 'Close modal',
     'modal-title-initial': 'Comfort Rate Detail',

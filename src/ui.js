@@ -9,6 +9,8 @@ import {
   sunriseSunset,
   facadeIrradiance,
   dailySunHours,
+  roofIrradiance,
+  dailyRoofSunHours,
   localToUTC,
   offsetByAzimuth,
 } from './solar.js';
@@ -74,6 +76,9 @@ let autocompleteTimeout = null;
 let customBaseTemps = null; // 12 monthly temp means from Open-Meteo; null = fallback to climate.js Rome table
 let climateExtra = null;    // { rh, wind, precip } monthly means from Open-Meteo (may be null / partial)
 let currentFloor = 0;       // user's floor (0 = ground … 5); higher clears nearby rooftops → less obstruction
+// Floor 5 isn't "a wall 15m up" like the others — it's the roof: a horizontal
+// surface with no facing direction, so orientation stops mattering entirely.
+const ROOF_FLOOR = 5;
 let lastAnalysis = null; // { seasonal, comfort, ... } from the latest refreshUI(), read by openKPIModal()
 // Coordinates of the last picked autocomplete suggestion, kept so the "Vai"
 // button can analyse them without a second Nominatim call. Includes the exact
@@ -165,7 +170,7 @@ function clearOverlays() {
   if (facadeLine)    { map.removeLayer(facadeLine);    facadeLine    = null; }
 }
 
-function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz) {
+function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz, isRoof = false) {
   clearOverlays();
 
   radarCircle = L.circle([lat, lng], {
@@ -202,13 +207,15 @@ function renderMapOverlays(lat, lng, elevation, azimuth, facadeAz) {
     }).addTo(map);
   }
 
-  // Facade orientation line
-  const facadeTip = offsetByAzimuth(lat, lng, facadeAz, 0.00014);
-  facadeLine = L.polyline([[lat, lng], facadeTip], {
-    color: '#22c55e',
-    weight: 6,
-    opacity: 0.95,
-  }).addTo(map);
+  // Facade orientation line — meaningless for a roof, which has no facing direction.
+  if (!isRoof) {
+    const facadeTip = offsetByAzimuth(lat, lng, facadeAz, 0.00014);
+    facadeLine = L.polyline([[lat, lng], facadeTip], {
+      color: '#22c55e',
+      weight: 6,
+      opacity: 0.95,
+    }).addTo(map);
+  }
 }
 
 // ─── geofencing ───────────────────────────────────────────────────────────────
@@ -497,6 +504,8 @@ function refreshUI() {
   const windowsType = checkedValue('windows', 'double');
   const insulationType = checkedValue('insulation', 'none');
 
+  const isRoof = currentFloor === ROOF_FLOOR;
+
   // Real shadow: cast a ray to the sun through the nearby OSM buildings from the
   // observer's floor height. When blocked, only diffuse sky light reaches the wall.
   const obsH = currentFloor * FLOOR_HEIGHT_M;
@@ -512,8 +521,9 @@ function refreshUI() {
     : 1.0;
   const kOmbra = kMonth(month);
 
-  // Facade irradiance and room temperature
-  const irr = facadeIrradiance(elevClamped, azimuth, angleDeg);
+  // Facade irradiance and room temperature — the roof has no facing direction,
+  // so its gain depends only on how high the sun is, never on angleDeg.
+  const irr = isRoof ? roofIrradiance(elevClamped) : facadeIrradiance(elevClamped, azimuth, angleDeg);
   const airTemp = airTemperature(month, localHour, lat, customBaseTemps);
   const gain = solarThermalGain(month, irr, inShadow ? DIFFUSE_K : 1.0);
   const roomTemp = airTemp + gain;
@@ -531,7 +541,7 @@ function refreshUI() {
   // Seasonal analysis
   const seasonal = seasonalTemperatures(
     m => solarPosition(localToUTC(DEFAULT_YEAR, m, 15, 12, TIMEZONE), lat, lng),
-    angleDeg, lat, kMonth, customBaseTemps, windowsType, insulationType
+    angleDeg, lat, kMonth, customBaseTemps, windowsType, insulationType, isRoof
   );
 
   const seasonMap = {
@@ -584,7 +594,7 @@ function refreshUI() {
     badge.dataset.label = comfortLabel;
   }
   // Direct sun hours today on the selected facade (folded into the Comfort Rate detail)
-  const sunHoursToday = dailySunHours(utcDate, lat, lng, angleDeg);
+  const sunHoursToday = isRoof ? dailyRoofSunHours(utcDate, lat, lng) : dailySunHours(utcDate, lat, lng, angleDeg);
   lastAnalysis = { seasonal, comfort, sunHoursToday, feels, climate: climateExtra };
 
   // Solar info
@@ -621,7 +631,14 @@ function refreshUI() {
   setText('telemetry-cardinal', `${angleDeg}° (${t(cardinalLabel(angleDeg))})`);
 
   // Map overlays
-  renderMapOverlays(lat, lng, elevation, azimuth, angleDeg);
+  renderMapOverlays(lat, lng, elevation, azimuth, angleDeg, isRoof);
+
+  // The compass sets a facing direction, which a roof doesn't have.
+  const compassEl = $('compass');
+  if (compassEl) {
+    compassEl.classList.toggle('roof-disabled', isRoof);
+    compassEl.setAttribute('aria-disabled', String(isRoof));
+  }
 }
 
 // ─── KPI modal ────────────────────────────────────────────────────────────────
