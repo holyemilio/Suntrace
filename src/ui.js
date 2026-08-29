@@ -145,7 +145,12 @@ function initMap() {
     }
   ).addTo(map);
 
-  map.on('click', e => analyzePoint(e.latlng.lat, e.latlng.lng, false));
+  map.on('click', e => {
+    // On mobile, a tap on the map is also how you dismiss whatever sheet or
+    // widget is open — closing it, not also dropping a new point underneath.
+    if (closeAllMobilePanels()) return;
+    analyzePoint(e.latlng.lat, e.latlng.lng, false);
+  });
 }
 
 // Clean custom marker (a green dot) — replaces Leaflet's default pin + grey shadow.
@@ -1070,6 +1075,19 @@ function initLangSwitch() {
 // Re-measured after a language switch, since IT/EN copy differs in length.
 const panelRemeasurers = [];
 
+// Every mobile sheet/widget registers a (isOpen, close) pair here so a tap on
+// the map can dismiss whichever one is open — see closeAllMobilePanels().
+const mobilePanelClosers = [];
+
+/** @returns {boolean} true if something was actually open (and got closed) */
+function closeAllMobilePanels() {
+  let closedAny = false;
+  mobilePanelClosers.forEach(({ isOpen, close }) => {
+    if (isOpen()) { close(); closedAny = true; }
+  });
+  return closedAny;
+}
+
 /**
  * Wire a panel that folds down to a single 42×42 icon button (the geolocation
  * button's own footprint) and back. CSS can't transition to/from `auto`, so we
@@ -1077,8 +1095,12 @@ const panelRemeasurers = [];
  * animation from explicit `--panel-w`/`--panel-h` custom properties instead.
  * @param {string} panelId
  * @param {string} toggleId
+ * @param {{ closeOnMapTap?: boolean }} [opts] — mobile widgets only: also
+ *   close when the map is tapped, and swap the icon for ✕ while open (the
+ *   desktop map-hint/legend panels keep their original click-to-toggle-only
+ *   behaviour, unchanged).
  */
-function initCollapsiblePanel(panelId, toggleId) {
+function initCollapsiblePanel(panelId, toggleId, { closeOnMapTap = false } = {}) {
   const panel = $(panelId);
   const toggle = $(toggleId);
   if (!panel || !toggle) return;
@@ -1093,11 +1115,25 @@ function initCollapsiblePanel(panelId, toggleId) {
   measure();
   panelRemeasurers.push(measure);
 
-  toggle.addEventListener('click', () => {
-    const collapsed = !panel.classList.contains('collapsed');
+  const toggleIcon = closeOnMapTap ? toggle.querySelector('[aria-hidden]') : null;
+  const openIcon = toggleIcon?.textContent;
+
+  const setCollapsed = collapsed => {
     panel.classList.toggle('collapsed', collapsed);
     toggle.setAttribute('aria-expanded', String(!collapsed));
-  });
+    if (toggleIcon && openIcon !== undefined) toggleIcon.textContent = collapsed ? openIcon : '✕';
+  };
+
+  toggle.addEventListener('click', () => setCollapsed(!panel.classList.contains('collapsed')));
+
+  if (closeOnMapTap) {
+    mobilePanelClosers.push({
+      isOpen: () => !panel.classList.contains('collapsed'),
+      close: () => setCollapsed(true),
+    });
+  }
+
+  return { close: () => setCollapsed(true) };
 }
 
 function initCollapsiblePanels() {
@@ -1183,26 +1219,29 @@ function initMobileLayout() {
 
   initMobileSheet('mobile-info-btn', 'mobile-info-sheet', 'mobile-info-overlay', 'mobile-info-close');
   initMobileSheet('mobile-drawer-toggle', 'mobile-drawer', 'mobile-drawer-overlay', 'mobile-drawer-close');
-  initCollapsiblePanel('mobile-solar-widget', 'mobile-solar-toggle');
-  initCollapsiblePanel('mobile-climate-widget', 'mobile-climate-toggle');
-  initCollapsiblePanel('mobile-compass-widget', 'mobile-compass-toggle');
+  const solarPanel = initCollapsiblePanel('mobile-solar-widget', 'mobile-solar-toggle', { closeOnMapTap: true });
+  const climatePanel = initCollapsiblePanel('mobile-climate-widget', 'mobile-climate-toggle', { closeOnMapTap: true });
+  const compassPanel = initCollapsiblePanel('mobile-compass-widget', 'mobile-compass-toggle', { closeOnMapTap: true });
 
   // The three widgets share the same corner: only one open at a time, or the
-  // expanded panels pile up over each other and over the map.
+  // expanded panels pile up over each other and over the map. Closing through
+  // the same `close()` each panel already uses (not raw classList) keeps the
+  // ✕ ⇄ icon swap correct on the ones forced shut, not just the one clicked.
   const widgets = [
-    ['mobile-solar-widget', 'mobile-solar-toggle'],
-    ['mobile-climate-widget', 'mobile-climate-toggle'],
-    ['mobile-compass-widget', 'mobile-compass-toggle'],
+    ['mobile-solar-toggle', solarPanel],
+    ['mobile-climate-toggle', climatePanel],
+    ['mobile-compass-toggle', compassPanel],
   ];
-  widgets.forEach(([, toggleId]) => {
+  widgets.forEach(([toggleId]) => {
     $(toggleId)?.addEventListener('click', () => {
-      widgets.forEach(([otherPanel, otherToggle]) => {
+      widgets.forEach(([otherToggle, otherPanel]) => {
         if (otherToggle === toggleId) return;
-        $(otherPanel)?.classList.add('collapsed');
-        $(otherToggle)?.setAttribute('aria-expanded', 'false');
+        otherPanel?.close();
       });
     });
   });
+
+  initMobileTour();
 }
 
 /**
@@ -1216,15 +1255,158 @@ function initMobileSheet(toggleId, sheetId, overlayId, closeId) {
   if (!toggle || !sheet) return;
   sheet.inert = true;
 
+  const toggleIcon = toggle.querySelector('[aria-hidden]');
+  const openIcon = toggleIcon?.textContent;
+
   const setOpen = open => {
     sheet.classList.toggle('open', open);
     overlay?.classList.toggle('open', open);
     sheet.inert = !open;
     toggle.setAttribute('aria-expanded', String(open));
+    // The toggle doubles as the close button once open — an X makes that obvious,
+    // instead of leaving the original icon looking unrelated to "closing".
+    if (toggleIcon && openIcon !== undefined) toggleIcon.textContent = open ? '✕' : openIcon;
   };
   toggle.addEventListener('click', () => setOpen(!sheet.classList.contains('open')));
   close?.addEventListener('click', () => setOpen(false));
   overlay?.addEventListener('click', () => setOpen(false));
+  mobilePanelClosers.push({ isOpen: () => sheet.classList.contains('open'), close: () => setOpen(false) });
+
+  initSheetSwipeToDismiss(sheet, () => setOpen(false));
+}
+
+/**
+ * Drag the handle down to dismiss a bottom sheet — the alternative to tapping
+ * outside that the settings drawer specifically needed (its own toggle button
+ * ends up hidden behind the open sheet, and reaching past the sheet to tap the
+ * map is not obvious). Restricted to the handle, not the whole sheet, so it
+ * doesn't fight normal scrolling of the sheet's content.
+ */
+function initSheetSwipeToDismiss(sheet, close) {
+  const handle = sheet.querySelector('.mobile-sheet-handle');
+  if (!handle) return;
+  const DISMISS_PX = 80;
+  let startY = null, delta = 0;
+
+  handle.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    delta = 0;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', e => {
+    if (startY == null) return;
+    delta = Math.max(0, e.touches[0].clientY - startY);
+    sheet.style.transform = `translateY(${delta}px)`;
+  }, { passive: true });
+
+  const endDrag = () => {
+    if (startY == null) return;
+    startY = null;
+    sheet.style.transition = '';
+    if (delta > DISMISS_PX) close();
+    sheet.style.transform = '';
+  };
+  handle.addEventListener('touchend', endDrag);
+  handle.addEventListener('touchcancel', endDrag);
+}
+
+// ─── first-run mobile tour ──────────────────────────────────────────────────
+
+const MOBILE_TOUR_SEEN_KEY = 'suntrace_mobile_tour_seen_v1';
+
+// Every step targets a control that's always on screen once initMobileLayout()
+// has run (no sheet/widget needs to be open first) — the toggle buttons, not
+// what they reveal, so nothing here depends on the timing of the first analysis.
+function mobileTourSteps() {
+  return [
+    { el: () => $('mobile-drawer-toggle'), textKey: 'tour-drawer' },
+    { el: () => $('floor-bar'), textKey: 'tour-floor' },
+    { el: () => $('mobile-solar-toggle'), textKey: 'tour-solar' },
+    { el: () => $('mobile-climate-toggle'), textKey: 'tour-climate' },
+    { el: () => $('mobile-compass-toggle'), textKey: 'tour-compass' },
+    { el: () => $('mobile-info-btn'), textKey: 'tour-info' },
+  ];
+}
+
+function initMobileTour() {
+  if (localStorage.getItem(MOBILE_TOUR_SEEN_KEY)) return;
+
+  const steps = mobileTourSteps().filter(s => s.el());
+  if (!steps.length) return;
+
+  const highlight = $('mobile-tour-highlight');
+  const callout = $('mobile-tour-callout');
+  const textEl = $('mobile-tour-text');
+  const nextBtn = $('mobile-tour-next');
+  const skipBtn = $('mobile-tour-skip');
+  const dotsEl = $('mobile-tour-dots');
+  if (!highlight || !callout || !textEl || !nextBtn || !skipBtn || !dotsEl) return;
+
+  let i = 0;
+
+  const finish = () => {
+    localStorage.setItem(MOBILE_TOUR_SEEN_KEY, '1');
+    highlight.classList.remove('open');
+    callout.classList.remove('open');
+    document.removeEventListener('keydown', onKeydown);
+  };
+
+  const onKeydown = e => { if (e.key === 'Escape') finish(); };
+
+  const renderDots = () => {
+    dotsEl.replaceChildren(...steps.map((_, idx) => {
+      const dot = document.createElement('span');
+      dot.className = 'mobile-tour-dot' + (idx === i ? ' active' : '');
+      return dot;
+    }));
+  };
+
+  const placeCallout = target => {
+    const r = target.getBoundingClientRect();
+    const cr = callout.getBoundingClientRect();
+    const margin = 12;
+    const spaceBelow = window.innerHeight - r.bottom;
+    const top = spaceBelow > cr.height + 24
+      ? r.bottom + 14
+      : Math.max(margin, r.top - cr.height - 14);
+    const left = Math.min(
+      Math.max(margin, r.left + r.width / 2 - cr.width / 2),
+      window.innerWidth - cr.width - margin
+    );
+    callout.style.top = top + 'px';
+    callout.style.left = left + 'px';
+  };
+
+  const show = () => {
+    const target = steps[i].el();
+    if (!target) { advance(); return; } // vanished between steps — skip rather than highlight nothing
+
+    const r = target.getBoundingClientRect();
+    highlight.style.left = (r.left - 6) + 'px';
+    highlight.style.top = (r.top - 6) + 'px';
+    highlight.style.width = (r.width + 12) + 'px';
+    highlight.style.height = (r.height + 12) + 'px';
+    highlight.classList.add('open');
+
+    textEl.textContent = t(steps[i].textKey);
+    nextBtn.textContent = t(i === steps.length - 1 ? 'tour-done' : 'tour-next');
+    renderDots();
+    callout.classList.add('open');
+    requestAnimationFrame(() => placeCallout(target));
+  };
+
+  const advance = () => {
+    i++;
+    if (i >= steps.length) { finish(); return; }
+    show();
+  };
+
+  nextBtn.addEventListener('click', advance);
+  skipBtn.addEventListener('click', finish);
+  document.addEventListener('keydown', onKeydown);
+
+  show();
 }
 
 // ─── app bootstrap ────────────────────────────────────────────────────────────

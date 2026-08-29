@@ -7,7 +7,7 @@
 # SunTrace — Simulatore Microclimatico Urbano
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2023%20e2e-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-64%20unit%20%2B%2025%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 [![Live Demo](https://img.shields.io/badge/demo-live-f5b301)](https://holyemilio.github.io/Suntrace/)
 
@@ -38,7 +38,7 @@
 | **Geolocalizzazione** | Messaggi di errore specifici per PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero dipendenze di runtime** | Leaflet e font serviti in locale (`vendor/`), nessun CDN: le uniche richieste esterne vanno alle API pubbliche senza chiave — OpenStreetMap (mappa e edifici), Nominatim, Open-Meteo. Nessun bundler. |
 | **Clima del luogo** | Umidità, vento, pioggia e percepita del mese scelto, dalle normali reali del punto. |
-| **60 unit + 23 e2e** | `node --test` per motore solare, modello termico e geometria delle ombre; Playwright guida l'app in un browser vero. |
+| **64 unit + 25 e2e** | `node --test` per motore solare, modello termico e geometria delle ombre; Playwright guida l'app in un browser vero. |
 
 ---
 
@@ -113,7 +113,7 @@ python3 -m http.server 8000
 # Installa suncalc (solo devDependency per i test)
 npm install
 
-# Esegui i 60 unit test (Node 18+)
+# Esegui i 64 unit test (Node 18+)
 npm test
 # oppure: node --test tests/solar.test.js
 ```
@@ -166,7 +166,7 @@ SunTrace/
 ├── server/
 │   └── overpass-cache/ # Cloudflare Worker: cache 30gg davanti a Overpass (opzionale)
 ├── tests/
-│   ├── solar.test.js   # 23 test — motore astronomico (oracle SunCalc)
+│   ├── solar.test.js   # 26 test — motore astronomico (oracle SunCalc)
 │   ├── climate.test.js # 21 test — modello termico e Comfort Rate
 │   ├── shadow.test.js  # 16 test — geometria facciate e ombre
 │   └── e2e/app.e2e.js  # 22 test end-to-end (Playwright, browser headless)

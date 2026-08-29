@@ -1611,7 +1611,8 @@ button:active { transform: translateY(1px); }
    Info sheet, and two small readouts you open on demand. ────────────────── */
 
 .mobile-info-btn, .mobile-drawer-toggle, .mobile-widgets, .mobile-bottom-bar,
-.mobile-sheet, .mobile-sheet-overlay { display: none; }
+.mobile-sheet, .mobile-sheet-overlay,
+.mobile-tour-highlight, .mobile-tour-callout { display: none; }
 
 @media (max-width: 768px) {
   .mobile-info-btn, .mobile-drawer-toggle, .mobile-widgets, .mobile-bottom-bar {
@@ -1677,10 +1678,17 @@ button:active { transform: translateY(1px); }
   }
   .mobile-sheet.open { transform: translateY(0); }
   .mobile-sheet-handle {
-    width: 40px; height: 4px;
-    margin: 0 auto 12px;
-    border-radius: var(--pill);
+    /* Visible bar stays a slim 40×4px, but the real touch target is much
+       taller — padding is transparent, background-clip keeps the bar itself
+       thin. touch-action:none hands the drag entirely to swipe-to-dismiss,
+       not the browser's own scroll/overscroll gestures. */
+    width: 100px; height: 24px;
+    padding: 10px 30px; /* border-box: leaves a 40×4 content area, the visible bar */
+    margin: -10px auto 2px; /* cancels the padding so the visible bar lands where it used to */
     background: var(--stroke-2);
+    background-clip: content-box;
+    border-radius: var(--pill);
+    touch-action: none;
   }
   .mobile-sheet-close {
     position: absolute;
@@ -1812,6 +1820,77 @@ button:active { transform: translateY(1px); }
     bottom: auto;
     left: 14px;
   }
+
+  /* ── first-run tour: one element does both jobs — a huge box-shadow spread
+     dims the whole screen except the element's own box (which stays clear,
+     "illuminating" it), ringed in accent. pointer-events stays none: the tour
+     only explains controls, it doesn't need to block interacting with them. */
+  .mobile-tour-highlight {
+    display: block;
+    position: fixed;
+    z-index: 1650;
+    border-radius: 16px;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(4, 6, 9, 0.45);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease,
+                opacity 0.2s ease;
+  }
+  .mobile-tour-highlight.open { opacity: 1; visibility: visible; }
+
+  .mobile-tour-callout {
+    display: block;
+    position: fixed;
+    z-index: 1660;
+    width: 240px;
+    max-width: calc(100vw - 24px);
+    background: var(--bg-elev);
+    border: 1px solid var(--stroke-2);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6), var(--shadow-pop);
+    padding: 14px 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, top 0.3s ease, left 0.3s ease;
+  }
+  .mobile-tour-callout.open { opacity: 1; visibility: visible; }
+  .mobile-tour-text {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .mobile-tour-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mobile-tour-skip {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 6px 4px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mobile-tour-skip:hover { color: var(--text-strong); filter: none; }
+  .mobile-tour-next {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: var(--pill);
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .mobile-tour-dots { display: flex; gap: 5px; }
+  .mobile-tour-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--stroke-2);
+  }
+  .mobile-tour-dot.active { background: var(--accent); }
 }
 
 /* ─── mobile warning overlay ─────────────────────────────────────────────── */

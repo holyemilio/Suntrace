@@ -558,6 +558,20 @@
 
     <div class="mobile-bottom-bar" id="mobile-bottom-bar"></div>
 
+    <!-- First-run guided tour: a highlight ring around one control at a time,
+         with a small callout next to it explaining what it does. Shown once
+         (localStorage), replaces cramming every explanation into a panel no
+         one taps into on their own the first time. -->
+    <div class="mobile-tour-highlight" id="mobile-tour-highlight" aria-hidden="true"></div>
+    <div class="mobile-tour-callout" id="mobile-tour-callout" role="dialog" aria-modal="false" data-i18n-aria="tour-aria" aria-label="Tutorial">
+      <p class="mobile-tour-text" id="mobile-tour-text"></p>
+      <div class="mobile-tour-actions">
+        <button type="button" class="mobile-tour-skip" id="mobile-tour-skip" data-i18n="tour-skip">Salta</button>
+        <div class="mobile-tour-dots" id="mobile-tour-dots" aria-hidden="true"></div>
+        <button type="button" class="mobile-tour-next" id="mobile-tour-next" data-i18n="tour-next">Avanti</button>
+      </div>
+    </div>
+
     <div
       id="map-error-toast"
       class="map-error-toast"

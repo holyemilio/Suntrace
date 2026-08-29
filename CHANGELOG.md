@@ -5,6 +5,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ---
 
+## [2.7.0] — 2026-08-29
+
+UX mobile: le finestre si chiudono in modo ovvio, e un tutorial al primo avvio.
+
+- 🖱️ **Tap sulla mappa chiude la finestra aperta** — valeva già per i due fogli (Info, Impostazioni) tramite il loro sfondo cliccabile; ora vale anche per i tre widget (☀️ 🌡️ 🧭), che non lo avevano affatto. Il tap si limita a chiudere: non conta anche come "sposta il punto analizzato".
+- ✕ **L'icona diventa una X quando la finestra è aperta** — su Info, Impostazioni e i tre widget, per rendere ovvio che è lì che si chiude.
+- 👇 **Swipe verso il basso per chiudere il foglio Impostazioni** (e quello Info) — non serve più per forza cliccare fuori; si può anche trascinare giù la maniglia, con un'area toccabile più larga di quella visibile.
+- 🎓 **Tutorial al primo avvio** — un anello luminoso evidenzia un controllo alla volta (Impostazioni, piani, i tre widget, Info) con un piccolo popup a fianco che ne spiega la funzione. Compare una sola volta (localStorage), non blocca l'uso dell'app sotto.
+- 🏚️ **Tooltip su piano terra e tetto, icona del tetto più chiara** — sostituita l'emoji 🔺 (ambigua, diversa da sistema a sistema) con un'icona a tratto coerente col resto dell'app; entrambi i pulsanti ora mostrano anche un tooltip al tocco, non solo passando il mouse.
+
+---
+
 ## [2.6.2] — 2026-08-28
 
 Rotazione libera della bussola, e il tetto come vera e propria superficie.

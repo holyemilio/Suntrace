@@ -1,7 +1,7 @@
 # Stato dei lavori — SunTrace
 
-Ultimo aggiornamento: **28 agosto 2026** · versione **2.6.2** · repo: <https://github.com/holyemilio/Suntrace>
-Live: <https://holyemilio.github.io/Suntrace/> · CI: verde (unit + parità i18n + 23 e2e)
+Ultimo aggiornamento: **29 agosto 2026** · versione **2.7.0** · repo: <https://github.com/holyemilio/Suntrace>
+Live: <https://holyemilio.github.io/Suntrace/> · CI: verde (unit + parità i18n + 25 e2e)
 
 Documento di passaggio di consegne: cosa è fatto, cosa è in sospeso e cosa
 sapere prima di rimettere le mani al progetto.
@@ -15,17 +15,16 @@ sapere prima di rimettere le mani al progetto.
 ./start.command                      # poi http://localhost:8000 (landing page)
 
 # test
-npm test                             # 60 unit  — motore solare, clima, geometria ombre
-npm run test:e2e                     # 23 e2e   — Playwright guida app.html in un browser vero
+npm test                             # 64 unit  — motore solare, clima, geometria ombre
+npm run test:e2e                     # 25 e2e   — Playwright guida app.html in un browser vero
 ```
 
-Su questo Mac **Node non è installato**: i comandi sopra non girano qui. La CI
-(`.github/workflows/ci.yml`) li esegue a ogni push — è l'unica rete di
-sicurezza reale, non dichiarare "verificato" senza CI verde o uno screenshot
-Chrome headless equivalente.
+**Aggiornamento**: Node è ora installato su questo Mac (dal 28/08/2026), i
+comandi sopra girano in locale — non serve più aspettare la CI per sapere se
+qualcosa si è rotto, anche se resta comunque il gate di ogni push
+(`.github/workflows/ci.yml`: unit, parità i18n, e2e).
 
-Serve **Node 18+**. Se manca: `brew install node`. Per gli e2e, una volta sola:
-`npx playwright install chromium`.
+Serve **Node 18+**. Per gli e2e, una volta sola: `npx playwright install chromium`.
 
 > Il progetto è **zero-dependency a runtime**: nessun bundler, moduli ES nativi.
 > Playwright e suncalc sono solo per i test.
@@ -43,7 +42,7 @@ Da questa sessione l'app è **due pagine separate**, non più una sola:
 | `src/landing.js` | Logica della landing: cambio lingua, submit ricerca → redirect ad `app.html`, scroll-reveal via `IntersectionObserver`. Indipendente da `ui.js`. |
 | `src/landing.css` | Stili della landing. Non importa `styles.css` (che fissa `body{overflow:hidden}` per il layout a mappa fissa) — importa solo `tokens.css`. |
 | `src/tokens.css` | I design token (`:root { --bg, --accent, --radius-*, ... }`), estratti da `styles.css` perché condivisi da entrambe le pagine. |
-| `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo**: 23 test lo confrontano con SunCalc. |
+| `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo**: 26 test lo confrontano con SunCalc. |
 | `src/climate.js` | Modello termico stagionale, temperatura percepita, Comfort Rate. Puro. |
 | `src/shadow.js` | Geometria: orientamento della facciata e ombre reali (ray-cast verso il sole). Puro. |
 | `src/ui.js` | Il simulatore: Leaflet, geofencing, chiamate API, modale, bussola (click + drag-to-rotate, condivisa dai due layout: sulla mappa su desktop, dentro il widget 🧭 su mobile), piani, arco solare, pannelli comprimibili (legenda/suggerimento), **layout mobile** (`initMobileLayout`, `initMobileSheet`, reparenting DOM verso barra inferiore/drawer/foglio Info/widget, widget mutuamente esclusivi). Legge `?q=` dall'URL per la ricerca in arrivo dalla landing. |
@@ -81,8 +80,8 @@ print('ok' if ki==ke else sorted(ki^ke))"
 0. ~~**CI + self-hosting risorse esterne**~~ — **completato** il 27/08/2026,
    **prima esecuzione reale (ed effettivamente verde) il 28/08/2026**:
    `.github/workflows/ci.yml` esegue unit, parità i18n ed e2e su ogni push
-   (i test NON possono girare su questa macchina, Node non è installato — la
-   CI è l'unica rete di sicurezza attiva). Al primo giro reale ha trovato tre
+   (allora l'unica rete di sicurezza: questa macchina non aveva Node — non è
+   più così dal 28/08/2026, vedi sopra). Al primo giro reale ha trovato tre
    problemi, tutti sistemati nello stesso push: script `test`/`test:e2e` in
    `package.json` con un glob tra virgolette che Node 20 non espande da solo
    (va tolta la virgoletta, lo espande la shell); tre e2e rimasti agganciati a
@@ -139,49 +138,94 @@ print('ok' if ki==ke else sorted(ki^ke))"
    verde di facciata sparisce dalla mappa (`renderMapOverlays(..., isRoof)`) —
    entrambe cose che altrimenti resterebbero visibili/interagibili senza avere
    più alcun effetto sul calcolo, un'incoerenza peggiore di non implementarlo.
-   Il pulsante piano 5 ora mostra 🔺 con tooltip "Tetto"/"Roof"
-   (`floor-roof` in i18n). **Non tocca** `sunBlocked`/`monthlySunAccess`: il
-   ray-cast verso il sole attraverso gli edifici OSM vicini resta identico,
-   un tetto può comunque essere in ombra di un vicino più alto.
-5. ~~**Landing page + separazione app**~~ — **completato** il 27/08/2026:
+   Il pulsante piano 5 mostra un'icona a tratto (una falda di tetto, non più
+   l'emoji 🔺 iniziale — poco chiara, sistemata il 29/08/2026 insieme al
+   tooltip, vedi punto 5) con tooltip "Tetto"/"Roof" (`floor-roof` in i18n).
+   **Non tocca** `sunBlocked`/`monthlySunAccess`: il ray-cast verso il sole
+   attraverso gli edifici OSM vicini resta identico, un tetto può comunque
+   essere in ombra di un vicino più alto.
+5. ~~**UX mobile: finestre e primo avvio**~~ — **completato** il 29/08/2026:
+   - **Tooltip su piano terra e tetto** — entrambi erano solo un'icona; un
+     tooltip custom (stesso stile scuro di `.info-tip-box`) appare su
+     hover/focus del pulsante stesso, quindi anche al tap su mobile (che porta
+     il focus sul bottone). L'icona del tetto è passata da 🔺 (emoji, resa
+     ambigua/diversa tra sistemi) a un'icona SVG a tratto coerente con le
+     altre dell'app.
+   - **Tap sulla mappa chiude la finestra aperta** — i due fogli (Info,
+     Impostazioni) lo facevano già tramite il loro overlay; i tre widget
+     (☀️ 🌡️ 🧭) no, perché riusano il pattern desktop dei pannelli
+     comprimibili, mai pensato con uno sfondo cliccabile. Ora `map.on('click',
+     ...)` chiama `closeAllMobilePanels()` prima di analizzare un nuovo punto:
+     se qualcosa era aperto lo chiude e basta, il tap non conta anche come
+     "sposta il punto". Il registro `mobilePanelClosers` è alimentato sia da
+     `initMobileSheet()` che da `initCollapsiblePanel(..., {closeOnMapTap:
+     true})` (il flag lascia invariato il comportamento delle stesse funzioni
+     su desktop — map-hint/map-legend non lo passano).
+   - **Icona ⇄ ✕ quando la finestra è aperta** — Info, Impostazioni e i tre
+     widget mostrano una ✕ al posto della propria icona mentre sono aperti,
+     per rendere ovvio che è lì che si chiudono. La mutua esclusione dei tre
+     widget (aprirne uno chiude gli altri) ora passa per lo stesso `close()`
+     di ciascun pannello (non più manipolazione diretta di `classList`),
+     altrimenti l'icona di un widget chiuso "dall'esterno" restava bloccata su
+     ✕.
+   - **Swipe-down per chiudere il foglio Impostazioni** — trascinare la
+     maniglia (`.mobile-sheet-handle`) verso il basso oltre 80px lo chiude;
+     sotto soglia torna su. Implementato in `initSheetSwipeToDismiss()`,
+     condiviso da entrambi i fogli (Info compreso, stesso componente). L'area
+     toccabile della maniglia è più grande di quella visibile (`padding` +
+     `background-clip: content-box`) — un target di 40×4px reale sarebbe
+     troppo piccolo per un dito.
+   - **Tutorial al primo avvio** — un anello luminoso (accent + un box-shadow
+     con spread enorme che scurisce il resto, un solo elemento fa entrambe le
+     cose) evidenzia un controllo alla volta — Impostazioni, piani, i tre
+     widget, Info — con un piccolo popup a fianco che spiega a cosa serve.
+     `localStorage` (`suntrace_mobile_tour_seen_v1`) lo mostra una sola volta;
+     non c'è ancora un modo per rivederlo a comando. Il tour non blocca
+     l'interazione con l'app sotto (`pointer-events:none`): è pensato solo per
+     spiegare, non per obbligare a seguirlo in ordine. **Nei test e2e**:
+     `openApp()` lo pre-marca come già visto di default
+     (`seedTourSeen: true`), altrimenti coprirebbe/intercetterebbe i click di
+     qualunque test scritto per un viewport stretto; T40 è l'unico che lo
+     disattiva per testare il tour stesso.
+6. ~~**Landing page + separazione app**~~ — **completato** il 27/08/2026:
    `index.html` è ora la landing (mission/vision, 4 sezioni con grafici SVG
    animati, CTA), `app.html` è il simulatore. Ricerca sulla landing → redirect
    ad `app.html?q=...` che avvia la ricerca in automatico; link «← Home» nel
    simulatore per tornare indietro. **Non ancora testata con Playwright**
    (nessun e2e sulla landing: solo verificata a occhio via screenshot
    headless).
-6. ~~**Deploy live**~~ — **completato**: <https://holyemilio.github.io/Suntrace/>.
+7. ~~**Deploy live**~~ — **completato**: <https://holyemilio.github.io/Suntrace/>.
    Essendo `index.html` la landing, il dominio radice mostra quella.
-7. ~~**Pannelli comprimibili mappa (legenda + suggerimento)**~~ — **completato**
+8. ~~**Pannelli comprimibili mappa (legenda + suggerimento)**~~ — **completato**
    il 27/08/2026: entrambi collassano in un bottone 42×42 (stessa misura del
    pulsante di geolocalizzazione) con animazione fluida; il testo del
    suggerimento è stato accorciato e reso più leggibile (font più grande,
    colore più chiaro) perché copriva troppo spazio sulla mappa. Su mobile
    (v2.6.0) legenda e suggerimento confluiscono in un unico foglio "Info"
    (vedi punto 1).
-8. ~~**Bussola: testo duplicato**~~ — **completato**: rimosso il paragrafo di
+9. ~~**Bussola: testo duplicato**~~ — **completato**: rimosso il paragrafo di
    stato sotto la bussola (`#compass-state`) perché ripeteva l'informazione
    già in sidebar ("Sole diretto"). Resta solo l'indicatore visivo (ago + sole).
-9. ~~**Regressione box Temperature**~~ — **completato**: il box si comprimeva a
+10. ~~**Regressione box Temperature**~~ — **completato**: il box si comprimeva a
    36px di altezza perché era l'unico elemento della sidebar con `overflow:
    hidden` mentre il flex-column della sidebar si restringeva per contenuto
    in eccesso. Fix: `flex-shrink: 0` su tutte le card della sidebar.
-10. **Fallback mirror Overpass** — codice in `overpassQuery()`, mai provato per
+11. **Fallback mirror Overpass** — codice in `overpassQuery()`, mai provato per
    irraggiungibilità del servizio. Se orientamento e schermatura restano fermi
    su "Sud / Nessuna", è quasi certamente Overpass che non risponde.
-11. **Landing page senza test automatici** — `landing.js`/`landing.css` sono
+12. **Landing page senza test automatici** — `landing.js`/`landing.css` sono
     stati verificati solo visivamente (screenshot Chrome headless, questa
     macchina non ha Node installato). Prima di fidarsene in produzione
     varrebbe la pena aggiungere qualche caso a `tests/e2e/` (submit ricerca →
     redirect corretto, `?q=` raccolto da `app.html`, cambio lingua, reveal on
     scroll). Stesso discorso per il nuovo layout mobile: niente e2e ancora,
     solo screenshot headless.
-12. **Documentazione utente non aggiornata** — `docs/manuale-utente.html`,
+13. **Documentazione utente non aggiornata** — `docs/manuale-utente.html`,
     `docs/testbook.html` e `docs/testbook.csv` parlano ancora della vecchia
     struttura a pagina singola su desktop-only. Non ancora rivisti per
     riflettere la landing page, la navigazione a due pagine e il layout
     mobile.
-13. **Audit accessibilità WCAG 2.2** — deliberatamente rimandato a una fase
+14. **Audit accessibilità WCAG 2.2** — deliberatamente rimandato a una fase
     separata futura (concordato con l'utente). Il lavoro mobile di questa
     sessione è stato costruito con attenzione ad aria-label/ruoli/focus, ma
     non è un audit completo.

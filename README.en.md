@@ -7,7 +7,7 @@
 # SunTrace — Urban Microclimate Simulator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-60%20unit%20%2B%2023%20e2e-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-64%20unit%20%2B%2025%20e2e-brightgreen)]()
 [![Engine](https://img.shields.io/badge/solar%20engine-Meeus%20%2F%20SPA-blue)]()
 [![Live Demo](https://img.shields.io/badge/demo-live-f5b301)](https://holyemilio.github.io/Suntrace/)
 
@@ -38,7 +38,7 @@
 | **Geolocation** | Specific error messages for PERMISSION_DENIED / POSITION_UNAVAILABLE / TIMEOUT. |
 | **Zero runtime dependencies** | Leaflet and fonts served locally (`vendor/`), no CDNs: the only external requests go to key-free public APIs — OpenStreetMap (tiles and buildings), Nominatim, Open-Meteo. No bundler. |
 | **Local climate** | Humidity, wind, rainfall and feels-like for the selected month, from the point's real normals. |
-| **60 unit + 23 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
+| **64 unit + 25 e2e** | `node --test` for the solar engine, thermal model and shadow geometry; Playwright drives the app in a real browser. |
 
 ---
 
@@ -66,7 +66,7 @@ Based on **Meeus, "Astronomical Algorithms" 2nd ed. (1998), ch. 25–27**:
 7. **Elevation** with **atmospheric refraction** (Bennet formula)
 8. **Azimuth** with the correct formula `cos Az = (sin δ − sin elev·sin lat)/(cos elev·cos lat)`
 
-**Accuracy target**: < 0.5° on elevation, < 1° on azimuth — verified against SunCalc across 23 test cases.
+**Accuracy target**: < 0.5° on elevation, < 1° on azimuth — verified against SunCalc across 26 test cases.
 
 ---
 
@@ -114,7 +114,7 @@ python3 -m http.server 8000
 # Install suncalc (test-only devDependency)
 npm install
 
-# Run the 60 unit tests (Node 18+)
+# Run the 64 unit tests (Node 18+)
 npm test
 # or: node --test tests/solar.test.js
 ```
@@ -167,7 +167,7 @@ SunTrace/
 ├── server/
 │   └── overpass-cache/ # Cloudflare Worker: 30-day cache in front of Overpass (optional)
 ├── tests/
-│   ├── solar.test.js   # 23 tests — astronomical engine (SunCalc oracle)
+│   ├── solar.test.js   # 26 tests — astronomical engine (SunCalc oracle)
 │   ├── climate.test.js # 21 tests — thermal model and Comfort Rate
 │   ├── shadow.test.js  # 16 tests — facade geometry and shadows
 │   └── e2e/app.e2e.js  # 23 end-to-end tests (Playwright, headless browser)

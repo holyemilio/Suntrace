@@ -9,26 +9,26 @@ Simulatore microclimatico urbano (esposizione solare di facciate in Italia).
 Vanilla JS, moduli ES nativi, **nessun build step, zero dipendenze di runtime**.
 Due pagine: `index.html` (landing) e `app.html` (simulatore, con layout mobile
 dedicato sotto i 768px). Live su GitHub Pages:
-<https://holyemilio.github.io/Suntrace/> · versione **2.6.2**.
+<https://holyemilio.github.io/Suntrace/> · versione **2.7.0**.
 
 ## Comandi
 
 ```bash
 ./start.command      # server locale su :8000 (Cache-Control: no-store)
-npm test             # 60 unit test (motore solare, clima, ombre)
-npm run test:e2e     # 23 e2e Playwright (API esterne mockate)
+npm test             # 64 unit test (motore solare, clima, ombre)
+npm run test:e2e     # 25 e2e Playwright (API esterne mockate)
 ```
 
-⚠️ **Su questo Mac Node NON è installato**: i test non girano localmente.
-La CI (`.github/workflows/ci.yml`) li esegue tutti a ogni push — unit, parità
-i18n IT/EN, e2e. È l'unica rete di sicurezza: non dichiarare "verificato" senza
-CI verde o prova equivalente (es. screenshot con Chrome headless, che c'è).
+Node è installato su questo Mac (v26+, `npm install` già fatto): i comandi sopra
+girano in locale, non serve più aspettare la CI per sapere se qualcosa si è
+rotto. La CI (`.github/workflows/ci.yml`) resta comunque il gate di ogni push
+— unit, parità i18n IT/EN, e2e — ma ora è una seconda conferma, non l'unica.
 
 ## Mappa dei file
 
 | Percorso | Ruolo |
 |---|---|
-| `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo** (23 test vs SunCalc). |
+| `src/solar.js` | Motore astronomico Meeus/SPA. **Puro, non toccare senza motivo** (26 test vs SunCalc). |
 | `src/climate.js` · `src/shadow.js` | Modello termico / geometria ombre. Puri, testati. |
 | `src/ui.js` | Tutto il simulatore (Leaflet, API, bussola click+drag condivisa dai due layout — sulla mappa su desktop, nel widget 🧭 su mobile —, pannelli, layout mobile con reparenting DOM e widget mutuamente esclusivi). Monolite ~47 KB. |
 | `src/landing.js` · `landing.css` | Landing. **Non importano `styles.css`** (che blocca lo scroll). |

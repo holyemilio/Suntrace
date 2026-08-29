@@ -71,12 +71,19 @@ function overpassPayload(lat, lon, height = 30) {
 
 const ROME_RESULT = { display_name: 'Via Giusti, Roma', lat: '41.8955', lon: '12.5010' };
 
-async function openApp(t, { buildings = true, buildingHeight = 30, searchResult = ROME_RESULT, viewport = null } = {}) {
+async function openApp(t, { buildings = true, buildingHeight = 30, searchResult = ROME_RESULT, viewport = null, seedTourSeen = true } = {}) {
   // An Italian locale makes the app start in Italian through its own auto-detect,
   // so the language-persistence test isn't fighting a forced localStorage value.
   const context = await browser.newContext({ locale: 'it-IT', ...(viewport ? { viewport } : {}) });
   t.after(() => context.close());
   const page = await context.newPage();
+
+  // The first-run mobile tour is opt-in for a test (seedTourSeen: false) — by
+  // default it's pre-marked "seen" so it can't cover/intercept clicks meant
+  // for whatever a test is actually checking on a narrow viewport.
+  if (seedTourSeen) {
+    await page.addInitScript(() => localStorage.setItem('suntrace_mobile_tour_seen_v1', '1'));
+  }
 
   await page.route('**/climate-api.open-meteo.com/**', r =>
     r.fulfill({ json: climatePayload() }));
@@ -477,4 +484,31 @@ test('T27: choosing a higher floor escapes the shadow and changes the reading', 
   assert.match(await text(page, 'val-sun-direct'), /sole/, 'the 5th floor sees the sun');
   assert.ok(parseFloat(await text(page, 'thermal-result')) > parseFloat(groundTemp),
     'escaping the shadow warms the room');
+});
+
+test('T40: the first-run mobile tour walks through every control, then stays gone', async (t) => {
+  const page = await openApp(t, { viewport: { width: 500, height: 820 }, seedTourSeen: false });
+
+  // Starts on its own, no interaction needed, highlighting the first control.
+  await page.waitForFunction(() => document.getElementById('mobile-tour-highlight')?.classList.contains('open'));
+  assert.ok(await text(page, 'mobile-tour-text'), 'the first step has explanatory text');
+  assert.equal(await page.locator('.mobile-tour-dot').count(), 6, 'one dot per step');
+  assert.equal(await page.locator('.mobile-tour-dot.active').count(), 1, 'exactly one dot marks the current step');
+
+  const firstText = await text(page, 'mobile-tour-text');
+  await page.locator('#mobile-tour-next').click();
+  const secondText = await text(page, 'mobile-tour-text');
+  assert.notEqual(secondText, firstText, 'Avanti moves to the next step\'s explanation');
+
+  // Skipping mid-way dismisses it and remembers not to show it again.
+  await page.locator('#mobile-tour-skip').click();
+  await page.waitForFunction(() => !document.getElementById('mobile-tour-highlight')?.classList.contains('open'));
+  const seen = await page.evaluate(() => localStorage.getItem('suntrace_mobile_tour_seen_v1'));
+  assert.equal(seen, '1', 'skipping marks the tour as seen');
+
+  await page.reload();
+  await page.waitForFunction(() => document.getElementById('thermal-result').textContent !== '--°C');
+  await page.waitForTimeout(200); // the tour, if it were going to start, does so synchronously in initMobileLayout
+  assert.equal(await page.locator('#mobile-tour-highlight').evaluate(el => el.classList.contains('open')), false,
+    'a returning visitor does not see the tour again');
 });
